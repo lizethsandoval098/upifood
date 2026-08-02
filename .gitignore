@@ -1,0 +1,6 @@
+cliente/build/
+servidor/build/
+
+*.o
+*.out
+*.exe
