@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/cliente.dir/link.d CMakeFiles/cliente.dir/src/mainCliente.cpp.o CMakeFiles/cliente.dir/src/Cliente.cpp.o -o cliente

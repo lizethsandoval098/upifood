@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/servidor.dir/link.d CMakeFiles/servidor.dir/src/mainServidor.cpp.o CMakeFiles/servidor.dir/src/Servidor.cpp.o -o servidor

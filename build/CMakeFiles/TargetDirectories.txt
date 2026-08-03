@@ -1,0 +1,4 @@
+/home/berenicepf/upifood/build/CMakeFiles/cliente.dir
+/home/berenicepf/upifood/build/CMakeFiles/servidor.dir
+/home/berenicepf/upifood/build/CMakeFiles/edit_cache.dir
+/home/berenicepf/upifood/build/CMakeFiles/rebuild_cache.dir
