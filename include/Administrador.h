@@ -4,20 +4,21 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include "Usuario.h"
 
 using namespace std;
 
 class Administrador{
-	public:
-		vector<string> listaUsuarios;
-
 	private:
-		// constructor
-		// destructor
-		// getters
-		// setters
-		// obtenerlista (de la db)
-		// verlista
+		vector<Usuario> listaUsuarios;
+
+	public:
+		Administrador();
+		
+		~Administrador();
+
+		void cargarLista();
+		void verLista();
 };
 
 #endif

@@ -1,27 +1,40 @@
-#ifndef USUARIO_H 
-#define USUARIO_H
+#ifndef PAGO_H 
+#define PAGO_H
 
 #include <string>
 #include <iostream>
 
 using namespace std;
 
-class Usuario{
-	public:
-		string nombre;
-		string correo;
-		string tipoUsuario;
-		string contra;
-		string username;
-
+class Pago{
 	private:
-		// constructor
-		// destructor
-		// getters
-		// setters
-		// login
-		// registrarse
-		// validarcorreo
+		int numeroTarjeta;
+		int CVV;
+		string nombrePropietario;
+		string fechaVencimiento;
+		float monto;
+		bool aprobado;
+
+	public:
+		Pago();
+		
+		~Pago();
+		
+		string getNombrePropietario();
+		int getNumeroTarjeta();
+		int getCVV();
+		string getFechaVencimiento();
+		float getMonto();
+		bool getAprobado();
+
+		void setNombrePropietario();
+		void setNumeroTarjeta();
+		void setCVV();
+		void setFechaVencimiento();
+		void setMonto();
+		void setAprobado();
+
+		void pagar();
 };
 
 #endif

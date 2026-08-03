@@ -4,25 +4,35 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include "Producto"
+#include "Pedido.h"
 
 using namespace std;
 
 class Cafeteria{
-	public:
-		string nombreC;
-		vector<string> inventario;
-		vector<string> listaPedidos;
-
 	private:
-		// constructor
-		// destructor
-		// getters
-		// setters
-		// restockproducto
-		// elaborarpedido
-		// entregarpedido
-		// escanearQR
-		// verificarpago
+		string nombreCafeteria;
+		vector<Producto> inventario;
+		vector<Pedido> listaPedidos;
+
+	public:
+		Cafeteria();
+
+		Cafeteria(string nombreCafeteria);
+
+		~Cafeteria();
+
+		string getNombreCafeteria();
+		
+		void setNombreCafeteria();
+		void cargarInventario();
+		void cargarListaPedidos();
+
+		void restockProducto();
+		void elaborarPedido();
+		void entregarPedido();
+		void escanearQR();
+		void verificarPago();
 };
 
 #endif

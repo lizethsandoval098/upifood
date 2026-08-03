@@ -5,11 +5,13 @@
 #include <vector> 
 #include <utility> // pair
 #include <iostream>
+#include "CodigoQR.h"
+#include "Producto.h"
 
 using namespace std;
 
 class Pedido{
-	public:
+	private:
 		string folio;
 		CodigoQR qr;
 		string nombreCliente;
@@ -17,13 +19,27 @@ class Pedido{
 		float total;
 		vector<pair<Producto, int>> listaProductos; 
 
-	private:
-		// constructor
-		// destructor
-		// getters
-		// setters
-		// agregarProducto
-		// generarTotal
+	public:
+		Pedido();
+		Pedido(string folio, string nombreCliente, string nombreCafeteria, float total,
+		      vector<pair<Producto, int>> listaProductos);
+
+		~Pedido();
+
+		string getFolio();
+		string getNombreCliente();
+		string getNombreCafeteria();
+		float getTotal();
+		vector<pair<Producto, int>> getListaProductos();
+
+		void setFolio();
+		void setNombreCliente();
+		void setNombreCafeteria();
+		void setTotal();
+		
+		void cargarListaProductos();		
+		void agregarProducto();
+		void generarTotal();
 };
 
 #endif

@@ -7,17 +7,27 @@
 using namespace std;
 
 class Producto{
-	public:
-		string nombreP;
-		string idP;
+	private:
+		string nombreProducto;
+		string idProducto;
 		int cantidad;
 		float precio;
 
-	private:
-		// constructor
-		// destructor
-		// getters
-		// setters
+	public:
+		Producto();
+		Producto(string nombreProducto, string idProducto, int cantidad, float precio);
+
+		~Producto();
+
+		string getNombreProducto();
+		string getIdProducto();
+		int getCantidad();
+		float getPrecio();
+
+		void setNombreProducto();
+		void setIdProducto();
+		void setCantidad();
+		void setPrecio();
 };
 
 #endif

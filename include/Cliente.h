@@ -19,12 +19,15 @@ class Cliente{
 	public: 
 		Cliente(); 
 		bool conectar();
-	       // destructor
-	       // getter
-	       // setter
-	       // hacerpedido
-	       // pagar
-	       // recogerpedido 	
+	       
+		~Cliente();
+	        
+		string getTipoCliente();
+		void setTipoCliente();
+		
+		void hacerPedido();
+		void pagar();
+		void recogerPedido();
 };
 
 #endif
