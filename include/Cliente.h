@@ -3,15 +3,28 @@
 
 #include<string>
 
+using namespace std;
+
 class Cliente{
 
-	private: 
+	private:
+	       // conexion	
 		int socketCliente; 
-		std::string ipServidor; 
-		int  puerto; 
+		string ipServidor; 
+		int  puerto;
+
+		//
+		string tipoCliente; // upiita, ipn, invitado
+
 	public: 
 		Cliente(); 
-		bool conectar(); 
+		bool conectar();
+	       // destructor
+	       // getter
+	       // setter
+	       // hacerpedido
+	       // pagar
+	       // recogerpedido 	
 };
 
 #endif
