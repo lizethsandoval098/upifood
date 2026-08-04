@@ -11,27 +11,28 @@ class Usuario{
 		string nombre;
 		string correo;
 		string tipoUsuario;
-		string contra;
+		string contrasena;
 		string username;
 		int anio;
 		string escuela;
 
 	public:
 		Usuario();
-		Usuario(string tipoUsuario, string nombre, string correo, string contra);	
-		Usuario(string tipoUsuario, string nombre, string correo, string contra, string username, int anio, string escuela);
+		Usuario(string tipoUsuario, string nombre, string correo, string contrasena);	
+		Usuario(string tipoUsuario, string nombre, string correo, string contrasena, string username, int anio, string escuela);
 			
 		~Usuario();
 
 		string getNombre();
 		string getTipoUsuario();
 		string getCorreo();
-		string getContra();
+		string getContrasena();
+		string getUsername();
 
 		void setNombre();
 		void setTipoUsuario();
 		void setCorreo();
-		void setContra();
+		void setContrasena();
 
 		void iniciarSesion();
 		void registro();

@@ -11,6 +11,7 @@ using namespace std;
 
 class Cafeteria{
 	private:
+		int idCafeteria;
 		string nombreCafeteria;
 		vector<Producto> inventario;
 		vector<Pedido> listaPedidos;
@@ -18,13 +19,15 @@ class Cafeteria{
 	public:
 		Cafeteria();
 
-		Cafeteria(string nombreCafeteria);
+		Cafeteria(int idCafeteria, string nombreCafeteria);
 
 		~Cafeteria();
 
 		string getNombreCafeteria();
-		
+		int getIdCafeteria();
+
 		void setNombreCafeteria();
+		void setIdCafeteria();
 		void cargarInventario();
 		void cargarListaPedidos();
 
