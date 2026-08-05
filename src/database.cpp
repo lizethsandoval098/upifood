@@ -130,17 +130,32 @@ bool BaseDatos::inicializarTablas(){
 
 // Usuarios
 bool BaseDatos::guardarUsuarioCliente(Cliente& cliente){     // guardar en db
-	string sqlU = "INSERT INTO Usuarios (username, tipoUsuario, nombre, correo, contrasena) VALUES ('" +
+	ejecutarQuery("BEGIN TRANSACTION;");
+
+	string sqlU = "INSERT INTO Usuarios (username, tipoUsuario, nombre, correo, contrasena) "
+		    + "VALUES ('" +
 		     cliente.getUsername() + "', 'Cliente', '" +
      		     cliente.getNombre() + "', '" + 
 		     cliente.getCorreo() + "', '" +
 		     cliente.getContrasena() + "');";
+	
+	if(!ejecutarQuery(sqlU)) {
+		ejecutarQuery("ROLLBACK;");
+		return false;
+	}
 
 	string sqlC = "INSERT INTO Clientes (username, tipoCliente) VALUES ('" +
 		     cliente.getUsername() + "', '" +
      		     cliente.getTipoCliente() + "');";
 
-	return ejecutarQuery(sqlU) && ejecutarQuery(sqlC);
+	if(!ejecutarQuery(sqlC)) {
+		ejecutarQuery("ROLLBACK;");
+		return false;
+	}
+	
+	ejecutarQuery("COMMIT;");
+
+	return true;
 }
 	
 vector<Usuario> obtenerUsuarios();        // para admin
@@ -148,17 +163,75 @@ vector<Usuario> obtenerUsuarios();        // para admin
 		
 		// Pedidos
 bool BaseDatos::guardarPedido(Pedido& pedido){
-	string sqlP = "INSERT INTO Pedidos (folio, fecha, urlQR, estado, total, usernameCliente, idCafeteria) VALUES ('" + pedido.getFolio() + "', " + pedido.getFecha() + "', " + pedido.getUrlQR() + "', " + pedido.getEstado() + "', " + pedido.getTotal() + "', " + pedido.getUsernameCliente() + "', " + pedido.getIdCafeteria + "');";
+	ejecutarQuery("BEGIN TRANSACTION;");
 
-	string sqlDP = "INSERT INTO DetallePedido (folioPedido, idProducto, cantidadP, precioUnitario) VALUES ('" +
-		       pedido.	
+	string sqlP = "INSERT INTO Pedidos (folio, fecha, urlQR, estado, total, usernameCliente, "
+		+ "idCafeteria) VALUES ('" + pedido.getFolio() + "',' " + pedido.getFecha() + 
+		"', '" + pedido.getUrlQR() + "', '" + pedido.getEstado() + "', " + 
+		to_string(pedido.getTotal()) + ", '" + pedido.getUsernameCliente() + 
+		"', " + to_string(pedido.getIdCafeteria()) + ");";
+
+	if(!ejecutarQuery(sqlP)) {
+		ejecutarQuery("ROLLBACK;");
+		return false;
+	}
+
+	for(const auto& item : pedido.getListaProductos()) {
+	       	Producto producto = item.first; // primer elemento del pair
+		int cantidad = item.second; // segundo elemento del pair
+
+		string sqlDP = "INSERT INTO DetallePedido (folioPedido, idProducto, cantidadP, "
+			+ "precioUnitario) VALUES ('" + pedido.getFolio() + "', '" + 
+			producto.getIdProducto() + "', " + to_string(cantidad) + ", " + 
+			to_string(producto.getPrecio()) + ");";
+		
+		if(!ejecutarQuery(sqlDP)) {
+			ejecutarQuery("ROLLBACK;");
+			return false;
+		}
+	}
+
+	ejecutarQuery("COMMIT;");
+
+	return true;
 }
+
 		vector<Pedido> obtenerPedidos();
 		Pedido obtenerPedido(string folio);
 		
 		// Productos
-bool guardarProducto(Producto producto){
-	
+bool BaseDatos::guardarProducto(Producto& producto){
+
+	string sqlP = "INSERT INTO Productos (idProducto, nombreProducto, cantidad, precio, total) "
+		+ "VALUES ('" + producto.getIdProducto() + "',' " + pedido.getFecha() + 
+		"', '" + pedido.getUrlQR() + "', '" + pedido.getEstado() + "', " + 
+		to_string(pedido.getTotal()) + ", '" + pedido.getUsernameCliente() + 
+		"', " + to_string(pedido.getIdCafeteria()) + ");";
+
+	if(!ejecutarQuery(sqlP)) {
+		ejecutarQuery("ROLLBACK;");
+		return false;
+	}
+
+	for(const auto& item : pedido.getListaProductos()) {
+	       	Producto producto = item.first; // primer elemento del pair
+		int cantidad = item.second; // segundo elemento del pair
+
+		string sqlDP = "INSERT INTO DetallePedido (folioPedido, idProducto, cantidadP, "
+			+ "precioUnitario) VALUES ('" + pedido.getFolio() + "', '" + 
+			producto.getIdProducto() + "', " + to_string(cantidad) + ", " + 
+			to_string(producto.getPrecio()) + ");";
+		
+		if(!ejecutarQuery(sqlDP)) {
+			ejecutarQuery("ROLLBACK;");
+			return false;
+		}
+	}
+
+	ejecutarQuery("COMMIT;");
+
+	return true;
+
 }
 		vector<Producto> obtenerInventario(int idCafeteria);
 		bool actualizarExistencia(int idProducto, int cantidad);
