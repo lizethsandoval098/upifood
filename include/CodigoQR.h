@@ -34,10 +34,10 @@ class CodidoQR{
 		// consultar url guardada
 		string getUrl() const;
 
-		void setUrl();
+		void setUrl(const string& u);
 
-		bool getEsValido();
-		void setEsValido();
+		bool getEsValido() const;
+		void setEsValido(bool ev);
 
 		// manipular Sprite desde SFML
 		sf::Sprite getSprite() const;

@@ -29,10 +29,11 @@ class Usuario{
 		string getContrasena() const;
 		string getUsername() const;
 
-		void setNombre();
-		void setTipoUsuario();
-		void setCorreo();
-		void setContrasena();
+		void setNombre(const string& n);
+		void setTipoUsuario(const string& tu);
+		void setCorreo(const string& c);
+		void setContrasena(const string& c);
+		void setUsername(const string& u);
 
 		void iniciarSesion();
 		void registro();

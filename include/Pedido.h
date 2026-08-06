@@ -35,14 +35,16 @@ class Pedido{
 		string getUsernameCliente() const;
 		string getIdCafeteria() const;
 		float getTotal() const;
+		CodigoQR getQr() const;
 		vector<pair<Producto, int>> getListaProductos() const;
 
-		void setFolio();
-		void setFecha();
-		void setEstado();
-		void setUsernameCliente();
-		void setIdCafeteria();
-		void setTotal();
+		void setFolio(const string& f);
+		void setFecha(const string& f);
+		void setEstado(const string& e);
+		void setUsernameCliente(const string& uc);
+		void setIdCafeteria(const string& ic);
+		void setTotal(float t);
+		void setQr(const string& url, bool valido);
 		
 		void cargarListaProductos();		
 		void agregarProducto();
