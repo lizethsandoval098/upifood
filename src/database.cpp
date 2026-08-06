@@ -176,10 +176,41 @@ bool BaseDatos::guardarUsuarioCliente(const Cliente& cliente) {     // guardar e
 }
 	
 vector<Usuario> BaseDatos::obtenerUsuarios(){        // para admin
+	vector<Usuario> listaU;
+
+	string sql = "SELECT username, tipoUsuario, nombre, correo, contrasena "
+	       	     "FROM Usuarios;";
+
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al cargar la lista de Usuarios: " << sqlite3_errmsg(db) << endl;
+		return listaU;
+	}
+
+	while(sqlite3_step(stmt) == SQLITE_ROW) {
+		Usuario u;
+
+		u.setUsername(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));	
+		u.setTipoUsuario(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+		u.setNombre(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+		u.setCorreo(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+		u.setContrasena(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
+
+		listaU.push_back(u);
+	}
 	
+	sqlite3_finalize(stmt);
+
+	return listaU;	
 }
-		Usuario obtenerUsuario(string username);  // usuario especifico
 		
+Usuario obtenerUsuario(string username);  // usuario especifico
+
+
+
+
+
 // Pedidos
 bool BaseDatos::guardarPedido(const Pedido& pedido) {
 	ejecutarQuery("BEGIN TRANSACTION;");
@@ -215,7 +246,91 @@ bool BaseDatos::guardarPedido(const Pedido& pedido) {
 	return true;
 }
 
-		vector<Pedido> obtenerPedidos();
+vector<Pedido> BaseDatos::obtenerPedidosCafeteria(string idC){        // para cafeteria
+	vector<Pedido> listaP;
+
+	string sql = "SELECT folio, fecha, urlQR, estado, total, usernameCliente, qrValido  "
+	       	     "FROM Pedidos "
+		     "WHERE idCafeteria = ?;";
+
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al cargar la lista de Pedidos: " << sqlite3_errmsg(db) << endl;
+		return listaP;
+	}
+
+	while(sqlite3_step(stmt) == SQLITE_ROW) {
+		Pedido p;
+		bool ev;
+
+		p.setFolio(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));	
+		p.setFecha(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+
+		if(sqlite3_column_int(stmt, 6) == 1) {
+			ev = true;
+		} else {
+			ev = false;
+		}
+
+		p.setQr(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)), ev);
+		p.setEstado(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+		p.setTotal(sqlite3_column_double(stmt, 4));
+		p.setUsernameCliente(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+		p.setIdCafeteria(idC);
+
+		listaP.push_back(p);
+	}
+	
+	sqlite3_finalize(stmt);
+
+	return listaP;	
+}
+
+vector<Pedido> BaseDatos::obtenerHistorialPedidos(string uC){        // para cliente
+	vector<Pedido> historialP;
+
+	string sql = "SELECT folio, fecha, urlQR, estado, total, idCafeteria, qrValido  "
+	       	     "FROM Pedidos "
+		     "WHERE usernameCliente = ?;";
+
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al cargar el historial de Pedidos: " << sqlite3_errmsg(db) << endl;
+		return historialP;
+	}
+
+	while(sqlite3_step(stmt) == SQLITE_ROW) {
+		Pedido p;
+		bool ev;
+
+		p.setFolio(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));	
+		p.setFecha(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+
+		if(sqlite3_column_int(stmt, 6) == 1) {
+			ev = true;
+		} else {
+			ev = false;
+		}
+
+		p.setQr(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)), ev);
+		p.setEstado(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+		p.setTotal(sqlite3_column_double(stmt, 4));
+		p.setIdCafeteria(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+		p.setUsernameCliente(uC);
+
+		historialP.push_back(p);
+	}
+	
+	sqlite3_finalize(stmt);
+
+	return historialP;	
+}
+
+
+
+
 		Pedido obtenerPedido(string folio);
 		
 // Productos
@@ -228,7 +343,50 @@ bool BaseDatos::guardarProducto(const Producto& producto) {
 	return ejecutarQuery(sqlP);
 }
 
-		vector<Producto> obtenerInventario(int idCafeteria);
+vector<Producto> BaseDatos::obtenerInventario(string idCafeteria){        // para cafeteria
+	vector<Producto> inventario;
+
+	////////////////////////////////////////////// AQUI ME QUEDE
+
+	string sql = "SELECT nombreProducto, cantidad, precio "
+	       	     "FROM Pedidos "
+		     "WHERE usernameCliente = ?;";
+
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al cargar el historial de Pedidos: " << sqlite3_errmsg(db) << endl;
+		return historialP;
+	}
+
+	while(sqlite3_step(stmt) == SQLITE_ROW) {
+		Pedido p;
+		bool ev;
+
+		p.setFolio(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));	
+		p.setFecha(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+
+		if(sqlite3_column_int(stmt, 6) == 1) {
+			ev = true;
+		} else {
+			ev = false;
+		}
+
+		p.setQr(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)), ev);
+		p.setEstado(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+		p.setTotal(sqlite3_column_double(stmt, 4));
+		p.setIdCafeteria(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+		p.setUsernameCliente(uC);
+
+		historialP.push_back(p);
+	}
+	
+	sqlite3_finalize(stmt);
+
+	return historialP;	
+}
+
+
 		bool actualizarExistencia(int idProducto, int cantidad);
 		int obtenerExistencia(int idProducto);
 		
