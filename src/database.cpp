@@ -1,5 +1,6 @@
 #include "BaseDatos.h"
 #include <iostream>
+#include <string>
 
 using namespace std;
 
@@ -117,7 +118,7 @@ bool BaseDatos::inicializarTablas() {
 			 "ON DELETE SET NULL);";
 
 	string sqlTarjetas = "CREATE TABLE IF NOT EXISTS Tarjetas ("
-			     "numeroTarjeta INTEGER PRIMARY KEY, "
+			     "numeroTarjeta INTEGER NOT NULL, "
 			     "usernameCliente TEXT NOT NULL, "
 			     "fechaVencimiento TEXT NOT NULL CHECK (fechaVencimiento "
 			     "LIKE '__/__'), "
@@ -175,7 +176,7 @@ bool BaseDatos::guardarUsuarioCliente(const Cliente& cliente) {     // guardar e
 	return true;
 }
 	
-vector<Usuario> BaseDatos::obtenerUsuarios(){        // para admin
+vector<Usuario> BaseDatos::obtenerUsuarios() const{        // para admin
 	vector<Usuario> listaU;
 
 	string sql = "SELECT username, tipoUsuario, nombre, correo, contrasena "
@@ -206,8 +207,6 @@ vector<Usuario> BaseDatos::obtenerUsuarios(){        // para admin
 }
 		
 Usuario obtenerUsuario(string username);  // usuario especifico
-
-
 
 
 
@@ -246,7 +245,7 @@ bool BaseDatos::guardarPedido(const Pedido& pedido) {
 	return true;
 }
 
-vector<Pedido> BaseDatos::obtenerPedidosCafeteria(string idC){        // para cafeteria
+vector<Pedido> BaseDatos::obtenerPedidosCafeteria(const string& idC) const{        // para cafeteria
 	vector<Pedido> listaP;
 
 	string sql = "SELECT folio, fecha, urlQR, estado, total, usernameCliente, qrValido  "
@@ -259,6 +258,8 @@ vector<Pedido> BaseDatos::obtenerPedidosCafeteria(string idC){        // para ca
 		cerr << "Error al cargar la lista de Pedidos: " << sqlite3_errmsg(db) << endl;
 		return listaP;
 	}
+
+	sqlite3_bind_text(stmt, 1, idC.c_str(), -1, SQLITE_TRANSIENT);
 
 	while(sqlite3_step(stmt) == SQLITE_ROW) {
 		Pedido p;
@@ -287,7 +288,7 @@ vector<Pedido> BaseDatos::obtenerPedidosCafeteria(string idC){        // para ca
 	return listaP;	
 }
 
-vector<Pedido> BaseDatos::obtenerHistorialPedidos(string uC){        // para cliente
+vector<Pedido> BaseDatos::obtenerHistorialPedidos(const string& uC) const{        // para cliente
 	vector<Pedido> historialP;
 
 	string sql = "SELECT folio, fecha, urlQR, estado, total, idCafeteria, qrValido  "
@@ -300,6 +301,8 @@ vector<Pedido> BaseDatos::obtenerHistorialPedidos(string uC){        // para cli
 		cerr << "Error al cargar el historial de Pedidos: " << sqlite3_errmsg(db) << endl;
 		return historialP;
 	}
+
+	sqlite3_bind_text(stmt, 1, uC.c_str(), -1, SQLITE_TRANSIENT);
 
 	while(sqlite3_step(stmt) == SQLITE_ROW) {
 		Pedido p;
@@ -343,47 +346,53 @@ bool BaseDatos::guardarProducto(const Producto& producto) {
 	return ejecutarQuery(sqlP);
 }
 
-vector<Producto> BaseDatos::obtenerInventario(string idCafeteria){        // para cafeteria
+
+/*
+ *    idProducto = idCaf-num,                           galletas de caf 1 : 101-123
+ *    idCafeteria = C-101 -> cafeteria 1
+ *                  C-202 -> caf 2
+ * 
+ */
+
+
+vector<Producto> BaseDatos::obtenerInventario(const string& idCafeteria) const{        // para cafeteria
 	vector<Producto> inventario;
+	string idProd;
+	size_t posGuion = idCafeteria.find('-');
 
-	////////////////////////////////////////////// AQUI ME QUEDE
+	if(posGuion != string::npos) {  // extrae string despues del guion
+		idProd = idCafeteria.substr(posGuion + 1);
+	}	
 
-	string sql = "SELECT nombreProducto, cantidad, precio "
-	       	     "FROM Pedidos "
-		     "WHERE usernameCliente = ?;";
+	idProd = idProd + "-%";
+
+	string sql = "SELECT nombreProducto, cantidad, precio, idProducto "
+	       	     "FROM Productos "
+		     "WHERE idProducto LIKE ?;";
 
 	sqlite3_stmt* stmt;
 
 	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
-		cerr << "Error al cargar el historial de Pedidos: " << sqlite3_errmsg(db) << endl;
-		return historialP;
+		cerr << "Error al cargar el inventario: " << sqlite3_errmsg(db) << endl;
+		return inventario;
 	}
 
+	sqlite3_bind_text(stmt, 1, idProd.c_str(), -1, SQLITE_TRANSIENT);
+
 	while(sqlite3_step(stmt) == SQLITE_ROW) {
-		Pedido p;
-		bool ev;
+		Producto p;
 
-		p.setFolio(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));	
-		p.setFecha(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-
-		if(sqlite3_column_int(stmt, 6) == 1) {
-			ev = true;
-		} else {
-			ev = false;
-		}
-
-		p.setQr(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)), ev);
-		p.setEstado(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-		p.setTotal(sqlite3_column_double(stmt, 4));
-		p.setIdCafeteria(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
-		p.setUsernameCliente(uC);
-
-		historialP.push_back(p);
+		p.setNombreProducto(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));	
+		p.setCantidad(sqlite3_column_int(stmt, 1));
+		p.setPrecio(sqlite3_column_double(stmt, 2));
+		p.setIdProducto(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+		
+		inventario.push_back(p);
 	}
 	
 	sqlite3_finalize(stmt);
 
-	return historialP;	
+	return inventario;	
 }
 
 
