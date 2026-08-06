@@ -4,37 +4,31 @@
 #include <string>
 #include <iostream>
 
+#include "Tarjeta.h"
+
 using namespace std;
 
 class Pago{
 	private:
-		int numeroTarjeta;
-		int CVV;
-		string nombrePropietario;
-		string fechaVencimiento;
+		Tarjeta tarjeta;
 		float monto;
 		bool aprobado;
+		string folioPedido;
 
 	public:
 		Pago();
 		
 		~Pago();
 		
-		string getNombrePropietario();
-		int getNumeroTarjeta();
-		int getCVV();
-		string getFechaVencimiento();
-		float getMonto();
-		bool getAprobado();
+		const Tarjeta& getTarjeta() const;
+		float getMonto() const;
+		bool getAprobado() const;
+		string getFolioPedido() const;
 
-		void setNombrePropietario();
-		void setNumeroTarjeta();
-		void setCVV();
-		void setFechaVencimiento();
-		void setMonto();
-		void setAprobado();
-
-		void pagar();
+		void asignarTarjeta(const Tarjeta& tarjeta);
+		void setMonto(float m);
+		void setAprobado(bool a);
+		void setFolioPedido(const string& folio);
 };
 
 #endif

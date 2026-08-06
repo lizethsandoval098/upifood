@@ -3,6 +3,9 @@
 
 #include<string>
 
+#include "Tarjeta.h"
+#include "Pedido.h"
+
 using namespace std;
 
 class Cliente{
@@ -15,6 +18,9 @@ class Cliente{
 
 		//
 		string tipoCliente; // upiita, ipn, invitado
+		vector<Tarjeta> tarjetasGuardadas;
+		vector<Pedido> historialPedidos;
+		Pedido pedidoActual;
 
 	public: 
 		Cliente(); 
@@ -23,8 +29,14 @@ class Cliente{
 		~Cliente();
 	        
 		string getTipoCliente();
-		void setTipoCliente();
+		vector<Tarjeta> getTarjetasGuardadas();
+		Pedido& getPedidoActual();
 		
+		void setTipoCliente();
+		void cargarTarjetasGuardadas();
+		void cargarPedidoActual();
+	
+		void verHistorialP();
 		void hacerPedido();
 		void pagar();
 		void recogerPedido();

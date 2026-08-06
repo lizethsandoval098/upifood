@@ -14,9 +14,8 @@ using namespace std;
 class Pedido{
 	private:
 		string folio;
-		CodigoQR qr;
+		CodigoQR qr; // url, esValido
 		string fecha;
-		string urlQR;
 		string estado;
 		string usernameCliente;
 		string idCafeteria;
@@ -32,7 +31,6 @@ class Pedido{
 
 		string getFolio();
 		string getFecha();
-		string getUrlQR();
 		string getEstado();
 		string getUsernameCliente();
 		string getIdCafeteria();
@@ -41,7 +39,6 @@ class Pedido{
 
 		void setFolio();
 		void setFecha();
-		void setUrlQR();
 		void setEstado();
 		void setUsernameCliente();
 		void setIdCafeteria();

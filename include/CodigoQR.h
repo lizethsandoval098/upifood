@@ -10,12 +10,18 @@ using namespace std;
 class CodidoQR{
 	private:
 		string url;
+		bool esValido;
+
 		sf::Texture textura; // arma la imagen
 		sf::Sprite spriteQR; // mostrar en la ventana
 
 		void construirGraficoQR(); // genera los pixeles y prepara el Sprite
 
 	public:
+		CodigoQR();
+
+		~CodigoQR();
+
 		// constructor que recibe la url
 		explicit CodigoQR(const string& url);
 
@@ -26,10 +32,15 @@ class CodidoQR{
 		void setPosicion(float x, float y);
 
 		// consultar url guardada
-		string getUrl() const { return url; }
+		string getUrl() const;
+
+		void setUrl();
+
+		bool getEsValido();
+		void setEsValido();
 
 		// manipular Sprite desde SFML
-		sf::Sprite getSprite() const { return spriteQR; }
+		sf::Sprite getSprite() const;
 
 };
 
