@@ -3,7 +3,7 @@
 
 using namespace std;
 
-BaseDatos::BaseDatos(){
+BaseDatos::BaseDatos() {
 	nombreBD = "upiifood.db";
 	db = nullptr;
 }
@@ -12,7 +12,7 @@ BaseDatos::~BaseDatos(){ }
 	desconectar();
 }
 
-bool BaseDatos::conectar(){
+bool BaseDatos::conectar() {
 	// si el archivo no existe, lo crea en la carpeta del proyecto
 	int resultado = sqlite3_open(nombreBD.c_str(), &db);
 
@@ -27,7 +27,7 @@ bool BaseDatos::conectar(){
 	return true;
 }
 
-void BaseDatos::desconectar(){
+void BaseDatos::desconectar() {
 	if(db != nullptr){
 		sqlite3_close(db);
 		db = nullptr;
@@ -50,7 +50,7 @@ bool BaseDatos::ejecutarQuery(const string& query) {
 	return true;
 }
 
-bool BaseDatos::inicializarTablas(){
+bool BaseDatos::inicializarTablas() {
 	string sqlUsuarios = "CREATE TABLE IF NOT EXISTS Usuarios ("
 			     "username TEXT PRIMARY KEY, "
 			     "tipoUsuario TEXT NOT NULL CHECK (tipoUsuario IN "
@@ -116,12 +116,11 @@ bool BaseDatos::inicializarTablas(){
 	string sqlTarjetas = "CREATE TABLE IF NOT EXISTS Tarjetas ("
 			     "numeroTarjeta INTEGER PRIMARY KEY, "
 			     "usernameCliente TEXT NOT NULL, "
-			     "nombrePropietario TEXT NOT NULL, "
 			     "fechaVencimiento TEXT NOT NULL CHECK (fechaVencimiento "
 			     "LIKE '__/__'), "
 			     "CVV INTEGER NOT NULL, "
-			     "FOREIGN KEY (usernameCliente, nombrePropietario) "
-			     "REFERENCES Usuarios(username, nombre) "
+			     "FOREIGN KEY (usernameCliente) "
+			     "REFERENCES Usuarios(username) "
 			     "ON DELETE CASCADE ON UPDATE CASCADE);";
 
 	return ejecutarQuery(sqlUsuarios) && ejecutarQuery(sqlCafeterias) && ejecutarQuery(sqlClientes) && ejecutarQuery(sqlProductos) && ejecutarQuery(sqlPedidos) && ejecutarQuery(sqlDetallePedido) && ejecutarQuery(sqlPagos) && ejecutarQuery(sqlTarjetas);
@@ -129,7 +128,7 @@ bool BaseDatos::inicializarTablas(){
 
 
 // Usuarios
-bool BaseDatos::guardarUsuarioCliente(Cliente& cliente){     // guardar en db
+bool BaseDatos::guardarUsuarioCliente(const Cliente& cliente) {     // guardar en db
 	ejecutarQuery("BEGIN TRANSACTION;");
 
 	string sqlU = "INSERT INTO Usuarios (username, tipoUsuario, nombre, correo, contrasena) "
@@ -161,12 +160,12 @@ bool BaseDatos::guardarUsuarioCliente(Cliente& cliente){     // guardar en db
 vector<Usuario> obtenerUsuarios();        // para admin
 		Usuario obtenerUsuario(string username);  // usuario especifico
 		
-		// Pedidos
-bool BaseDatos::guardarPedido(Pedido& pedido){
+// Pedidos
+bool BaseDatos::guardarPedido(const Pedido& pedido) {
 	ejecutarQuery("BEGIN TRANSACTION;");
 
 	string sqlP = "INSERT INTO Pedidos (folio, fecha, urlQR, estado, total, usernameCliente, "
-		+ "idCafeteria) VALUES ('" + pedido.getFolio() + "',' " + pedido.getFecha() + 
+		+ "idCafeteria) VALUES ('" + pedido.getFolio() + "', '" + pedido.getFecha() + 
 		"', '" + pedido.getUrlQR() + "', '" + pedido.getEstado() + "', " + 
 		to_string(pedido.getTotal()) + ", '" + pedido.getUsernameCliente() + 
 		"', " + to_string(pedido.getIdCafeteria()) + ");";
@@ -199,46 +198,40 @@ bool BaseDatos::guardarPedido(Pedido& pedido){
 		vector<Pedido> obtenerPedidos();
 		Pedido obtenerPedido(string folio);
 		
-		// Productos
-bool BaseDatos::guardarProducto(Producto& producto){
+// Productos
+bool BaseDatos::guardarProducto(const Producto& producto) {
+	string sqlP = "INSERT INTO Productos (idProducto, nombreProducto, cantidad, precio) "
+		+ "VALUES ('" + producto.getIdProducto() + "', '" + producto.getNombreProducto() + 
+		"', " + to_string(producto.getCantidad()) + ", " + to_string(producto.getPrecio()) + 
+		");";
 
-	string sqlP = "INSERT INTO Productos (idProducto, nombreProducto, cantidad, precio, total) "
-		+ "VALUES ('" + producto.getIdProducto() + "',' " + pedido.getFecha() + 
-		"', '" + pedido.getUrlQR() + "', '" + pedido.getEstado() + "', " + 
-		to_string(pedido.getTotal()) + ", '" + pedido.getUsernameCliente() + 
-		"', " + to_string(pedido.getIdCafeteria()) + ");";
-
-	if(!ejecutarQuery(sqlP)) {
-		ejecutarQuery("ROLLBACK;");
-		return false;
-	}
-
-	for(const auto& item : pedido.getListaProductos()) {
-	       	Producto producto = item.first; // primer elemento del pair
-		int cantidad = item.second; // segundo elemento del pair
-
-		string sqlDP = "INSERT INTO DetallePedido (folioPedido, idProducto, cantidadP, "
-			+ "precioUnitario) VALUES ('" + pedido.getFolio() + "', '" + 
-			producto.getIdProducto() + "', " + to_string(cantidad) + ", " + 
-			to_string(producto.getPrecio()) + ");";
-		
-		if(!ejecutarQuery(sqlDP)) {
-			ejecutarQuery("ROLLBACK;");
-			return false;
-		}
-	}
-
-	ejecutarQuery("COMMIT;");
-
-	return true;
-
+	return ejecutarQuery(sqlP);
 }
+
 		vector<Producto> obtenerInventario(int idCafeteria);
 		bool actualizarExistencia(int idProducto, int cantidad);
 		int obtenerExistencia(int idProducto);
 		
-		// Pagos
-		bool guardarPago(Pago pago);
-		Pago obtenerPago(int folio);
+// Pagos
+bool BaseDatos::guardarPago(const Pago& pago) {
+	string sqlP = "INSERT INTO Pagos (folioPedido, monto, aprobado, numTarjeta) "
+		+ "VALUES ('" + pago.getFolioPedido() + "', " + to_string(pago.getMonto()) + 
+		", " + to_string(pago.getAprobado()) + ", " + 
+		to_string(pago.getTarjeta().getNumeroTarjeta()) + 
+		");";
 
+	return ejecutarQuery(sqlP);
+} 
 
+Pago obtenerPago(int folio);
+
+// Tarjetas
+bool BaseDatos::guardarTarjeta(const Tarjeta& tarjeta) {
+	string sqlT = "INSERT INTO Tarjetas (numeroTarjeta, usernameCliente, "
+		+ "fechaVencimiento, CVV) VALUES (" + 
+		to_string(tarjeta.getNumeroTarjeta()) + ", '" + tarjeta.getUsernamePropietario() + 
+		"', '" + tarjeta.getFechaVencimiento() + "', " + 
+		to_string(tarjeta.getCVV()) + ");";
+
+	return ejecutarQuery(sqlT);
+}
