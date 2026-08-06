@@ -206,8 +206,65 @@ vector<Usuario> BaseDatos::obtenerUsuarios() const{        // para admin
 	return listaU;	
 }
 		
-Usuario obtenerUsuario(string username);  // usuario especifico
+Cliente BaseDatos::obtenerUsuarioCliente(const string& username) const {  // usuario especifico
+	Cliente usuario;
 
+	string sql1 = "SELECT U.tipoUsuario, U.nombre, U.correo, U.contrasena, C.tipoCliente "
+	       	     "FROM Usuarios U "
+		     "JOIN Clientes C ON U.username = C.username "
+		     "WHERE U.username = ?;";
+
+
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql1.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al cargar el usuario: " << sqlite3_errmsg(db) << endl;
+		return usuario;
+	}
+
+	sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+
+	if(sqlite3_step(stmt) == SQLITE_ROW) {
+		usuario.setTipoUsuario(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));	
+		usuario.setNombre(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+		usuario.setCorreo(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+		usuario.setContrasena(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+		usuario.setTipoCliente(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
+		usuario.setUsername(username);
+	}
+	
+	sqlite3_finalize(stmt);
+
+	string sql2 = "SELECT numeroTarjeta, fechaVencimiento, CVV "
+		      "FROM Tarjetas WHERE usernameCliente = ?;";
+
+	if(sqlite3_prepare_v2(db, sql2.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+		sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+
+		vector<Tarjeta> tarjetas;
+
+		while(sqlite3_step(stmt) == SQLITE_ROW) {
+			Tarjeta t;
+			t.setNumeroTarjeta(sqlite3_column_int(stmt, 0));
+			t.setFechaVencimiento(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+			t.setCVV(sqlite3_column_int(stmt, 2));
+			t.setNombrePropietario(usuario.getNombre());
+			
+			tarjetas.push_back(t);
+		}
+
+		sqlite3_finalize(stmt);
+
+		usuario.setTarjetasGuardadas(tarjetas);
+	}
+
+	usuario.setHistorialPedidos(obtenerHistorialPedidos(username));
+		
+	// obtenerPedido where estado != cancelado o asi
+	usuario.setPedidoActual(_______);	
+	 
+	return usuario;	
+}
 
 
 // Pedidos
@@ -331,10 +388,35 @@ vector<Pedido> BaseDatos::obtenerHistorialPedidos(const string& uC) const{      
 	return historialP;	
 }
 
+Pedido BaseDatos::obtenerPedido(const string& folio) const {
+	Pedido p;
 
+	string sql = "SELECT U.tipoUsuario, U.nombre, U.correo, U.contrasena, C.tipoCliente "
+	       	     "FROM Usuarios U "
+		     "JOIN Clientes C ON U.username = C.username "
+		     "WHERE U.username = ?;";
 
+	sqlite3_stmt* stmt;
 
-		Pedido obtenerPedido(string folio);
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al cargar el usuario: " << sqlite3_errmsg(db) << endl;
+		return listaU;
+	}
+
+	sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+
+	if(sqlite3_step(stmt) == SQLITE_ROW) {
+		usuario.setTipoUsuario(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));	
+		usuario.setNombre(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+		usuario.setCorreo(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+		usuario.setContrasena(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+		usuario.setTipoCliente(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
+	}
+	
+	sqlite3_finalize(stmt);
+
+	return usuario;	
+}
 		
 // Productos
 bool BaseDatos::guardarProducto(const Producto& producto) {
