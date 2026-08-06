@@ -51,13 +51,15 @@ bool BaseDatos::ejecutarQuery(const string& query) {
 }
 
 bool BaseDatos::inicializarTablas() {
+	ejecutarQuery("BEGIN TRANSACTION;");
+
 	string sqlUsuarios = "CREATE TABLE IF NOT EXISTS Usuarios ("
 			     "username TEXT PRIMARY KEY, "
 			     "tipoUsuario TEXT NOT NULL CHECK (tipoUsuario IN "
 			     "('Admin', 'Cafe', 'Cliente')), "
 			     "nombre TEXT NOT NULL, "
 			     "correo TEXT NOT NULL CHECK (correo LIKE '%@alumno.ipn.mx'), "
-			     "contrasena NOT NULL CHECK (length(contrasena) >= 8));";
+			     "contrasena TEXT NOT NULL CHECK (length(contrasena) >= 8));";
 	
 	string sqlCafeterias = "CREATE TABLE IF NOT EXISTS Cafeterias ("
 			       "username TEXT PRIMARY KEY, "
@@ -88,6 +90,7 @@ bool BaseDatos::inicializarTablas() {
 			    "total REAL NOT NULL CHECK (total > 0.0), "
 			    "usernameCliente TEXT NOT NULL, "
 			    "idCafeteria TEXT NOT NULL, "
+			    "qrValido INTEGER NOT NULL CHECK (qrValido IN (0,1)), "
 			    "FOREIGN KEY (usernameCliente) REFERENCES Usuarios(username) "
 			    "ON DELETE RESTRICT, "
 			    "FOREIGN KEY (idCafeteria) REFERENCES Cafeterias(idCafeteria) ON DELETE "
@@ -101,7 +104,7 @@ bool BaseDatos::inicializarTablas() {
 				  "PRIMARY KEY (folioPedido, idProducto), "
 				  "FOREIGN KEY (folioPedido) REFERENCES Pedidos(folio) "
 				  "ON DELETE RESTRICT, "
-				  "FOREIGN KEY (idProducto) REFERENCES Productos(id) "
+				  "FOREIGN KEY (idProducto) REFERENCES Productos(idProducto) "
 				  "ON DELETE RESTRICT);";
 	
   	string sqlPagos = "CREATE TABLE IF NOT EXISTS Pagos ("
@@ -122,8 +125,23 @@ bool BaseDatos::inicializarTablas() {
 			     "FOREIGN KEY (usernameCliente) "
 			     "REFERENCES Usuarios(username) "
 			     "ON DELETE CASCADE ON UPDATE CASCADE);";
+	
+	bool resultado = ejecutarQuery(sqlUsuarios) && 
+			 ejecutarQuery(sqlCafeterias) && 
+			 ejecutarQuery(sqlClientes) && 
+			 ejecutarQuery(sqlProductos) && 
+			 ejecutarQuery(sqlPedidos) && 
+			 ejecutarQuery(sqlDetallePedido) && 
+			 ejecutarQuery(sqlTarjetas) && 
+			 ejecutarQuery(sqlPagos);
 
-	return ejecutarQuery(sqlUsuarios) && ejecutarQuery(sqlCafeterias) && ejecutarQuery(sqlClientes) && ejecutarQuery(sqlProductos) && ejecutarQuery(sqlPedidos) && ejecutarQuery(sqlDetallePedido) && ejecutarQuery(sqlPagos) && ejecutarQuery(sqlTarjetas);
+	if(resultado) {
+		ejecutarQuery("COMMIT;");
+		return true;
+	} else {
+		ejecutarQuery("ROLLBACK;");
+		return false;
+	}
 }
 
 
