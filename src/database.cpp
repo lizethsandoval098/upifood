@@ -175,7 +175,9 @@ bool BaseDatos::guardarUsuarioCliente(const Cliente& cliente) {     // guardar e
 	return true;
 }
 	
-vector<Usuario> obtenerUsuarios();        // para admin
+vector<Usuario> BaseDatos::obtenerUsuarios(){        // para admin
+	
+}
 		Usuario obtenerUsuario(string username);  // usuario especifico
 		
 // Pedidos

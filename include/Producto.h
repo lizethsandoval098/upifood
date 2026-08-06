@@ -19,10 +19,10 @@ class Producto{
 
 		~Producto();
 
-		string getNombreProducto();
-		string getIdProducto();
-		int getCantidad();
-		float getPrecio();
+		string getNombreProducto() const;
+		string getIdProducto() const;
+		int getCantidad() const;
+		float getPrecio() const;
 
 		void setNombreProducto();
 		void setIdProducto();

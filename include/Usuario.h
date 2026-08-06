@@ -23,11 +23,11 @@ class Usuario{
 			
 		~Usuario();
 
-		string getNombre();
-		string getTipoUsuario();
-		string getCorreo();
-		string getContrasena();
-		string getUsername();
+		string getNombre() const;
+		string getTipoUsuario() const;
+		string getCorreo() const;
+		string getContrasena() const;
+		string getUsername() const;
 
 		void setNombre();
 		void setTipoUsuario();

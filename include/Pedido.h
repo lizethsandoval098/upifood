@@ -29,13 +29,13 @@ class Pedido{
 
 		~Pedido();
 
-		string getFolio();
-		string getFecha();
-		string getEstado();
-		string getUsernameCliente();
-		string getIdCafeteria();
-		float getTotal();
-		vector<pair<Producto, int>> getListaProductos();
+		string getFolio() const;
+		string getFecha() const;
+		string getEstado() const;
+		string getUsernameCliente() const;
+		string getIdCafeteria() const;
+		float getTotal() const;
+		vector<pair<Producto, int>> getListaProductos() const;
 
 		void setFolio();
 		void setFecha();

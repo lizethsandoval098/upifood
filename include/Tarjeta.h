@@ -18,11 +18,11 @@ class Tarjeta{
 		
 		~Tarjeta();
 		
-		string getNombrePropietario();
-		int getNumeroTarjeta();
-		int getCVV();
-		string getFechaVencimiento();
-		string getUsernamePropietario();
+		string getNombrePropietario() const;
+		int getNumeroTarjeta() const;
+		int getCVV() const;
+		string getFechaVencimiento() const;
+		string getUsernamePropietario() const;
 
 		void setNombrePropietario();
 		void setNumeroTarjeta();
