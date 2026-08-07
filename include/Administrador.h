@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include "Usuario.h"
+#include "BaseDatos.h"
 
 using namespace std;
 
@@ -17,6 +18,8 @@ class Administrador{
 		
 		~Administrador();
 
+		const vector<Usuario>& getListaUsuarios() const;
+		void setListaUsuarios(const vector<Usuario>& lista);
 		void cargarLista();
 		void verLista();
 };
