@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include "BaseDatos.h"
 
 using namespace std;
 
