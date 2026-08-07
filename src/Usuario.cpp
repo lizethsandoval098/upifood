@@ -73,20 +73,33 @@ void Usuario::iniciarSesion()
     cout << "==================================" << endl;
     cout << "Inicio de sesion" << endl;
 
-    if(correo.empty())
+    string username;
+    string contrasena;
+
+    cout << "Ingrese username: ";
+    cin >> username;
+
+    cout << "Ingrese contrasena: ";
+    cin >> contrasena;
+
+    BaseDatos db;
+
+    Usuario* usuario = db.obtenerUsuarioCliente(username);
+
+    if(usuario == NULL)
     {
-        cout << "Debe ingresar un correo." << endl;
+        cout << "Usuario inexistente." << endl;
         return;
     }
 
-    if(contrasena.empty())
+    if(contrasena == usuario->getContra())
     {
-        cout << "Debe ingresar una contraseña." << endl;
-        return;
+        cout << "Inicio de sesion correcto." << endl;
     }
-
-    cout << "Credenciales recibidas." << endl;
-    cout << "Inicio de sesion correcto." << endl;
+    else
+    {
+        cout << "Contrasena incorrecta." << endl;
+    }
 }
 
 //Para que ese pueda validar si el usuario es del instituto o no se requiere comparar su correo con sus datos de año escuela (TALVEZ ERA CON EL NOMBRE IGUAL)
