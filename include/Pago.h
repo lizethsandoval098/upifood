@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "Tarjeta.h"
+#include "BaseDatos.h"
 
 using namespace std;
 
