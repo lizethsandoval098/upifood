@@ -6,7 +6,7 @@
 #include <iostream>
 #include "Producto"
 #include "Pedido.h"
-
+#include "BaseDatos.h"
 using namespace std;
 
 class Cafeteria{
