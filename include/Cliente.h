@@ -5,7 +5,7 @@
 
 #include "Tarjeta.h"
 #include "Pedido.h"
-
+#include "BaseDatos.h"
 using namespace std;
 
 class Cliente{
