@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <vector>
+#include "BaseDatos.h"
 
 class Ventana {
 private:
