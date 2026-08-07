@@ -4,7 +4,7 @@
 #include <string>
 #include <SFML/Graphics.hpp>
 #include "QrCode.hpp"     // generador de qr
-
+#include "BaseDatos.h"
 using namespace std;
 
 class CodidoQR{
