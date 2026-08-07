@@ -47,7 +47,7 @@ void Usuario::iniciarSesion(){
 }
 		void registro();
 		bool validarIPN(string correo, int anio, string escuela);
-		void asignarUsername(string correo);
+		void asignarUsername(string correo);		
 
 void Usuario::registro()
 {
