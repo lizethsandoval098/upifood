@@ -93,7 +93,7 @@ void Usuario::iniciarSesion()
         return;
     }
 
-    if(contrasena == usuario->getContra())
+    if(contrasena == usuario.getContra())
     {
         cout << "Inicio de sesion correcto." << endl;
     }
