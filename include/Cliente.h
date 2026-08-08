@@ -1,11 +1,15 @@
 #ifndef CLIENTE_H
 #define CLIENTE_H
 
-#include<string>
+#include <string>
+#include <vector>
+#include <iostream>
 
+#include "Ventana.h"
 #include "Tarjeta.h"
 #include "Pedido.h"
 #include "BaseDatos.h"
+
 using namespace std;
 
 class Cliente{

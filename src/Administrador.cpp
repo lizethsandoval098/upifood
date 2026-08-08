@@ -2,10 +2,6 @@
 
 using namespace std;
 
-vector<Usuario> listaUsuarios;
-
-
-
 Administrador::Administrador() { }
 		
 Administrador::~Administrador() { }

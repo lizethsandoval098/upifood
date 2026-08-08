@@ -43,7 +43,8 @@ void Usuario::setContra(const string& con){
 }
 		
 void Usuario::iniciarSesion(){
-	
+	cout << "ingresa tu nombre de usuario: ";
+		
 }
 		void registro();
 		bool validarIPN(string correo, int anio, string escuela);
