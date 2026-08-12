@@ -3,7 +3,8 @@
 
 #include <string>
 #include <iostream>
-#include "BaseDatos.h"
+
+class BaseDatos;
 
 using namespace std;
 
@@ -13,6 +14,8 @@ class Producto{
 		string idProducto;
 		int cantidad;
 		float precio;
+
+		BaseDatos& bd;
 
 	public:
 		Producto();
