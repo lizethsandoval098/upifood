@@ -79,7 +79,7 @@ bool BaseDatos::inicializarTablas() {
 	string sqlProductos = "CREATE TABLE IF NOT EXISTS Productos ("
 			      "idProducto TEXT PRIMARY KEY, "
 		      	      "nombreProducto TEXT NOT NULL, "
-			      "cantidad INTEGER NOT NULL CHECK (cantidad >=0), "
+			      "stock INTEGER NOT NULL CHECK (stock >=0), "
 			      "precio REAL NOT NULL CHECK (precio > 0.0));";
 	
 	string sqlPedidos = "CREATE TABLE IF NOT EXISTS Pedidos ("
@@ -302,7 +302,7 @@ bool BaseDatos::guardarPedido(const Pedido& pedido) {
 
 vector<pair<Producto, int>> BaseDatos::listaProductosPedido(const string& folio) const{
 	string sql2 = "SELECT DP.idProducto, DP.cantidadP, DP.precioUnitario, "
-		      "P.nombreProducto P.cantidad "
+		      "P.nombreProducto P.stock "
 		      "FROM DetallePedido DP "
 		      "JOIN Productos P ON DP.idProducto = P.idProducto "
 		      "WHERE DP.folioPedido = ?;";
@@ -318,7 +318,7 @@ vector<pair<Producto, int>> BaseDatos::listaProductosPedido(const string& folio)
 			Producto producto;
 			producto.setIdProducto(reinterpret_cast<const char*>(sqlite3_column_text(stmt2, 0)));
 			cantidadP = sqlite3_column_int(stmt2, 1);
-			producto.setCantidad(sqlite3_column_int(stmt2, 4));
+			producto.setStock(sqlite3_column_int(stmt2, 4));
 			producto.setPrecio(sqlite3_column_double(stmt2, 2));
 			producto.setNombreProducto(reinterpret_cast<const char*>(sqlite3_column_text(stmt2, 3)));
 			listaProductos.push_back({producto, cantidadP});
@@ -508,9 +508,9 @@ Pedido BaseDatos::obtenerPedido_Username(const string& username) const {
 
 // Productos
 bool BaseDatos::guardarProducto(const Producto& producto) {
-	string sqlP = "INSERT INTO Productos (idProducto, nombreProducto, cantidad, precio) "
+	string sqlP = "INSERT INTO Productos (idProducto, nombreProducto, stock, precio) "
 		+ "VALUES ('" + producto.getIdProducto() + "', '" + producto.getNombreProducto() + 
-		"', " + to_string(producto.getCantidad()) + ", " + to_string(producto.getPrecio()) + 
+		"', " + to_string(producto.getStock()) + ", " + to_string(producto.getPrecio()) + 
 		");";
 
 	return ejecutarQuery(sqlP);
@@ -536,7 +536,7 @@ vector<Producto> BaseDatos::obtenerInventario(const string& idCafeteria) const{ 
 
 	idProd = idProd + "-%";
 
-	string sql = "SELECT nombreProducto, cantidad, precio, idProducto "
+	string sql = "SELECT nombreProducto, stock, precio, idProducto "
 	       	     "FROM Productos "
 		     "WHERE idProducto LIKE ?;";
 
@@ -553,7 +553,7 @@ vector<Producto> BaseDatos::obtenerInventario(const string& idCafeteria) const{ 
 		Producto p;
 
 		p.setNombreProducto(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));	
-		p.setCantidad(sqlite3_column_int(stmt, 1));
+		p.setStock(sqlite3_column_int(stmt, 1));
 		p.setPrecio(sqlite3_column_double(stmt, 2));
 		p.setIdProducto(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
 		
@@ -567,7 +567,7 @@ vector<Producto> BaseDatos::obtenerInventario(const string& idCafeteria) const{ 
 
 bool BaseDatos::actualizarExistencia(const string& idProducto, int cantidad) {
 	string sql = "UPDATE Productos "
-		     "SET cantidad = ? "
+		     "SET stock = ? "
 		     "WHERE idProducto = ?;";
 	sqlite3_stmt* stmt;
 	

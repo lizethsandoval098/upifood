@@ -75,5 +75,25 @@ void Pedido::setQr(const string& url, bool valido){
 } 
 
 
+void Pedido::agregarProducto(const Producto& producto) {
+	
+}
+
+void Pedido::eliminarProducto(const string& idp);
+
+void Pedido::mostrarCarrito();
+
+void Pedido::vaciarCarrito();
+
+
+
+void Pedido::generarTotal();
+
+void Pedido::generarTicket();
+
+void Pedido::cambiarEstado();
+
+void Pedido::visualizar();
+
 
 

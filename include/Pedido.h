@@ -49,10 +49,15 @@ class Pedido{
 		void setTotal(float t);
 		void setQr(const string& url, bool valido);
 		
-		void cargarListaProductos();		
-		void agregarProducto();
+		void agregarProducto(const Producto& producto);
+		void eliminarProducto(const string& idp);
+		void mostrarCarrito();
+		void vaciarCarrito();
+
 		void generarTotal();
 		void generarTicket();
+		void cambiarEstado();
+		void visualizar();
 };
 
 #endif
