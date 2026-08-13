@@ -7,20 +7,23 @@
 #include <iostream>
 #include "CodigoQR.h"
 #include "Producto.h"
-#include "BaseDatos.h"
+
+class BaseDatos;
 
 using namespace std;
 
 class Pedido{
 	private:
 		string folio;
-		CodigoQR qr; // url, esValido
+		CodigoQR& qr; // url, esValido
 		string fecha;
 		string estado;
 		string usernameCliente;
 		string idCafeteria;
 		float total;
 		vector<pair<Producto, int>> listaProductos; 
+
+		BaseDatos& bd;
 
 	public:
 		Pedido();

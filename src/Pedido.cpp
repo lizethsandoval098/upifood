@@ -1,4 +1,5 @@
-include "Pedido.h"
+#include "Pedido.h"
+#include "BaseDatos.h"
 
 Pedido::Pedido(){
 }

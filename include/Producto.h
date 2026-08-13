@@ -12,26 +12,26 @@ class Producto{
 	private:
 		string nombreProducto;
 		string idProducto;
-		int cantidad;
+		int stock;
 		float precio;
 
 		BaseDatos& bd;
 
 	public:
 		Producto();
-		Producto(string nombreProducto, string idProducto, int cantidad, float precio);
+		Producto(string nombreProducto, string idProducto, int stock, float precio);
 
 		~Producto();
 
 		string getNombreProducto() const;
 		string getIdProducto() const;
-		int getCantidad() const;
+		int getStock() const;
 		float getPrecio() const;
 
-		void setNombreProducto();
-		void setIdProducto();
-		void setCantidad();
-		void setPrecio();
+		void setNombreProducto(const string& nombrep);
+		void setIdProducto(const string& idp);
+		void setStock(int sto);
+		void setPrecio(float pre);
 };
 
 #endif
