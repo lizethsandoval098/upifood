@@ -140,21 +140,65 @@ void Pedido::mostrarCarrito() {
     	cout << "========================================================" << endl;
 }
 
-void Pedido::vaciarCarrito();
-
-
+void Pedido::vaciarCarrito() {
+	listaProductos.clear();
+	total = 0;
+}
 
 void Pedido::generarTotal() {
-	for(int i = 0; i < listaProductos.length() ; i++) {
-       		total += listaProductos.cantidad * listaProductos.Producto.getPrecio();
+	total = 0.0;
+	
+	for(const auto& par : listaProductos) {
+       		total += (par.first.getPrecio() * par.second);
 	}	
-	total = 
+}
 
-void Pedido::generarTicket();
+void Pedido::generarTicket() {
+	cout << "\n========================================================" << endl;
+    	cout << "                  TICKET DE COMPRA                      " << endl;
+    	cout << "========================================================" << endl;
+    	cout << "  Folio: #" << folio << endl; 
+	cout << "  Fecha: " << fecha << endl;
+	cout << "  Cliente: " << usernameCliente << endl;
+	cout << "  Cafetería : " << idCafeteria << endl;
+    	cout << "--------------------------------------------------------" << endl;
 
-void Pedido::cambiarEstado();
+    	cout << left
+             << setw(8)  << "   ID"
+             << setw(22) << "PRODUCTO"
+             << setw(8)  << "CANT."
+             << setw(10) << "TOTAL" << endl;
+             
+    	cout << "--------------------------------------------------------" << endl;
 
-void Pedido::visualizar();
+	for (const auto& par : listaProductos) { 
+			const Producto& prod = par.first; 
+			int cantidad = par.second; 
+			double subtotal = prod.getPrecio() * cantidad; 
+			cout << left << setw(20) << prod.getNombre()
+			     << " x" << cantidad << " $" 
+			     << fixed << setprecision(2) << subtotal << endl;
+	        } 
+	} 
+	
+	cout << "--------------------------------------------------------" << endl; 
+	cout << "                           TOTAL A PAGAR: $" << total << endl; 
+        cout << "--------------------------------------------------------" << endl;
+        cout << "           ¡Escanea tu QR en el mostrador!              " << endl; 
+	cout << "========================================================\n" << endl; 
+}  
+
+void Pedido::cambiarEstado(const string& nuevo) {
+	estado = nuevo;
+}
+
+void Pedido::visualizar() {
+	cout << "[Folio #" << folio << setw(26) << " " << " ]" << endl;
+	cout << left << set(36) << ("| Cafeteria : " +  idCafeteria) << "|" << endl;
+	cout << left << set(36) << ("| No. de  productos : " + to_string(listaProductos.size())) << "|" << endl;
+        cout << left << set(36) << ("| Total : $" + total) << "|" << endl;
+	cout << left << set(36) << ("| Estado : " + estado) << "|" << endl;	
+}
 
 
 

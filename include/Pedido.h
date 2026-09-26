@@ -56,7 +56,7 @@ class Pedido{
 
 		void generarTotal();
 		void generarTicket();
-		void cambiarEstado();
+		void cambiarEstado(const string& nuevo);
 		void visualizar();
 
 
