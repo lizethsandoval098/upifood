@@ -43,3 +43,5 @@ void Producto::setStock(int sto){
 void Producto::setPrecio(float pre){
     precio = pre;
 }
+
+

@@ -75,19 +75,80 @@ void Pedido::setQr(const string& url, bool valido){
 } 
 
 
-void Pedido::agregarProducto(const Producto& producto) {
-	
+void Pedido::agregarProducto(const Producto& producto, int cantidad) {
+	if (cantidad <=0) return;
+
+	for (auto& par : listaProductos) {
+		if(par.first.getId() == producto.getId()) {
+			par.second += cantidad;
+			return;
+		}
+	}
+
+	listaProductos.push_back(make_pair(producto, cantidad));	
 }
 
-void Pedido::eliminarProducto(const string& idp);
+void Pedido::eliminarProducto(const string& idp) {
+	for (auto it = listaProductos.begin(); it != listaProductos.end(); ++it) {
+		if (it -> first.getId() == idp) {
+			listaProductos.erase(it);
+			return true;
+		}
+	}
 
-void Pedido::mostrarCarrito();
+	return false;
+}
+	
+
+void Pedido::mostrarCarrito() {
+	cout << "\n========================================================" << endl;
+    	cout << "                  CARRITO DE COMPRAS                    " << endl;
+    	cout << "========================================================" << endl;
+    	cout << "  Cliente : " << usernameCliente << endl;
+    	cout << "  Cafetería : " << idCafeteria << endl;
+    	cout << "--------------------------------------------------------" << endl;
+
+    	if (listaProductos.empty()) {
+        	cout << "   El carrito está vacío." << endl;
+        	cout << "========================================================" << endl;
+        	return;
+    	}
+
+    	cout << left
+             << setw(8)  << "   ID"
+             << setw(22) << "PRODUCTO"
+             << setw(8)  << "CANT."
+             << setw(10) << "TOTAL" << endl;
+             
+    	cout << "--------------------------------------------------------" << endl;
+
+	for (const auto& par : listaProductos) {
+        	const Producto& prod = par.first;
+        	int cantidad = par.second;
+        	double subtotal = prod.getPrecio() * cantidad;
+
+        	cout << left
+             	     << setw(8)  << "   " << prod.getId()
+             	     << setw(22) << prod.getNombre()
+             	     << setw(8)  << cantidad
+             	     << "$" << fixed << setprecision(2) << subtotal
+             	     << endl;
+    	}
+
+   	cout << "--------------------------------------------------------" << endl;
+    	cout << "          TOTAL PARCIAL: $" << fixed << setprecision(2) << total << endl;
+    	cout << "========================================================" << endl;
+}
 
 void Pedido::vaciarCarrito();
 
 
 
-void Pedido::generarTotal();
+void Pedido::generarTotal() {
+	for(int i = 0; i < listaProductos.length() ; i++) {
+       		total += listaProductos.cantidad * listaProductos.Producto.getPrecio();
+	}	
+	total = 
 
 void Pedido::generarTicket();
 

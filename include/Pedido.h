@@ -58,7 +58,7 @@ class Pedido{
 		void generarTicket();
 		void cambiarEstado();
 		void visualizar();
-};
+
 
 #endif
 		
