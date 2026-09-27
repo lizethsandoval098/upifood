@@ -1,61 +1,104 @@
 #include "Administrador.h"
+#include "BaseDatos.h"
 
 using namespace std;
 
+// Definicion de los estaticos declarados en el header.
+vector<string> Administrador::usuariosEnLinea;
+mutex Administrador::mutexEnLinea;
+
 Administrador::Administrador() { }
-		
+
+Administrador::Administrador(string nombre, string correo, string contrasena, string username)
+	: Usuario("Admin", nombre, correo, contrasena, username) {
+}
+
 Administrador::~Administrador() { }
 
 const vector<Usuario>& Administrador::getListaUsuarios() const {
 	return listaUsuarios;
-} 
+}
 
-//Se crea un objeto de la clase BaseDatos y se utiliza el metodo de conectar el cual va a conectar a la base de datos y si se realiza correctamente la conexion con el vector que se 
-//creo arriba se almacenarar la lista de usuarios que se obtendra con obtenerUsuario y una vez obtenida se desconecta de la base de datos ya que ya obtuvo los datos que necesitaba. 
-void Administrador::setListaUsuarios() {
+const vector<Cafeteria>& Administrador::getListaCafeterias() const {
+	return listaCafeterias;
+}
 
+// Se conecta a la BD y trae la lista de usuarios (ya viene ordenada por
+// orden de registro desde BaseDatos::obtenerUsuarios).
+void Administrador::cargarUsuarios() {
 	BaseDatos db;
 
 	if(db.conectar()){
-
 		listaUsuarios = db.obtenerUsuarios();
-
 		db.desconectar();
-
 	}
 }
 
-void Administrador::verLista() {
-//Verifica que la lista de usuarios no este vacia ya que size dice la cantidad exacta de datos que contiene el vector.
-    if(listaUsuarios.size() == 0){
+void Administrador::verUsuarios() {
+	if(listaUsuarios.empty()){
+		cout << "No hay usuarios registrados." << endl;
+		return;
+	}
 
-        cout << "No hay usuarios registrados." << endl;
-
-        return;
-    }
-//Si el vector no esta vacio entonces comenzara a recorrer usuario por usuario e ir obteniendo sus datos 
-    for(int i = 0; i < listaUsuarios.size(); i++){
-
-        cout << "Nombre: " << listaUsuarios[i].getNombre() << endl;
-        cout << "Username: " << listaUsuarios[i].getUsername() << endl;
-        cout << "Correo: " << listaUsuarios[i].getCorreo() << endl;
-        cout << "Tipo de usuario: " << listaUsuarios[i].getTipoUsuario() << endl;
-
-        cout << "----------------------------------" << endl;
-    }
+	for(size_t i = 0; i < listaUsuarios.size(); i++){
+		cout << "Nombre: " << listaUsuarios[i].getNombre() << endl;
+		cout << "Username: " << listaUsuarios[i].getUsername() << endl;
+		cout << "Correo: " << listaUsuarios[i].getCorreo() << endl;
+		cout << "Tipo de usuario: " << listaUsuarios[i].getTipoUsuario() << endl;
+		cout << "----------------------------------" << endl;
+	}
 }
 
+void Administrador::verCafeterias() {
+	BaseDatos db;
 
+	if(db.conectar()){
+		listaCafeterias = db.obtenerCafeterias();
+		db.desconectar();
+	}
 
+	if(listaCafeterias.empty()){
+		cout << "No hay cafeterias registradas." << endl;
+		return;
+	}
 
+	for(const auto& c : listaCafeterias){
+		cout << "Cafeteria [" << c.getIdCafeteria() << "] " << c.getNombreCafeteria()
+		     << " -> " << c.getListaPedidos().size() << " pedidos" << endl;
+	}
+}
 
+void Administrador::verUsuariosEnLinea() {
+	lock_guard<mutex> guard(mutexEnLinea);
 
-//void Administrador::setListaUsuarios() {
-//	listaUsuarios = obtenerUsuarios();
-//}
+	if(usuariosEnLinea.empty()){
+		cout << "No hay usuarios conectados en este momento." << endl;
+		return;
+	}
 
-//void Administrador::verLista() {
-	
-//}
+	cout << "Usuarios en linea (" << usuariosEnLinea.size() << "):" << endl;
+	for(const auto& username : usuariosEnLinea){
+		cout << " - " << username << endl;
+	}
+}
 
-		
+void Administrador::marcarConectado(const string& username) {
+	lock_guard<mutex> guard(mutexEnLinea);
+
+	for(const auto& u : usuariosEnLinea){
+		if(u == username) return; // ya estaba marcado
+	}
+
+	usuariosEnLinea.push_back(username);
+}
+
+void Administrador::marcarDesconectado(const string& username) {
+	lock_guard<mutex> guard(mutexEnLinea);
+
+	for(auto it = usuariosEnLinea.begin(); it != usuariosEnLinea.end(); ++it){
+		if(*it == username){
+			usuariosEnLinea.erase(it);
+			return;
+		}
+	}
+}
