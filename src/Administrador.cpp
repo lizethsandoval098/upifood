@@ -1,5 +1,11 @@
 #include "Administrador.h"
 #include "BaseDatos.h"
+#include "Protocolo.h"
+
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 using namespace std;
 
@@ -7,13 +13,42 @@ using namespace std;
 vector<string> Administrador::usuariosEnLinea;
 mutex Administrador::mutexEnLinea;
 
-Administrador::Administrador() { }
+Administrador::Administrador() {
+	socketAdmin = -1;
+	ipServidor = "100.91.99.27";
+	puerto = 5000;
+}
 
 Administrador::Administrador(string nombre, string correo, string contrasena, string username)
 	: Usuario("Admin", nombre, correo, contrasena, username) {
+	socketAdmin = -1;
+	ipServidor = "100.91.99.27";
+	puerto = 5000;
 }
 
 Administrador::~Administrador() { }
+
+bool Administrador::conectar() {
+	socketAdmin = socket(AF_INET, SOCK_STREAM, 0);
+
+	if (socketAdmin == -1) {
+		cout << "Error creando socket." << endl;
+		return false;
+	}
+
+	sockaddr_in direccionServidor;
+	direccionServidor.sin_family = AF_INET;
+	direccionServidor.sin_port = htons(puerto);
+	inet_pton(AF_INET, ipServidor.c_str(), &direccionServidor.sin_addr);
+
+	if (connect(socketAdmin, (sockaddr*)&direccionServidor, sizeof(direccionServidor)) == -1) {
+		cout << "Error conectando al servidor. Revisa la IP/Tailscale." << endl;
+		return false;
+	}
+
+	cout << "Conectado al servidor correctamente." << endl;
+	return true;
+}
 
 const vector<Usuario>& Administrador::getListaUsuarios() const {
 	return listaUsuarios;
@@ -101,4 +136,40 @@ void Administrador::marcarDesconectado(const string& username) {
 			return;
 		}
 	}
+}
+
+bool Administrador::iniciarSesionAdmin() {
+	cout << "==================================" << endl;
+	cout << "Inicio de sesion (Administrador)" << endl;
+
+	string username, contrasena;
+
+	cout << "Ingrese username: ";
+	cin >> username;
+
+	cout << "Ingrese contrasena: ";
+	cin >> contrasena;
+
+	string respuesta = enviarComando(socketAdmin, "LOGIN_ADMIN|" + username + "|" + contrasena);
+	vector<string> campos = separarCampos(respuesta);
+
+	if (campos.empty() || campos[0] != "OK") {
+		string motivo = (campos.size() > 1) ? campos[1] : "Error desconocido.";
+		cout << motivo << endl;
+		return false;
+	}
+
+	// Respuesta esperada: OK|nombre|correo|username
+	if (campos.size() < 4) {
+		cout << "Respuesta invalida del servidor." << endl;
+		return false;
+	}
+
+	setNombre(campos[1]);
+	setCorreo(campos[2]);
+	setUsername(campos[3]);
+	setTipoUsuario("Admin");
+
+	cout << "Inicio de sesion correcto." << endl;
+	return true;
 }
