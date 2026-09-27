@@ -10,30 +10,27 @@ using namespace std;
 
 class Servidor {
 
-	private:
-		int socketServidor;
-		int puerto;
+private:
 
-		// UNA sola conexion a la base de datos, compartida por todos los
-		// hilos. sqlite3 no es seguro para que varios hilos escriban al
-		// mismo tiempo sin control, por eso cada operacion sobre "db" va
-		// protegida con "dbMutex" (seccion critica).
-		BaseDatos db;
-		mutex dbMutex;
+    int socketServidor;
+    int puerto;
 
-		// Atiende a UN cliente ya conectado: lee comandos en bucle, los
-		// despacha y contesta, hasta que el cliente se desconecta.
-		// Corre en su propio hilo (uno distinto por cada cliente conectado).
-		void atenderCliente(int socketCliente);
+    BaseDatos db;
 
-		// Interpreta un comando ("LOGIN_CLIENTE|user|pass", etc.) y regresa
-		// la respuesta ya lista para mandar ("OK|..." o "ERR|...").
-		string procesarComando(const string& comando);
+    mutex dbMutex;
 
-	public:
-		Servidor();
+    void atenderCliente(int socketCliente);
 
-		bool iniciar();
+    string procesarComando(
+        const string& comando,
+        int socketCliente
+    );
+
+public:
+
+    Servidor();
+
+    bool iniciar();
 };
 
 #endif
