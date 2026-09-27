@@ -1,5 +1,4 @@
 #include "Producto.h"
-#include "BaseDatos.h"
 
 Producto::Producto(){
 }
