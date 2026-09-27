@@ -40,14 +40,6 @@ float Pedido::getTotal() const{
     return total;
 }
 
-string Pedido::getUrlQR() const{
-    return qr.getUrl();
-}
-
-bool Pedido::getQrValido() const{
-    return qr.getEsValido();
-}
-
 vector<pair<Producto, int>> Pedido::getListaProductos() const{
     return listaProductos;
 }
@@ -74,10 +66,6 @@ void Pedido::setIdCafeteria(const string& ic){
 
 void Pedido::setTotal(float t){
     total = t;
-}
-
-void Pedido::setQr(const string& url, bool valido){
-    qr = CodigoQR(url, valido);
 }
 
 void Pedido::setListaProductos(const vector<pair<Producto, int>>& lista){
