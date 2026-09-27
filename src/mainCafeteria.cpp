@@ -7,10 +7,16 @@ using namespace std;
 
 int main() {
     Cafeteria cafeteria;
+
+    if (!cafeteria.conectar()) {
+        cout << "No se pudo conectar al servidor. Revisa la IP/Tailscale y que 'servidor' este corriendo." << endl;
+        return 1;
+    }
+
     bool autenticado = false;
 
     while (!autenticado) {
-        if (Cafeteria::iniciarSesionCafeteria(cafeteria)) {
+        if (cafeteria.iniciarSesionCafeteria()) {
             autenticado = true;
         } else {
             cout << "Intenta de nuevo (o cierra la ventana con Ctrl+C)." << endl;
