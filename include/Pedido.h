@@ -1,29 +1,25 @@
-#ifndef PEDIDO_H 
+#ifndef PEDIDO_H
 #define PEDIDO_H
 
 #include <string>
-#include <vector> 
+#include <vector>
 #include <utility> // pair
 #include <iostream>
 #include "CodigoQR.h"
 #include "Producto.h"
-
-class BaseDatos;
 
 using namespace std;
 
 class Pedido{
 	private:
 		string folio;
-		CodigoQR& qr; // url, esValido
+		CodigoQR qr;  // url + validez del QR (invalido/vacio hasta que se paga)
 		string fecha;
 		string estado;
 		string usernameCliente;
 		string idCafeteria;
 		float total;
-		vector<pair<Producto, int>> listaProductos; 
-
-		BaseDatos& bd;
+		vector<pair<Producto, int>> listaProductos;
 
 	public:
 		Pedido();
@@ -38,7 +34,8 @@ class Pedido{
 		string getUsernameCliente() const;
 		string getIdCafeteria() const;
 		float getTotal() const;
-		CodigoQR getQr() const;
+		string getUrlQR() const;
+		bool getQrValido() const;
 		vector<pair<Producto, int>> getListaProductos() const;
 
 		void setFolio(const string& f);
@@ -48,9 +45,10 @@ class Pedido{
 		void setIdCafeteria(const string& ic);
 		void setTotal(float t);
 		void setQr(const string& url, bool valido);
-		
-		void agregarProducto(const Producto& producto);
-		void eliminarProducto(const string& idp);
+		void setListaProductos(const vector<pair<Producto, int>>& lista);
+
+		void agregarProducto(const Producto& producto, int cantidad);
+		bool eliminarProducto(const string& idp);
 		void mostrarCarrito();
 		void vaciarCarrito();
 
@@ -59,6 +57,8 @@ class Pedido{
 		void cambiarEstado(const string& nuevo);
 		void visualizar();
 
+		// El folio expira 1 hora (simulada) despues de generado.
+		bool haExpirado(long segundosSimuladosTranscurridos) const;
+};
 
 #endif
-		
