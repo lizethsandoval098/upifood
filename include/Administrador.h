@@ -13,16 +13,12 @@ using namespace std;
 
 class Administrador : public Usuario {
 	private:
-		vector<Usuario> listaUsuarios;      // orden de registro (llega asi de la BD)
+		vector<Usuario> listaUsuarios;
 		vector<Cafeteria> listaCafeterias;
 
-		// Usuarios conectados en este momento a la plataforma.
-		// static + mutex porque TODOS los hilos/conexiones activas
-		// escriben aqui al conectarse/desconectarse (seccion critica).
 		static vector<string> usuariosEnLinea;
 		static mutex mutexEnLinea;
 
-		// conexion al servidor
 		int socketAdmin;
 		string ipServidor;
 		int puerto;
@@ -38,18 +34,28 @@ class Administrador : public Usuario {
 		const vector<Usuario>& getListaUsuarios() const;
 		const vector<Cafeteria>& getListaCafeterias() const;
 
-		void cargarUsuarios();      // trae la lista de usuarios desde la BD
-		void verUsuarios();         // 1) clientes en el orden en que se registraron
-		void verCafeterias();       // 2) cafeterias + cantidad de pedidos de cada una
-		void verUsuariosEnLinea();  // quien esta conectado ahora mismo
+		// Consultas que se hacen a traves del servidor
+		bool cargarUsuarios();
+		bool cargarCafeterias();
 
-		// Llamados por cualquier hilo/conexion cuando un usuario entra o sale.
+		void verUsuarios();
+		void verCafeterias();
+		void verUsuariosEnLinea();
+
 		static void marcarConectado(const string& username);
 		static void marcarDesconectado(const string& username);
 
-		// Pide username/contrasena por consola y los manda al servidor.
-		// Requiere haber llamado conectar() antes.
 		bool iniciarSesionAdmin();
+
+		// Para que la interfaz SFML pueda pedir informacion al servidor
+		string enviarPeticion(const string& comando);
+
+		// Consultas para el panel
+		vector<string> obtenerUsuariosPanel();
+		vector<string> obtenerCafeteriasPanel();
+		vector<string> obtenerPedidosPanel();
+		vector<string> obtenerInventarioPanel();
+		vector<string> obtenerUsuariosEnLineaPanel();
 };
 
 #endif
