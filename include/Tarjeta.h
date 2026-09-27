@@ -1,35 +1,33 @@
-#ifndef TARJETA_H 
+#ifndef TARJETA_H
 #define TARJETA_H
 
 #include <string>
 #include <iostream>
-#include "BaseDatos.h"
 
 using namespace std;
 
 class Tarjeta{
 	private:
-		int numeroTarjeta;
-		int CVV;
+		string numeroTarjeta;   // string: un numero de tarjeta real (16 digitos) no cabe en un int
+		string CVV;             // string: preserva ceros a la izquierda (ej. "007")
 		string nombrePropietario;
 		string fechaVencimiento;
 
 	public:
 		Tarjeta();
-	        Tarjeta(int numeroTarjeta, int CVV, string nombrePropietario, string fechaVencimiento)	
+		Tarjeta(string numeroTarjeta, string CVV, string nombrePropietario, string fechaVencimiento);
 		~Tarjeta();
-		
+
 		string getNombrePropietario() const;
-		int getNumeroTarjeta() const;
-		int getCVV() const;
+		string getNumeroTarjeta() const;
+		string getCVV() const;
 		string getFechaVencimiento() const;
-		string getUsernamePropietario() const;
 
 		void setNombrePropietario(const string& nombre);
-		void setNumeroTarjeta(int numero);
-		void setCVV(int cvv);
+		void setNumeroTarjeta(const string& numero);
+		void setCVV(const string& cvv);
 		void setFechaVencimiento(const string& fecha);
 };
 
 #endif
-		
+
