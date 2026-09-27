@@ -1,11 +1,16 @@
 #include "Tarjeta.h"
 
-// Constructor
 Tarjeta::Tarjeta() {
     numeroTarjeta = 0;
     CVV = 0;
     nombrePropietario = "";
     fechaVencimiento = "";
+}
+
+// Constructor
+Tarjeta::Tarjeta(int numeroTarjeta, int CVV, string nombrePropietario, string fechaVencimiento)
+    : numeroTarjeta(numeroTarjeta), CVV(CVV), nombrePropietario(nombrePropietario),
+	fechaVencimiento(fechaVencimiento) {
 }
 
 // Destructor
@@ -33,24 +38,19 @@ string Tarjeta::getUsernamePropietario() const {
     return nombrePropietario;
 }
 
-// Setters (Lectura desde la consola)
-void Tarjeta::setNombrePropietario() {
-    cout << "Ingrese el nombre del propietario de la tarjeta: ";
-    cin.ignore();
-    getline(cin, nombrePropietario);
+// Setters
+void Tarjeta::setNombrePropietario(const string& nombre) {
+    nombrePropietario = nombre;
 }
 
-void Tarjeta::setNumeroTarjeta() {
-    cout << "Ingrese el numero de tarjeta: ";
-    cin >> numeroTarjeta;
+void Tarjeta::setNumeroTarjeta(int numero) {
+    numeroTarjeta = numero;
 }
 
-void Tarjeta::setCVV() {
-    cout << "Ingrese el CVV: ";
-    cin >> CVV;
+void Tarjeta::setCVV(int cvv) {
+	CVV = cvv;
 }
 
-void Tarjeta::setFechaVencimiento() {
-    cout << "Ingrese la fecha de vencimiento (MM/AA): ";
-    cin >> fechaVencimiento;
+void Tarjeta::setFechaVencimiento(const string& fecha) {
+    fechaVencimiento = fecha;
 }
