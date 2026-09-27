@@ -4,8 +4,6 @@
 #include <string>
 #include <iostream>
 
-class BaseDatos;
-
 using namespace std;
 
 class Producto{
@@ -14,8 +12,6 @@ class Producto{
 		string idProducto;
 		int stock;
 		float precio;
-
-		BaseDatos& bd;
 
 	public:
 		Producto();
@@ -36,3 +32,4 @@ class Producto{
 
 #endif
 		
+
