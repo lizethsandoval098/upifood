@@ -1,7 +1,9 @@
 #include "Pedido.h"
-#include "BaseDatos.h"
+#include <iomanip>
 
-Pedido::Pedido(){
+using namespace std;
+
+Pedido::Pedido() : total(0.0f) {
 }
 
 Pedido::Pedido(string folio, string usernameCliente, string idCafeteria,
@@ -38,8 +40,12 @@ float Pedido::getTotal() const{
     return total;
 }
 
-CodigoQR Pedido::getQr() const{
-    return qr;
+string Pedido::getUrlQR() const{
+    return qr.getUrl();
+}
+
+bool Pedido::getQrValido() const{
+    return qr.getEsValido();
 }
 
 vector<pair<Producto, int>> Pedido::getListaProductos() const{
@@ -72,25 +78,28 @@ void Pedido::setTotal(float t){
 
 void Pedido::setQr(const string& url, bool valido){
     qr = CodigoQR(url, valido);
-} 
+}
 
+void Pedido::setListaProductos(const vector<pair<Producto, int>>& lista){
+    listaProductos = lista;
+}
 
 void Pedido::agregarProducto(const Producto& producto, int cantidad) {
-	if (cantidad <=0) return;
+	if (cantidad <= 0) return;
 
 	for (auto& par : listaProductos) {
-		if(par.first.getId() == producto.getId()) {
+		if (par.first.getIdProducto() == producto.getIdProducto()) {
 			par.second += cantidad;
 			return;
 		}
 	}
 
-	listaProductos.push_back(make_pair(producto, cantidad));	
+	listaProductos.push_back(make_pair(producto, cantidad));
 }
 
-void Pedido::eliminarProducto(const string& idp) {
+bool Pedido::eliminarProducto(const string& idp) {
 	for (auto it = listaProductos.begin(); it != listaProductos.end(); ++it) {
-		if (it -> first.getId() == idp) {
+		if (it->first.getIdProducto() == idp) {
 			listaProductos.erase(it);
 			return true;
 		}
@@ -98,28 +107,27 @@ void Pedido::eliminarProducto(const string& idp) {
 
 	return false;
 }
-	
 
 void Pedido::mostrarCarrito() {
 	cout << "\n========================================================" << endl;
     	cout << "                  CARRITO DE COMPRAS                    " << endl;
     	cout << "========================================================" << endl;
     	cout << "  Cliente : " << usernameCliente << endl;
-    	cout << "  Cafetería : " << idCafeteria << endl;
+    	cout << "  Cafeteria : " << idCafeteria << endl;
     	cout << "--------------------------------------------------------" << endl;
 
     	if (listaProductos.empty()) {
-        	cout << "   El carrito está vacío." << endl;
+        	cout << "   El carrito esta vacio." << endl;
         	cout << "========================================================" << endl;
         	return;
     	}
 
     	cout << left
-             << setw(8)  << "   ID"
+             << setw(8)  << "ID"
              << setw(22) << "PRODUCTO"
              << setw(8)  << "CANT."
              << setw(10) << "TOTAL" << endl;
-             
+
     	cout << "--------------------------------------------------------" << endl;
 
 	for (const auto& par : listaProductos) {
@@ -128,8 +136,8 @@ void Pedido::mostrarCarrito() {
         	double subtotal = prod.getPrecio() * cantidad;
 
         	cout << left
-             	     << setw(8)  << "   " << prod.getId()
-             	     << setw(22) << prod.getNombre()
+             	     << setw(8)  << prod.getIdProducto()
+             	     << setw(22) << prod.getNombreProducto()
              	     << setw(8)  << cantidad
              	     << "$" << fixed << setprecision(2) << subtotal
              	     << endl;
@@ -147,58 +155,59 @@ void Pedido::vaciarCarrito() {
 
 void Pedido::generarTotal() {
 	total = 0.0;
-	
+
 	for(const auto& par : listaProductos) {
        		total += (par.first.getPrecio() * par.second);
-	}	
+	}
 }
 
 void Pedido::generarTicket() {
 	cout << "\n========================================================" << endl;
     	cout << "                  TICKET DE COMPRA                      " << endl;
     	cout << "========================================================" << endl;
-    	cout << "  Folio: #" << folio << endl; 
+    	cout << "  Folio: #" << folio << endl;
 	cout << "  Fecha: " << fecha << endl;
 	cout << "  Cliente: " << usernameCliente << endl;
-	cout << "  Cafetería : " << idCafeteria << endl;
+	cout << "  Cafeteria : " << idCafeteria << endl;
     	cout << "--------------------------------------------------------" << endl;
 
     	cout << left
-             << setw(8)  << "   ID"
+             << setw(8)  << "ID"
              << setw(22) << "PRODUCTO"
              << setw(8)  << "CANT."
              << setw(10) << "TOTAL" << endl;
-             
+
     	cout << "--------------------------------------------------------" << endl;
 
-	for (const auto& par : listaProductos) { 
-			const Producto& prod = par.first; 
-			int cantidad = par.second; 
-			double subtotal = prod.getPrecio() * cantidad; 
-			cout << left << setw(20) << prod.getNombre()
-			     << " x" << cantidad << " $" 
-			     << fixed << setprecision(2) << subtotal << endl;
-	        } 
-	} 
-	
-	cout << "--------------------------------------------------------" << endl; 
-	cout << "                           TOTAL A PAGAR: $" << total << endl; 
+	for (const auto& par : listaProductos) {
+		const Producto& prod = par.first;
+		int cantidad = par.second;
+		double subtotal = prod.getPrecio() * cantidad;
+		cout << left << setw(20) << prod.getNombreProducto()
+		     << " x" << cantidad << " $"
+		     << fixed << setprecision(2) << subtotal << endl;
+	}
+
+	cout << "--------------------------------------------------------" << endl;
+	cout << "                           TOTAL A PAGAR: $" << fixed << setprecision(2) << total << endl;
         cout << "--------------------------------------------------------" << endl;
-        cout << "           ¡Escanea tu QR en el mostrador!              " << endl; 
-	cout << "========================================================\n" << endl; 
-}  
+        cout << "           Folio para recoger: #" << folio << endl;
+	cout << "========================================================\n" << endl;
+}
 
 void Pedido::cambiarEstado(const string& nuevo) {
 	estado = nuevo;
 }
 
 void Pedido::visualizar() {
-	cout << "[Folio #" << folio << setw(26) << " " << " ]" << endl;
-	cout << left << set(36) << ("| Cafeteria : " +  idCafeteria) << "|" << endl;
-	cout << left << set(36) << ("| No. de  productos : " + to_string(listaProductos.size())) << "|" << endl;
-        cout << left << set(36) << ("| Total : $" + total) << "|" << endl;
-	cout << left << set(36) << ("| Estado : " + estado) << "|" << endl;	
+	cout << "[Folio #" << folio << "]" << endl;
+	cout << left << setw(36) << ("| Cafeteria : " +  idCafeteria) << "|" << endl;
+	cout << left << setw(36) << ("| No. de productos : " + to_string(listaProductos.size())) << "|" << endl;
+        cout << left << setw(36) << ("| Total : $" + to_string(total)) << "|" << endl;
+	cout << left << setw(36) << ("| Estado : " + estado) << "|" << endl;
 }
 
-
-
+bool Pedido::haExpirado(long segundosSimuladosTranscurridos) const {
+	const long UNA_HORA_SIMULADA = 3600;
+	return segundosSimuladosTranscurridos >= UNA_HORA_SIMULADA;
+}
