@@ -22,11 +22,18 @@ class Administrador : public Usuario {
 		static vector<string> usuariosEnLinea;
 		static mutex mutexEnLinea;
 
+		// conexion al servidor
+		int socketAdmin;
+		string ipServidor;
+		int puerto;
+
 	public:
 		Administrador();
 		Administrador(string nombre, string correo, string contrasena, string username);
 
 		~Administrador();
+
+		bool conectar();
 
 		const vector<Usuario>& getListaUsuarios() const;
 		const vector<Cafeteria>& getListaCafeterias() const;
@@ -39,6 +46,10 @@ class Administrador : public Usuario {
 		// Llamados por cualquier hilo/conexion cuando un usuario entra o sale.
 		static void marcarConectado(const string& username);
 		static void marcarDesconectado(const string& username);
+
+		// Pide username/contrasena por consola y los manda al servidor.
+		// Requiere haber llamado conectar() antes.
+		bool iniciarSesionAdmin();
 };
 
 #endif
