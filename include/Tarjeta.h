@@ -16,7 +16,7 @@ class Tarjeta{
 
 	public:
 		Tarjeta();
-		
+	        Tarjeta(int numeroTarjeta, int CVV, string nombrePropietario, string fechaVencimiento)	
 		~Tarjeta();
 		
 		string getNombrePropietario() const;
@@ -25,10 +25,10 @@ class Tarjeta{
 		string getFechaVencimiento() const;
 		string getUsernamePropietario() const;
 
-		void setNombrePropietario();
-		void setNumeroTarjeta();
-		void setCVV();
-		void setFechaVencimiento();
+		void setNombrePropietario(const string& nombre);
+		void setNumeroTarjeta(int numero);
+		void setCVV(int cvv);
+		void setFechaVencimiento(const string& fecha);
 };
 
 #endif
