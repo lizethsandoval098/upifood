@@ -13,6 +13,12 @@ void limpiarEntrada() {
 
 int main() {
     Cliente cliente;
+
+    if (!cliente.conectar()) {
+        cout << "No se pudo conectar al servidor. Revisa la IP/Tailscale y que 'servidor' este corriendo." << endl;
+        return 1;
+    }
+
     bool autenticado = false;
 
     while (!autenticado) {
@@ -27,11 +33,11 @@ int main() {
         cin >> opcion;
 
         if (opcion == 1) {
-            if (Cliente::iniciarSesionCliente(cliente)) {
+            if (cliente.iniciarSesionCliente()) {
                 autenticado = true;
             }
         } else if (opcion == 2) {
-            if (Cliente::registrarNuevoCliente()) {
+            if (cliente.registrarNuevoCliente()) {
                 cout << "Ahora inicia sesion con tu nuevo usuario." << endl;
             }
         } else if (opcion == 3) {
@@ -52,11 +58,6 @@ int main() {
 
     cout << "\nBienvenido/a, " << cliente.getNombre()
          << " (" << cliente.getTipoCliente() << ")" << endl;
-
-    if (!cliente.conectar()) {
-        cout << "No se pudo conectar al servidor. Revisa que 'servidor' este corriendo." << endl;
-        return 1;
-    }
 
     // Ventana SFML de referencia (requiere una fuente real en recursos/font.ttf)
     Ventana ventana("UPIIFOOD - Cliente", 800, 600);
@@ -94,4 +95,3 @@ int main() {
 
     return 0;
 }
-
