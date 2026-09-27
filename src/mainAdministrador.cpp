@@ -7,10 +7,16 @@ using namespace std;
 
 int main() {
     Administrador admin;
+
+    if (!admin.conectar()) {
+        cout << "No se pudo conectar al servidor. Revisa la IP/Tailscale y que 'servidor' este corriendo." << endl;
+        return 1;
+    }
+
     bool autenticado = false;
 
     while (!autenticado) {
-        if (Administrador::iniciarSesionAdmin(admin)) {
+        if (admin.iniciarSesionAdmin()) {
             autenticado = true;
         } else {
             cout << "Intenta de nuevo (o cierra la ventana con Ctrl+C)." << endl;
