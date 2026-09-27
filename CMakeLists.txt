@@ -12,7 +12,7 @@ find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 
 # ---------------------------------------------------------------------
 # Libreria con TODAS las clases del dominio (Usuario, Cliente, Cafeteria,
-# Administrador, Producto, Pedido, CodigoQR, Tarjeta, Pago, BaseDatos,
+# Administrador, Producto, Pedido, Tarjeta, Pago, BaseDatos,
 # Ventana). La usan cliente/cafeteria/administrador para no repetir la
 # lista de .cpp en cada executable.
 # ---------------------------------------------------------------------
@@ -24,11 +24,11 @@ add_library(
 	src/Administrador.cpp
 	src/Producto.cpp
 	src/Pedido.cpp
-	src/CodigoQR.cpp
 	src/Tarjeta.cpp
 	src/Pago.cpp
 	src/database.cpp
 	src/Ventana.cpp
+	src/Protocolo.cpp
 )
 
 target_link_libraries(
@@ -62,18 +62,11 @@ add_executable(
 )
 target_link_libraries(administrador PRIVATE modelo)
 
-# servidor (no necesita SFML: no dibuja nada, solo atiende conexiones)
+# servidor: el UNICO que abre la base de datos directamente. Necesita las
+# mismas clases del dominio para poder atender los comandos (LOGIN_*, etc.)
 add_executable(
 	servidor
 	src/mainServidor.cpp
 	src/Servidor.cpp
 )
-target_link_libraries(servidor PRIVATE Threads::Threads)
-
-
-# administrador
-#add_executable(
-#	administrador
-#	src/mainAdministrador.cpp
-#	src/Administrador.cpp
-#)
+target_link_libraries(servidor PRIVATE modelo)
