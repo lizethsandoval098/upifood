@@ -1,57 +1,159 @@
 #include "Ventana.h"
+
 #include <iostream>
 
-// NOTA IMPORTANTE: esto esta escrito para SFML 2.5/2.6 (la version que se
-// suele usar en clase). Si en tu maquina tienen instalada SFML 3.x, la forma
-// de crear sf::Text y de leer eventos cambio (sf::Text ahora pide la fuente
-// en el constructor, y pollEvent regresa std::optional). Si al compilar te
-// marca error justo en esas dos partes, es por eso.
+using namespace std;
 
-Ventana::Ventana(const std::string& nombreVentana, int ancho, int alto)
-    : window(sf::VideoMode(ancho, alto), nombreVentana) {
 
-    // Necesitan poner un archivo .ttf real en recursos/ y ajustar esta ruta.
-    if (!font.loadFromFile("recursos/font.ttf")) {
-        std::cout << "[Ventana] Aviso: no se pudo cargar recursos/font.ttf. "
-                  << "El texto no se va a ver hasta que agreguen una fuente real ahi."
-                  << std::endl;
+Ventana::Ventana(
+    const string& nombreVentana,
+    int ancho,
+    int alto
+)
+    : window(
+        sf::VideoMode(ancho, alto),
+        nombreVentana
+      )
+{
+    if(!font.loadFromFile("recursos/font.ttf")) {
+
+        cout
+            << "No se pudo cargar recursos/font.ttf"
+            << endl;
     }
+
+    window.setFramerateLimit(60);
 }
 
-void Ventana::agregarTexto(const std::string& texto, int x, int y, int size) {
-    sf::Text t;
-    t.setFont(font);
-    t.setString(texto);
-    t.setCharacterSize(size);
-    t.setPosition(static_cast<float>(x), static_cast<float>(y));
-
-    textos.push_back(t);
-}
-
-void Ventana::limpiar() {
-    textos.clear();
-}
 
 bool Ventana::estaAbierta() const {
+
     return window.isOpen();
 }
 
-void Ventana::loop() {
-    while (window.isOpen()) {
-        sf::Event evento;
 
-        while (window.pollEvent(evento)) {
-            if (evento.type == sf::Event::Closed) {
-                window.close();
-            }
-        }
+void Ventana::cerrar() {
 
-        window.clear(sf::Color(245, 245, 245));
+    window.close();
+}
 
-        for (const auto& t : textos) {
-            window.draw(t);
-        }
 
-        window.display();
+void Ventana::limpiar() {
+
+    window.clear(
+        sf::Color(245, 245, 245)
+    );
+}
+
+
+void Ventana::mostrar() {
+
+    window.display();
+}
+
+
+bool Ventana::obtenerEvento(
+    sf::Event& evento
+) {
+
+    return window.pollEvent(evento);
+}
+
+
+bool Ventana::botonPresionado(
+    float x,
+    float y,
+    float ancho,
+    float alto
+) {
+
+    sf::Vector2i posicion =
+        sf::Mouse::getPosition(window);
+
+    if(
+        posicion.x >= x &&
+        posicion.x <= x + ancho &&
+        posicion.y >= y &&
+        posicion.y <= y + alto
+    ) {
+
+        return true;
     }
+
+    return false;
+}
+
+
+void Ventana::dibujarTexto(
+    const string& texto,
+    float x,
+    float y,
+    unsigned int tamano
+) {
+
+    sf::Text textoSFML;
+
+    textoSFML.setFont(font);
+    textoSFML.setString(texto);
+    textoSFML.setCharacterSize(tamano);
+    textoSFML.setFillColor(
+        sf::Color(30, 30, 30)
+    );
+
+    textoSFML.setPosition(x, y);
+
+    window.draw(textoSFML);
+}
+
+
+void Ventana::dibujarBoton(
+    const string& texto,
+    float x,
+    float y,
+    float ancho,
+    float alto
+) {
+
+    sf::RectangleShape boton;
+
+    boton.setSize(
+        sf::Vector2f(ancho, alto)
+    );
+
+    boton.setPosition(x, y);
+
+    boton.setFillColor(
+        sf::Color(70, 130, 180)
+    );
+
+    boton.setOutlineThickness(2);
+
+    boton.setOutlineColor(
+        sf::Color(30, 80, 120)
+    );
+
+    window.draw(boton);
+
+
+    sf::Text textoBoton;
+
+    textoBoton.setFont(font);
+    textoBoton.setString(texto);
+    textoBoton.setCharacterSize(20);
+
+    textoBoton.setFillColor(
+        sf::Color::White
+    );
+
+
+    sf::FloatRect limites =
+        textoBoton.getLocalBounds();
+
+
+    textoBoton.setPosition(
+        x + (ancho - limites.width) / 2,
+        y + (alto - limites.height) / 2 - 5
+    );
+
+    window.draw(textoBoton);
 }
