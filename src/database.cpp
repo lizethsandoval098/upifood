@@ -470,12 +470,27 @@ vector<Cafeteria> BaseDatos::obtenerCafeterias() {        // para admin
 
 	sqlite3_finalize(stmt);
 
-	// para cada cafeteria, cargar sus pedidos (y asi poder contar cuantos tiene)
-	for(auto& c : listaCaf) {
-		c.cargarListaPedidos();
+	return listaCaf;
+}
+
+int BaseDatos::contarPedidosCafeteria(const string& idCafeteria) {
+	string sql = "SELECT COUNT(*) FROM Pedidos WHERE idCafeteria = ?;";
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al contar pedidos de cafeteria: " << sqlite3_errmsg(db) << endl;
+		return 0;
 	}
 
-	return listaCaf;
+	sqlite3_bind_text(stmt, 1, idCafeteria.c_str(), -1, SQLITE_TRANSIENT);
+
+	int cantidad = 0;
+	if(sqlite3_step(stmt) == SQLITE_ROW) {
+		cantidad = sqlite3_column_int(stmt, 0);
+	}
+
+	sqlite3_finalize(stmt);
+	return cantidad;
 }
 
 
@@ -736,12 +751,13 @@ bool BaseDatos::guardarProducto(const Producto& producto) {
 }
 
 /*
- *    idProducto = idCafeteria-num,      ej. galletas de cafeteria 1 : 101-123
- *    idCafeteria = "1" -> cafeteria 1, "2" -> cafeteria 2
+ *    Los productos se distinguen por cafeteria: C1-01, C1-02, ...
+ *    y C2-01, C2-02, ...
+ *    idCafeteria en la BD sigue siendo "1" o "2".
  */
 vector<Producto> BaseDatos::obtenerInventario(const string& idCafeteria) {        // para cafeteria
 	vector<Producto> inventario;
-	string patron = idCafeteria + "-%";
+	string patron = "C" + idCafeteria + "-%";
 
 	string sql = "SELECT nombreProducto, stock, precio, idProducto "
 	       	     "FROM Productos "

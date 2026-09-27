@@ -25,6 +25,10 @@ Cafeteria::Cafeteria(string nombre, string correo, string contrasena, string use
 }
 
 Cafeteria::~Cafeteria() {
+    if (socketCafeteria != -1) {
+        close(socketCafeteria);
+        socketCafeteria = -1;
+    }
 }
 
 bool Cafeteria::conectar() {
@@ -83,12 +87,52 @@ void Cafeteria::setIdCafeteria(const string& id) {
 }
 
 void Cafeteria::cargarInventario() {
-	BaseDatos db;
+    string respuesta = enviarComando(socketCafeteria, "INVENTARIO|" + idCafeteria);
+    vector<string> encabezado = separarCampos(respuesta);
 
-	if(db.conectar()) {
-		inventario = db.obtenerInventario(idCafeteria);
-		db.desconectar();
-	}
+    inventario.clear();
+
+    if (encabezado.empty() || encabezado[0] != "OK" || encabezado.size() < 2) {
+        cout << "No se pudo cargar el inventario." << endl;
+        if (encabezado.size() > 1) cout << encabezado[1] << endl;
+        return;
+    }
+
+    int cantidad = 0;
+    try {
+        cantidad = stoi(encabezado[1]);
+    } catch (...) {
+        cout << "Respuesta invalida del servidor." << endl;
+        return;
+    }
+
+    for (int i = 0; i < cantidad; i++) {
+        string linea;
+
+        if (!recibirMensaje(socketCafeteria, linea)) {
+            cout << "No se recibieron todos los productos." << endl;
+            return;
+        }
+
+        vector<string> campos = separarCampos(linea);
+
+        if (campos.size() < 4) {
+            continue;
+        }
+
+        Producto producto;
+        producto.setIdProducto(campos[0]);
+        producto.setNombreProducto(campos[1]);
+
+        try {
+            producto.setStock(stoi(campos[2]));
+            producto.setPrecio(stof(campos[3]));
+        } catch (...) {
+            continue;
+        }
+
+        inventario.push_back(producto);
+    }
 }
 
 void Cafeteria::verInventario() {
@@ -113,23 +157,37 @@ void Cafeteria::cargarListaPedidos() {
 }
 
 void Cafeteria::restockProducto(const string& idProducto, int cantidad) {
-	for(auto& producto : inventario) {
-		if(producto.getIdProducto() == idProducto) {
-			int nuevoStock = producto.getStock() + cantidad;
-			producto.setStock(nuevoStock);
+    if (cantidad <= 0) {
+        cout << "La cantidad debe ser mayor a cero." << endl;
+        return;
+    }
 
-			BaseDatos db;
-			if(db.conectar()) {
-				db.actualizarExistencia(idProducto, nuevoStock);
-				db.desconectar();
-			}
+    string comando = "RESTOCK|" + idProducto + "|" + to_string(cantidad);
+    string respuesta = enviarComando(socketCafeteria, comando);
+    vector<string> campos = separarCampos(respuesta);
 
-			cout << "Producto reabastecido correctamente." << endl;
-			return;
-		}
-	}
+    if (campos.empty() || campos[0] != "OK") {
+        string motivo = (campos.size() > 1) ? campos[1] : "No se pudo actualizar el inventario.";
+        cout << motivo << endl;
+        return;
+    }
 
-	cout << "Producto no encontrado." << endl;
+    if (campos.size() < 3) {
+        cout << "Respuesta invalida del servidor." << endl;
+        return;
+    }
+
+    for (auto& producto : inventario) {
+        if (producto.getIdProducto() == campos[1]) {
+            try {
+                producto.setStock(stoi(campos[2]));
+            } catch (...) {
+            }
+            break;
+        }
+    }
+
+    cout << "Producto reabastecido correctamente." << endl;
 }
 
 void Cafeteria::elaborarPedido(const string& folio) {
