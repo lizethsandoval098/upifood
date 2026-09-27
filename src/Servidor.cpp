@@ -1,100 +1,219 @@
+#include "Servidor.h"
+#include "Protocolo.h"
+#include "Cliente.h"
+#include "Cafeteria.h"
+#include "Usuario.h"
+
 #include <iostream>
-#include<sys/socket.h>
-#include "../include/Servidor.h"
+#include <thread>
+#include <cstring>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
-#include<netinet/in.h>
-#include<arpa/inet.h>
-#include<cstring>
+using namespace std;
 
-
-
-
-Servidor ::Servidor()
-{
-//El -1 indica hay un error y si es distinto de -1 quiere decir que el socket se creo se pone -1  para tener una salida en caso de que no se creara el  socket 
-socketServidor = -1; 
-puerto=5000;
-socketCliente = -1;
+Servidor::Servidor() {
+	socketServidor = -1;
+	puerto = 5000;
 }
 
-bool Servidor::iniciar(){
-	
-
-	std::cout<<"Iniciando Servidor"<<std::endl; 
-//En la creacion de un socket se debe indicar el tipo  de socket y el dominio 
-	socketServidor = socket(AF_INET, SOCK_STREAM, 0);
-//AF_INET indica que se usaran direcciones IPv4 
-//SOCK_STREAM inidica que se usara el protocolo de comunicacion TCP el cual  es un protocolo de comunicacion que garantiza que todos los datos lleguen correctamente 
-
-	if(socketServidor == -1)
-	{
-		std::cout<<"Error creando sockets"<<std::endl; 
-		return false; 
+bool Servidor::iniciar() {
+	// La base de datos se abre UNA sola vez, aqui, y se queda abierta todo
+	// el tiempo que el servidor este corriendo (a diferencia de Cliente/
+	// Cafeteria/Administrador, que ya no tocan la BD directo).
+	if (!db.conectar()) {
+		cout << "No se pudo abrir la base de datos. El servidor no puede iniciar." << endl;
+		return false;
 	}
-	std::cout<<"Socket creado correctamente"<<std::endl; 
-	
-	
-	sockaddr_in direccionServidor;
 
-	direccionServidor.sin_family = AF_INET;
-	direccionServidor.sin_port = htons(puerto);
-	direccionServidor.sin_addr.s_addr = INADDR_ANY;
+	socketServidor = socket(AF_INET, SOCK_STREAM, 0);
 
-	memset(&(direccionServidor.sin_zero), 0, 8);
+	if (socketServidor == -1) {
+		cout << "Error creando el socket del servidor." << endl;
+		return false;
+	}
 
+	int opt = 1;
+	setsockopt(socketServidor, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-	if(bind(socketServidor,
-        (sockaddr*)&direccionServidor,
-        sizeof(direccionServidor)) == -1)
-{
-    std::cout << "Error en bind" << std::endl;
-    return false;
+	sockaddr_in direccion;
+	memset(&direccion, 0, sizeof(direccion));
+	direccion.sin_family = AF_INET;
+	direccion.sin_addr.s_addr = INADDR_ANY; // escucha en todas las interfaces (incluida Tailscale)
+	direccion.sin_port = htons(puerto);
+
+	if (bind(socketServidor, (sockaddr*)&direccion, sizeof(direccion)) == -1) {
+		cout << "Error haciendo bind en el puerto " << puerto << "." << endl;
+		return false;
+	}
+
+	if (listen(socketServidor, 10) == -1) {
+		cout << "Error poniendo el socket en modo escucha." << endl;
+		return false;
+	}
+
+	cout << "Servidor escuchando en el puerto " << puerto << "..." << endl;
+
+	while (true) {
+		sockaddr_in direccionCliente;
+		socklen_t tam = sizeof(direccionCliente);
+
+		int socketCliente = accept(socketServidor, (sockaddr*)&direccionCliente, &tam);
+
+		if (socketCliente == -1) {
+			cout << "Error aceptando una conexion." << endl;
+			continue;
+		}
+
+		cout << "Nueva conexion aceptada." << endl;
+
+		// Un hilo por cliente conectado: asi los 3 (cliente/cafeteria/admin)
+		// pueden estar conectados y pidiendo cosas al mismo tiempo.
+		thread hiloCliente(&Servidor::atenderCliente, this, socketCliente);
+		hiloCliente.detach();
+	}
+
+	return true;
 }
 
-std::cout << "Puerto asignado correctamente: "
-          << puerto << std::endl;
+void Servidor::atenderCliente(int socketCliente) {
+	while (true) {
+		string comando;
 
+		if (!recibirMensaje(socketCliente, comando)) {
+			break; // el cliente se desconecto
+		}
 
+		cout << "Comando recibido: " << comando << endl;
 
+		string respuesta = procesarComando(comando);
 
-if (listen(socketServidor, 5) == -1)
-{
-    std::cout << "Error al escuchar conexiones." << std::endl;
-    return false;
+		if (!enviarMensaje(socketCliente, respuesta)) {
+			break;
+		}
+	}
+
+	close(socketCliente);
+	cout << "Conexion cerrada." << endl;
 }
 
-std::cout << "Servidor escuchando en el puerto "
-          << puerto << std::endl;
+string Servidor::procesarComando(const string& comando) {
+	vector<string> campos = separarCampos(comando);
 
-  
-sockaddr_in direccionCliente;
+	if (campos.empty()) {
+		return "ERR|Comando vacio.";
+	}
 
-socklen_t longitudCliente = sizeof(direccionCliente);
+	const string& tipo = campos[0];
 
+	// ---------------------------------------------------------------
+	// LOGIN_CLIENTE|username|contrasena
+	// ---------------------------------------------------------------
+	if (tipo == "LOGIN_CLIENTE") {
+		if (campos.size() < 3) return "ERR|Formato invalido.";
 
-std::cout << "Esperando cliente..." << std::endl;
+		string username = campos[1];
+		string contrasena = campos[2];
 
+		lock_guard<mutex> guard(dbMutex); // seccion critica: acceso a la BD
 
-socketCliente = accept(
-    socketServidor,
-    (sockaddr*)&direccionCliente,
-    &longitudCliente
-);
+		Cliente c = db.obtenerUsuarioCliente(username);
 
+		if (c.getUsername().empty()) {
+			return "ERR|Usuario inexistente.";
+		}
 
-if(socketCliente == -1)
-{
-    std::cout << "Error aceptando cliente" << std::endl;
-    return false;
-}
+		if (!c.verificarContrasena(contrasena)) {
+			return "ERR|Contrasena incorrecta.";
+		}
 
+		return "OK|" + c.getNombre() + "|" + c.getCorreo() + "|" +
+		       c.getApellidoPaterno() + "|" + c.getApellidoMaterno() + "|" +
+		       c.getTipoCliente() + "|" + c.getUsername();
+	}
 
-std::cout << "Cliente conectado correctamente" << std::endl;
+	// ---------------------------------------------------------------
+	// REGISTRO_CLIENTE|username|nombre|correo|contrasena|apellidoP|apellidoM|tipoCliente
+	// ---------------------------------------------------------------
+	if (tipo == "REGISTRO_CLIENTE") {
+		if (campos.size() < 8) return "ERR|Formato invalido.";
 
+		string username = campos[1];
+		string nombre = campos[2];
+		string correo = campos[3];
+		string contrasena = campos[4];
+		string apellidoP = campos[5];
+		string apellidoM = campos[6];
+		string tipoCliente = campos[7];
 
+		Cliente nuevoCliente(nombre, correo, contrasena, username, apellidoP, apellidoM, tipoCliente);
 
+		lock_guard<mutex> guard(dbMutex);
 
+		bool exito = db.guardarUsuarioCliente(nuevoCliente);
 
-	  return true; 
+		if (!exito) {
+			return "ERR|No se pudo registrar (el username ya existe?).";
+		}
 
+		return "OK|" + username;
+	}
+
+	// ---------------------------------------------------------------
+	// LOGIN_CAFETERIA|username|contrasena
+	// ---------------------------------------------------------------
+	if (tipo == "LOGIN_CAFETERIA") {
+		if (campos.size() < 3) return "ERR|Formato invalido.";
+
+		string username = campos[1];
+		string contrasena = campos[2];
+
+		lock_guard<mutex> guard(dbMutex);
+
+		Cafeteria c = db.obtenerCafeteriaPorUsername(username);
+
+		if (c.getUsername().empty()) {
+			return "ERR|Usuario inexistente.";
+		}
+
+		if (!c.verificarContrasena(contrasena)) {
+			return "ERR|Contrasena incorrecta.";
+		}
+
+		return "OK|" + c.getNombreCafeteria() + "|" + c.getCorreo() + "|" +
+		       c.getIdCafeteria() + "|" + c.getUsername();
+	}
+
+	// ---------------------------------------------------------------
+	// LOGIN_ADMIN|username|contrasena
+	// ---------------------------------------------------------------
+	if (tipo == "LOGIN_ADMIN") {
+		if (campos.size() < 3) return "ERR|Formato invalido.";
+
+		string username = campos[1];
+		string contrasena = campos[2];
+
+		lock_guard<mutex> guard(dbMutex);
+
+		Usuario u = db.obtenerAdministrador(username);
+
+		if (u.getUsername().empty()) {
+			return "ERR|Usuario inexistente.";
+		}
+
+		if (!u.verificarContrasena(contrasena)) {
+			return "ERR|Contrasena incorrecta.";
+		}
+
+		return "OK|" + u.getNombre() + "|" + u.getCorreo() + "|" + u.getUsername();
+	}
+
+	// TODO: siguientes comandos a agregar con el mismo patron:
+	//   LISTAR_USUARIOS, LISTAR_CAFETERIAS, INVENTARIO|idCafeteria,
+	//   RESTOCK|idProducto|cantidad, PEDIDOS_CAFETERIA|idCafeteria,
+	//   GESTIONAR_PEDIDO|folio, GUARDAR_PEDIDO|..., etc.
+
+	return "ERR|Comando desconocido: " + tipo;
 }
