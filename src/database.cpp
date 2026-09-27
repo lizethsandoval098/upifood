@@ -64,7 +64,7 @@ bool BaseDatos::inicializarTablas() {
 			     "('Admin', 'Cafe', 'Cliente')), "
 			     "nombre TEXT NOT NULL, "
 			     "correo TEXT NOT NULL, "
-			     "contrasenaHash TEXT NOT NULL);";
+			     "contrasena TEXT NOT NULL);";
 
 	string sqlCafeterias = "CREATE TABLE IF NOT EXISTS Cafeterias ("
 			       "username TEXT PRIMARY KEY, "
@@ -157,7 +157,7 @@ bool BaseDatos::guardarUsuarioCliente(const Cliente& cliente) {
 	ejecutarQuery("BEGIN TRANSACTION;");
 
 	sqlite3_stmt* stmt;
-	string sqlU = "INSERT INTO Usuarios (username, tipoUsuario, nombre, correo, contrasenaHash) "
+	string sqlU = "INSERT INTO Usuarios (username, tipoUsuario, nombre, correo, contrasena) "
 		      "VALUES (?, 'Cliente', ?, ?, ?);";
 
 	if(sqlite3_prepare_v2(db, sqlU.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
@@ -169,7 +169,7 @@ bool BaseDatos::guardarUsuarioCliente(const Cliente& cliente) {
 	sqlite3_bind_text(stmt, 1, cliente.getUsername().c_str(), -1, SQLITE_TRANSIENT);
 	sqlite3_bind_text(stmt, 2, cliente.getNombre().c_str(), -1, SQLITE_TRANSIENT);
 	sqlite3_bind_text(stmt, 3, cliente.getCorreo().c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(stmt, 4, cliente.getContrasenaHash().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 4, cliente.getContrasena().c_str(), -1, SQLITE_TRANSIENT);
 
 	bool exitoU = (sqlite3_step(stmt) == SQLITE_DONE);
 	sqlite3_finalize(stmt);
@@ -212,7 +212,7 @@ bool BaseDatos::guardarUsuarioCliente(const Cliente& cliente) {
 
 bool BaseDatos::guardarAdministrador(const Usuario& admin) {
 	sqlite3_stmt* stmt;
-	string sqlU = "INSERT INTO Usuarios (username, tipoUsuario, nombre, correo, contrasenaHash) "
+	string sqlU = "INSERT INTO Usuarios (username, tipoUsuario, nombre, correo, contrasena) "
 		      "VALUES (?, 'Admin', ?, ?, ?);";
 
 	if(sqlite3_prepare_v2(db, sqlU.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
@@ -223,7 +223,7 @@ bool BaseDatos::guardarAdministrador(const Usuario& admin) {
 	sqlite3_bind_text(stmt, 1, admin.getUsername().c_str(), -1, SQLITE_TRANSIENT);
 	sqlite3_bind_text(stmt, 2, admin.getNombre().c_str(), -1, SQLITE_TRANSIENT);
 	sqlite3_bind_text(stmt, 3, admin.getCorreo().c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(stmt, 4, admin.getContrasenaHash().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 4, admin.getContrasena().c_str(), -1, SQLITE_TRANSIENT);
 
 	bool exito = (sqlite3_step(stmt) == SQLITE_DONE);
 	sqlite3_finalize(stmt);
@@ -234,7 +234,7 @@ bool BaseDatos::guardarAdministrador(const Usuario& admin) {
 Usuario BaseDatos::obtenerAdministrador(const string& username) {
 	Usuario admin;
 
-	string sql = "SELECT nombre, correo, contrasenaHash "
+	string sql = "SELECT nombre, correo, contrasena "
 		     "FROM Usuarios "
 		     "WHERE username = ? AND tipoUsuario = 'Admin';";
 
@@ -251,7 +251,7 @@ Usuario BaseDatos::obtenerAdministrador(const string& username) {
 		admin.setTipoUsuario("Admin");
 		admin.setNombre(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
 		admin.setCorreo(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-		admin.setContrasenaHash(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+		admin.setContrasena(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
 		admin.setUsername(username);
 	}
 
@@ -263,7 +263,7 @@ Usuario BaseDatos::obtenerAdministrador(const string& username) {
 vector<Usuario> BaseDatos::obtenerUsuarios() {        // para admin
 	vector<Usuario> listaU;
 
-	string sql = "SELECT tipoUsuario, nombre, correo, contrasenaHash, username "
+	string sql = "SELECT tipoUsuario, nombre, correo, contrasena, username "
 	             "FROM Usuarios ORDER BY rowid ASC;"; // rowid ASC = orden de registro
 
 	sqlite3_stmt* stmt;
@@ -277,11 +277,11 @@ vector<Usuario> BaseDatos::obtenerUsuarios() {        // para admin
 		string tipoUsuario = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
 		string nombre = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
 		string correo = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
-		string contrasenaHash = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+		string contrasena = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
 		string username = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
 
 		Usuario u(tipoUsuario, nombre, correo, "", username);
-		u.setContrasenaHash(contrasenaHash); // sobrescribe el hash de "" con el real
+		u.setContrasena(contrasena); // sobrescribe el hash de "" con el real
 		listaU.push_back(u);
 	}
 
@@ -293,7 +293,7 @@ vector<Usuario> BaseDatos::obtenerUsuarios() {        // para admin
 Cliente BaseDatos::obtenerUsuarioCliente(const string& username) {
 	Cliente cliente;
 
-	string sql1 = "SELECT U.nombre, U.correo, U.contrasenaHash, C.apellidoPaterno, "
+	string sql1 = "SELECT U.nombre, U.correo, U.contrasena, C.apellidoPaterno, "
 		     "C.apellidoMaterno, C.tipoCliente "
 	       	     "FROM Usuarios U "
 		     "JOIN Clientes C ON U.username = C.username "
@@ -314,7 +314,7 @@ Cliente BaseDatos::obtenerUsuarioCliente(const string& username) {
 		cliente.setTipoUsuario("Cliente");
 		cliente.setNombre(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
 		cliente.setCorreo(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-		cliente.setContrasenaHash(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+		cliente.setContrasena(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
 		cliente.setApellidoPaterno(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
 		cliente.setApellidoMaterno(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
 		cliente.setTipoCliente(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
@@ -365,7 +365,7 @@ bool BaseDatos::guardarCafeteria(const Cafeteria& cafeteria) {
 	ejecutarQuery("BEGIN TRANSACTION;");
 
 	sqlite3_stmt* stmt;
-	string sqlU = "INSERT INTO Usuarios (username, tipoUsuario, nombre, correo, contrasenaHash) "
+	string sqlU = "INSERT INTO Usuarios (username, tipoUsuario, nombre, correo, contrasena) "
 		      "VALUES (?, 'Cafe', ?, ?, ?);";
 
 	if(sqlite3_prepare_v2(db, sqlU.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
@@ -377,7 +377,7 @@ bool BaseDatos::guardarCafeteria(const Cafeteria& cafeteria) {
 	sqlite3_bind_text(stmt, 1, cafeteria.getUsername().c_str(), -1, SQLITE_TRANSIENT);
 	sqlite3_bind_text(stmt, 2, cafeteria.getNombre().c_str(), -1, SQLITE_TRANSIENT);
 	sqlite3_bind_text(stmt, 3, cafeteria.getCorreo().c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(stmt, 4, cafeteria.getContrasenaHash().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 4, cafeteria.getContrasena().c_str(), -1, SQLITE_TRANSIENT);
 
 	bool exitoU = (sqlite3_step(stmt) == SQLITE_DONE);
 	sqlite3_finalize(stmt);
@@ -415,7 +415,7 @@ bool BaseDatos::guardarCafeteria(const Cafeteria& cafeteria) {
 Cafeteria BaseDatos::obtenerCafeteriaPorUsername(const string& username) {
 	Cafeteria cafeteria;
 
-	string sql = "SELECT U.nombre, U.correo, U.contrasenaHash, C.idCafeteria "
+	string sql = "SELECT U.nombre, U.correo, U.contrasena, C.idCafeteria "
 		     "FROM Usuarios U "
 		     "JOIN Cafeterias C ON U.username = C.username "
 		     "WHERE U.username = ? AND U.tipoUsuario = 'Cafe';";
@@ -433,7 +433,7 @@ Cafeteria BaseDatos::obtenerCafeteriaPorUsername(const string& username) {
 		cafeteria.setTipoUsuario("Cafe");
 		cafeteria.setNombre(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
 		cafeteria.setCorreo(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-		cafeteria.setContrasenaHash(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+		cafeteria.setContrasena(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
 		cafeteria.setIdCafeteria(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
 		cafeteria.setUsername(username);
 	}
