@@ -88,8 +88,11 @@ void Servidor::atenderCliente(int socketCliente) {
 
 		cout << "Comando recibido: " << comando << endl;
 
-		string respuesta = procesarComando(comando);
-
+string respuesta =
+    procesarComando(
+        comando,
+        socketCliente
+    );
 		if (!enviarMensaje(socketCliente, respuesta)) {
 			break;
 		}
@@ -215,5 +218,180 @@ string Servidor::procesarComando(const string& comando) {
 	//   RESTOCK|idProducto|cantidad, PEDIDOS_CAFETERIA|idCafeteria,
 	//   GESTIONAR_PEDIDO|folio, GUARDAR_PEDIDO|..., etc.
 
+
+
+	// ---------------------------------------------------------------
+// LISTAR_USUARIOS
+// ---------------------------------------------------------------
+if(tipo == "LISTAR_USUARIOS") {
+
+	lock_guard<mutex> guard(dbMutex);
+
+	vector<Usuario> usuarios =
+		db.obtenerUsuarios();
+
+	/*
+	    Primero mandamos:
+
+	    OK|cantidad
+
+	    Después mandamos un mensaje
+	    por cada usuario.
+	*/
+
+	string respuesta =
+		"OK|" +
+		to_string(usuarios.size());
+
+	for(const auto& usuario : usuarios) {
+
+		if(!enviarMensaje(
+			socketCliente,
+			usuario.getTipoUsuario() + "|" +
+			usuario.getNombre() + "|" +
+			usuario.getCorreo() + "|" +
+			usuario.getContrasenaHash() + "|" +
+			usuario.getUsername()
+		)) {
+
+			return "ERR|Error enviando usuarios.";
+		}
+	}
+
+	return respuesta;
+}
+
+
+// ---------------------------------------------------------------
+// LISTAR_CAFETERIAS
+// ---------------------------------------------------------------
+if(tipo == "LISTAR_CAFETERIAS") {
+
+	lock_guard<mutex> guard(dbMutex);
+
+	vector<Cafeteria> cafeterias =
+		db.obtenerCafeterias();
+
+	string respuesta =
+		"OK|" +
+		to_string(cafeterias.size());
+
+	for(const auto& cafeteria : cafeterias) {
+
+		if(!enviarMensaje(
+			socketCliente,
+			cafeteria.getNombreCafeteria() + "|" +
+			cafeteria.getCorreo() + "|" +
+			cafeteria.getUsername() + "|" +
+			cafeteria.getIdCafeteria()
+		)) {
+
+			return "ERR|Error enviando cafeterias.";
+		}
+	}
+
+	return respuesta;
+}
+
+
+// ---------------------------------------------------------------
+// LISTAR_PEDIDOS
+// ---------------------------------------------------------------
+if(tipo == "LISTAR_PEDIDOS") {
+
+	lock_guard<mutex> guard(dbMutex);
+
+	vector<Pedido> pedidos;
+
+	vector<Cafeteria> cafeterias =
+		db.obtenerCafeterias();
+
+	for(const auto& cafeteria : cafeterias) {
+
+		vector<Pedido> pedidosCafe =
+			db.obtenerPedidosCafeteria(
+				cafeteria.getIdCafeteria()
+			);
+
+		for(const auto& pedido : pedidosCafe) {
+			pedidos.push_back(pedido);
+		}
+	}
+
+	string respuesta =
+		"OK|" +
+		to_string(pedidos.size());
+
+	for(const auto& pedido : pedidos) {
+
+		string registro =
+			pedido.getFolio() + "|" +
+			pedido.getFecha() + "|" +
+			pedido.getEstado() + "|" +
+			to_string(pedido.getTotal()) + "|" +
+			pedido.getUsernameCliente() + "|" +
+			pedido.getIdCafeteria();
+
+		if(!enviarMensaje(
+			socketCliente,
+			registro
+		)) {
+
+			return "ERR|Error enviando pedidos.";
+		}
+	}
+
+	return respuesta;
+}
+
+
+// ---------------------------------------------------------------
+// LISTAR_INVENTARIO
+// ---------------------------------------------------------------
+if(tipo == "LISTAR_INVENTARIO") {
+
+	lock_guard<mutex> guard(dbMutex);
+
+	vector<Producto> productos;
+
+	vector<Cafeteria> cafeterias =
+		db.obtenerCafeterias();
+
+	for(const auto& cafeteria : cafeterias) {
+
+		vector<Producto> inventario =
+			db.obtenerInventario(
+				cafeteria.getIdCafeteria()
+			);
+
+		for(const auto& producto : inventario) {
+			productos.push_back(producto);
+		}
+	}
+
+	string respuesta =
+		"OK|" +
+		to_string(productos.size());
+
+	for(const auto& producto : productos) {
+
+		string registro =
+			producto.getIdProducto() + "|" +
+			producto.getNombreProducto() + "|" +
+			to_string(producto.getStock()) + "|" +
+			to_string(producto.getPrecio());
+
+		if(!enviarMensaje(
+			socketCliente,
+			registro
+		)) {
+
+			return "ERR|Error enviando inventario.";
+		}
+	}
+
+	return respuesta;
+}
+	
 	return "ERR|Comando desconocido: " + tipo;
 }
