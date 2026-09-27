@@ -91,13 +91,11 @@ bool BaseDatos::inicializarTablas() {
 	string sqlPedidos = "CREATE TABLE IF NOT EXISTS Pedidos ("
 			    "folio TEXT PRIMARY KEY, "
 		    	    "fecha TEXT DEFAULT (DATETIME('now', 'localtime')), "
-		            "urlQR TEXT NOT NULL DEFAULT '', "
 			    "estado TEXT NOT NULL DEFAULT 'Pendiente' CHECK (estado IN "
 			    "('Pendiente', 'Preparando', 'Listo', 'Entregado', 'Cancelado')), "
 			    "total REAL NOT NULL CHECK (total > 0.0), "
 			    "usernameCliente TEXT NOT NULL, "
 			    "idCafeteria TEXT NOT NULL, "
-			    "qrValido INTEGER NOT NULL DEFAULT 0 CHECK (qrValido IN (0,1)), "
 			    "FOREIGN KEY (usernameCliente) REFERENCES Usuarios(username) "
 			    "ON DELETE RESTRICT, "
 			    "FOREIGN KEY (idCafeteria) REFERENCES Cafeterias(idCafeteria) ON DELETE "
@@ -208,6 +206,60 @@ bool BaseDatos::guardarUsuarioCliente(const Cliente& cliente) {
 	return true;
 }
 
+// =====================================================================
+// Usuarios / Clientes
+// =====================================================================
+
+bool BaseDatos::guardarAdministrador(const Usuario& admin) {
+	sqlite3_stmt* stmt;
+	string sqlU = "INSERT INTO Usuarios (username, tipoUsuario, nombre, correo, contrasenaHash) "
+		      "VALUES (?, 'Admin', ?, ?, ?);";
+
+	if(sqlite3_prepare_v2(db, sqlU.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al preparar insercion de administrador: " << sqlite3_errmsg(db) << endl;
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, admin.getUsername().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 2, admin.getNombre().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 3, admin.getCorreo().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 4, admin.getContrasenaHash().c_str(), -1, SQLITE_TRANSIENT);
+
+	bool exito = (sqlite3_step(stmt) == SQLITE_DONE);
+	sqlite3_finalize(stmt);
+
+	return exito;
+}
+
+Usuario BaseDatos::obtenerAdministrador(const string& username) {
+	Usuario admin;
+
+	string sql = "SELECT nombre, correo, contrasenaHash "
+		     "FROM Usuarios "
+		     "WHERE username = ? AND tipoUsuario = 'Admin';";
+
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al cargar el administrador: " << sqlite3_errmsg(db) << endl;
+		return admin;
+	}
+
+	sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+
+	if(sqlite3_step(stmt) == SQLITE_ROW) {
+		admin.setTipoUsuario("Admin");
+		admin.setNombre(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+		admin.setCorreo(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+		admin.setContrasenaHash(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+		admin.setUsername(username);
+	}
+
+	sqlite3_finalize(stmt);
+
+	return admin;
+}
+
 vector<Usuario> BaseDatos::obtenerUsuarios() {        // para admin
 	vector<Usuario> listaU;
 
@@ -229,7 +281,7 @@ vector<Usuario> BaseDatos::obtenerUsuarios() {        // para admin
 		string username = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
 
 		Usuario u(tipoUsuario, nombre, correo, "", username);
-		// la contrasena ya viene hasheada desde la BD; no se vuelve a hashear
+		u.setContrasenaHash(contrasenaHash); // sobrescribe el hash de "" con el real
 		listaU.push_back(u);
 	}
 
@@ -262,7 +314,7 @@ Cliente BaseDatos::obtenerUsuarioCliente(const string& username) {
 		cliente.setTipoUsuario("Cliente");
 		cliente.setNombre(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
 		cliente.setCorreo(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-		// El hash ya viene calculado desde la BD: se guarda directo, sin volver a hashear.
+		cliente.setContrasenaHash(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
 		cliente.setApellidoPaterno(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
 		cliente.setApellidoMaterno(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
 		cliente.setTipoCliente(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
@@ -309,6 +361,88 @@ Cliente BaseDatos::obtenerUsuarioCliente(const string& username) {
 // Cafeterias
 // =====================================================================
 
+bool BaseDatos::guardarCafeteria(const Cafeteria& cafeteria) {
+	ejecutarQuery("BEGIN TRANSACTION;");
+
+	sqlite3_stmt* stmt;
+	string sqlU = "INSERT INTO Usuarios (username, tipoUsuario, nombre, correo, contrasenaHash) "
+		      "VALUES (?, 'Cafe', ?, ?, ?);";
+
+	if(sqlite3_prepare_v2(db, sqlU.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al preparar insercion de usuario (cafeteria): " << sqlite3_errmsg(db) << endl;
+		ejecutarQuery("ROLLBACK;");
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, cafeteria.getUsername().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 2, cafeteria.getNombre().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 3, cafeteria.getCorreo().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 4, cafeteria.getContrasenaHash().c_str(), -1, SQLITE_TRANSIENT);
+
+	bool exitoU = (sqlite3_step(stmt) == SQLITE_DONE);
+	sqlite3_finalize(stmt);
+
+	if(!exitoU) {
+		ejecutarQuery("ROLLBACK;");
+		return false;
+	}
+
+	string sqlC = "INSERT INTO Cafeterias (username, idCafeteria, nombreCafeteria) VALUES (?, ?, ?);";
+
+	if(sqlite3_prepare_v2(db, sqlC.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al preparar insercion de cafeteria: " << sqlite3_errmsg(db) << endl;
+		ejecutarQuery("ROLLBACK;");
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, cafeteria.getUsername().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 2, cafeteria.getIdCafeteria().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 3, cafeteria.getNombreCafeteria().c_str(), -1, SQLITE_TRANSIENT);
+
+	bool exitoC = (sqlite3_step(stmt) == SQLITE_DONE);
+	sqlite3_finalize(stmt);
+
+	if(!exitoC) {
+		ejecutarQuery("ROLLBACK;");
+		return false;
+	}
+
+	ejecutarQuery("COMMIT;");
+
+	return true;
+}
+
+Cafeteria BaseDatos::obtenerCafeteriaPorUsername(const string& username) {
+	Cafeteria cafeteria;
+
+	string sql = "SELECT U.nombre, U.correo, U.contrasenaHash, C.idCafeteria "
+		     "FROM Usuarios U "
+		     "JOIN Cafeterias C ON U.username = C.username "
+		     "WHERE U.username = ? AND U.tipoUsuario = 'Cafe';";
+
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al cargar la cafeteria: " << sqlite3_errmsg(db) << endl;
+		return cafeteria;
+	}
+
+	sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+
+	if(sqlite3_step(stmt) == SQLITE_ROW) {
+		cafeteria.setTipoUsuario("Cafe");
+		cafeteria.setNombre(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+		cafeteria.setCorreo(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+		cafeteria.setContrasenaHash(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+		cafeteria.setIdCafeteria(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+		cafeteria.setUsername(username);
+	}
+
+	sqlite3_finalize(stmt);
+
+	return cafeteria;
+}
+
 vector<Cafeteria> BaseDatos::obtenerCafeterias() {        // para admin
 	vector<Cafeteria> listaCaf;
 
@@ -353,8 +487,8 @@ bool BaseDatos::guardarPedido(const Pedido& pedido) {
 	ejecutarQuery("BEGIN TRANSACTION;");
 
 	sqlite3_stmt* stmt;
-	string sqlP = "INSERT INTO Pedidos (folio, fecha, urlQR, estado, total, usernameCliente, "
-		      "idCafeteria, qrValido) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+	string sqlP = "INSERT INTO Pedidos (folio, fecha, estado, total, usernameCliente, "
+		      "idCafeteria) VALUES (?, ?, ?, ?, ?, ?);";
 
 	if(sqlite3_prepare_v2(db, sqlP.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
 		cerr << "Error al preparar insercion de pedido: " << sqlite3_errmsg(db) << endl;
@@ -364,12 +498,10 @@ bool BaseDatos::guardarPedido(const Pedido& pedido) {
 
 	sqlite3_bind_text(stmt, 1, pedido.getFolio().c_str(), -1, SQLITE_TRANSIENT);
 	sqlite3_bind_text(stmt, 2, pedido.getFecha().c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(stmt, 3, pedido.getUrlQR().c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(stmt, 4, pedido.getEstado().c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_double(stmt, 5, pedido.getTotal());
-	sqlite3_bind_text(stmt, 6, pedido.getUsernameCliente().c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(stmt, 7, pedido.getIdCafeteria().c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_int(stmt, 8, pedido.getQrValido() ? 1 : 0);
+	sqlite3_bind_text(stmt, 3, pedido.getEstado().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_double(stmt, 4, pedido.getTotal());
+	sqlite3_bind_text(stmt, 5, pedido.getUsernameCliente().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 6, pedido.getIdCafeteria().c_str(), -1, SQLITE_TRANSIENT);
 
 	bool exitoP = (sqlite3_step(stmt) == SQLITE_DONE);
 	sqlite3_finalize(stmt);
@@ -442,7 +574,7 @@ vector<pair<Producto, int>> BaseDatos::listaProductosPedido(const string& folio)
 vector<Pedido> BaseDatos::obtenerPedidosCafeteria(const string& idCafeteria) {        // para cafeteria
 	vector<Pedido> listaP;
 
-	string sql = "SELECT folio, fecha, urlQR, estado, total, usernameCliente, qrValido "
+	string sql = "SELECT folio, fecha, estado, total, usernameCliente "
 	       	     "FROM Pedidos "
 		     "WHERE idCafeteria = ?;";
 
@@ -460,13 +592,9 @@ vector<Pedido> BaseDatos::obtenerPedidosCafeteria(const string& idCafeteria) {  
 
 		p.setFolio(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
 		p.setFecha(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-
-		bool ev = (sqlite3_column_int(stmt, 6) == 1);
-
-		p.setQr(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)), ev);
-		p.setEstado(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-		p.setTotal(sqlite3_column_double(stmt, 4));
-		p.setUsernameCliente(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+		p.setEstado(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+		p.setTotal(sqlite3_column_double(stmt, 3));
+		p.setUsernameCliente(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
 		p.setIdCafeteria(idCafeteria);
 
 		p.setListaProductos(listaProductosPedido(p.getFolio()));
@@ -482,7 +610,7 @@ vector<Pedido> BaseDatos::obtenerPedidosCafeteria(const string& idCafeteria) {  
 vector<Pedido> BaseDatos::obtenerHistorialPedidos(const string& username) {        // para cliente
 	vector<Pedido> historialP;
 
-	string sql = "SELECT folio, fecha, urlQR, estado, total, idCafeteria, qrValido "
+	string sql = "SELECT folio, fecha, estado, total, idCafeteria "
 	       	     "FROM Pedidos "
 		     "WHERE usernameCliente = ?;";
 
@@ -500,13 +628,9 @@ vector<Pedido> BaseDatos::obtenerHistorialPedidos(const string& username) {     
 
 		p.setFolio(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
 		p.setFecha(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-
-		bool ev = (sqlite3_column_int(stmt, 6) == 1);
-
-		p.setQr(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)), ev);
-		p.setEstado(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-		p.setTotal(sqlite3_column_double(stmt, 4));
-		p.setIdCafeteria(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+		p.setEstado(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+		p.setTotal(sqlite3_column_double(stmt, 3));
+		p.setIdCafeteria(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
 		p.setUsernameCliente(username);
 
 		p.setListaProductos(listaProductosPedido(p.getFolio()));
@@ -522,7 +646,7 @@ vector<Pedido> BaseDatos::obtenerHistorialPedidos(const string& username) {     
 Pedido BaseDatos::obtenerPedido_Folio(const string& folio) {
 	Pedido p;
 
-	string sql = "SELECT usernameCliente, fecha, urlQR, estado, total, idCafeteria, qrValido "
+	string sql = "SELECT usernameCliente, fecha, estado, total, idCafeteria "
 	       	     "FROM Pedidos "
 		     "WHERE folio = ?;";
 
@@ -538,13 +662,9 @@ Pedido BaseDatos::obtenerPedido_Folio(const string& folio) {
 	if(sqlite3_step(stmt) == SQLITE_ROW) {
 		p.setUsernameCliente(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
 		p.setFecha(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-
-		bool ev = (sqlite3_column_int(stmt, 6) == 1);
-
-		p.setQr(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)), ev);
-		p.setEstado(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-		p.setTotal(sqlite3_column_double(stmt, 4));
-		p.setIdCafeteria(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+		p.setEstado(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+		p.setTotal(sqlite3_column_double(stmt, 3));
+		p.setIdCafeteria(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
 		p.setFolio(folio);
 
 		p.setListaProductos(listaProductosPedido(folio));
@@ -558,7 +678,7 @@ Pedido BaseDatos::obtenerPedido_Folio(const string& folio) {
 Pedido BaseDatos::obtenerPedido_Username(const string& username) {
 	Pedido p;
 
-	string sql = "SELECT folio, fecha, urlQR, estado, total, idCafeteria, qrValido "
+	string sql = "SELECT folio, fecha, estado, total, idCafeteria "
 	       	     "FROM Pedidos "
 		     "WHERE usernameCliente = ? "
 		     "ORDER BY rowid DESC "
@@ -576,13 +696,9 @@ Pedido BaseDatos::obtenerPedido_Username(const string& username) {
 	if(sqlite3_step(stmt) == SQLITE_ROW) {
 		p.setFolio(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
 		p.setFecha(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-
-		bool ev = (sqlite3_column_int(stmt, 6) == 1);
-
-		p.setQr(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)), ev);
-		p.setEstado(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-		p.setTotal(sqlite3_column_double(stmt, 4));
-		p.setIdCafeteria(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+		p.setEstado(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+		p.setTotal(sqlite3_column_double(stmt, 3));
+		p.setIdCafeteria(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
 		p.setUsernameCliente(username);
 
 		p.setListaProductos(listaProductosPedido(p.getFolio()));
