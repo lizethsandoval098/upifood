@@ -62,15 +62,16 @@ class Cliente : public Usuario {
 		void recogerPedido();
 		void verEstadoPedido();
 
-		// ---- Registro e inicio de sesion (flujo de consola) ----
-		// Hace todas las preguntas por consola, valida el correo institucional,
-		// genera el username y guarda el cliente en la base de datos.
-		// Regresa true si el registro se completo con exito.
-		static bool registrarNuevoCliente();
+		// ---- Registro e inicio de sesion (flujo de consola, via el servidor) ----
+		// Hace todas las preguntas por consola, valida el correo institucional
+		// LOCALMENTE (son puras reglas), y manda el registro al servidor por el
+		// socket. Requiere haber llamado conectar() antes.
+		bool registrarNuevoCliente();
 
-		// Pide username/contrasena por consola y valida contra la base de datos.
-		// Si el login es correcto, llena "out" con los datos del cliente y regresa true.
-		static bool iniciarSesionCliente(Cliente& out);
+		// Pide username/contrasena por consola y los manda al servidor.
+		// Si el login es correcto, llena *this con los datos y regresa true.
+		// Requiere haber llamado conectar() antes.
+		bool iniciarSesionCliente();
 
 		// ---- Validaciones IPN ----
 		// El correo debe ser institucional (@alumno.ipn.mx), el anio de ingreso
@@ -84,4 +85,3 @@ class Cliente : public Usuario {
 };
 
 #endif
-
