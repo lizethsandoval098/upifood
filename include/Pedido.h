@@ -5,7 +5,6 @@
 #include <vector>
 #include <utility> // pair
 #include <iostream>
-#include "CodigoQR.h"
 #include "Producto.h"
 
 using namespace std;
@@ -13,7 +12,6 @@ using namespace std;
 class Pedido{
 	private:
 		string folio;
-		CodigoQR qr;  // url + validez del QR (invalido/vacio hasta que se paga)
 		string fecha;
 		string estado;
 		string usernameCliente;
@@ -34,8 +32,6 @@ class Pedido{
 		string getUsernameCliente() const;
 		string getIdCafeteria() const;
 		float getTotal() const;
-		string getUrlQR() const;
-		bool getQrValido() const;
 		vector<pair<Producto, int>> getListaProductos() const;
 
 		void setFolio(const string& f);
@@ -44,7 +40,6 @@ class Pedido{
 		void setUsernameCliente(const string& uc);
 		void setIdCafeteria(const string& ic);
 		void setTotal(float t);
-		void setQr(const string& url, bool valido);
 		void setListaProductos(const vector<pair<Producto, int>>& lista);
 
 		void agregarProducto(const Producto& producto, int cantidad);
