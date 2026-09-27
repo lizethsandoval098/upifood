@@ -40,6 +40,7 @@ class BaseDatos{
 
 		// Cafeterias
 		vector<Cafeteria> obtenerCafeterias();           // para admin
+		int contarPedidosCafeteria(const string& idCafeteria);
 		Cafeteria obtenerCafeteriaPorUsername(const string& username);
 		bool guardarCafeteria(const Cafeteria& cafeteria);
 
