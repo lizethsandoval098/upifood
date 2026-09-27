@@ -35,9 +35,13 @@ class BaseDatos{
 		bool guardarUsuarioCliente(const Cliente& cliente);
 		vector<Usuario> obtenerUsuarios();               // para admin
 		Cliente obtenerUsuarioCliente(const string& username);
+		Usuario obtenerAdministrador(const string& username);
+		bool guardarAdministrador(const Usuario& admin);
 
 		// Cafeterias
 		vector<Cafeteria> obtenerCafeterias();           // para admin
+		Cafeteria obtenerCafeteriaPorUsername(const string& username);
+		bool guardarCafeteria(const Cafeteria& cafeteria);
 
 		// Pedidos
 		bool guardarPedido(const Pedido& pedido);
