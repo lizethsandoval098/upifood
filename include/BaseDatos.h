@@ -5,16 +5,15 @@
 #include <vector>
 #include <sqlite3.h>
 
-#include "Usuario.h"
-#include "Administrador.h"
-#include "Cliente.h"
-#include "Cafeteria.h"
-#include "Producto.h"
-#include "Pedido.h"
-#include "Pago.h"
-#include "CodigoQR.h"
-
 using namespace std;
+
+class Usuario;
+class Cliente;
+class Cafeteria;
+class Pedido;
+class Producto;
+class Pago;
+class Tarjeta;
 
 class BaseDatos{
 	private:
@@ -32,28 +31,33 @@ class BaseDatos{
 		void desconectar();
 		bool inicializarTablas();
 
-		// Usuarios
-		bool guardarUsuario(Usuario usuario);     // guardar en db
-		vector<Usuario> obtenerUsuarios();        // para admin
-		Usuario obtenerUsuario(string username);  // usuario especifico
-		
-		// Pedidos
-		bool guardarPedido(Pedido pedido);
-		vector<Pedido> obtenerPedidos();
-		Pedido obtenerPedido(string folio);
-		
-		// Productos
-		bool guardarProducto(Producto producto);
-		vector<Producto> obtenerInventario(int idCafeteria);
-		bool actualizarExistencia(int idProducto, int cantidad);
-		int obtenerExistencia(int idProducto);
-		
-		// Pagos
-		bool guardarPago(Pago pago);
-		Pago obtenerPago(int folio);
+		// Usuarios / Clientes
+		bool guardarUsuarioCliente(const Cliente& cliente);
+		vector<Usuario> obtenerUsuarios();               // para admin
+		Cliente obtenerUsuarioCliente(const string& username);
 
+		// Cafeterias
+		vector<Cafeteria> obtenerCafeterias();           // para admin
+
+		// Pedidos
+		bool guardarPedido(const Pedido& pedido);
+		vector<pair<Producto, int>> listaProductosPedido(const string& folio);
+		vector<Pedido> obtenerPedidosCafeteria(const string& idCafeteria); // para cafeteria
+		vector<Pedido> obtenerHistorialPedidos(const string& username);   // para cliente
+		Pedido obtenerPedido_Folio(const string& folio);
+		Pedido obtenerPedido_Username(const string& username);            // pedido activo mas reciente
+
+		// Productos
+		bool guardarProducto(const Producto& producto);
+		vector<Producto> obtenerInventario(const string& idCafeteria);
+		bool actualizarExistencia(const string& idProducto, int nuevoStock);
+
+		// Pagos
+		bool guardarPago(const Pago& pago);
+		Pago obtenerPago(const string& folio);
+
+		// Tarjetas
+		bool guardarTarjeta(const Tarjeta& tarjeta);
 };
 
 #endif
-
-
