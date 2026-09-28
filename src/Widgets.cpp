@@ -97,6 +97,10 @@ const std::string& CampoTexto::getContenido() const {
     return contenido;
 }
 
+void CampoTexto::setContenido(const std::string& texto) {
+    contenido = texto.substr(0, maxLongitud);
+}
+
 void CampoTexto::limpiar() {
     contenido.clear();
 }

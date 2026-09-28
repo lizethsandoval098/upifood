@@ -7,6 +7,7 @@
 #include "Pedido.h"
 
 #include <iostream>
+#include <cmath>
 #include <thread>
 #include <cstring>
 #include <unistd.h>
@@ -87,6 +88,7 @@ bool Servidor::iniciar() {
 
 void Servidor::atenderCliente(int socketCliente) {
     string usuarioConectado;
+    string idCafeteriaConectada;
 
     while (true) {
         string comando;
@@ -97,7 +99,7 @@ void Servidor::atenderCliente(int socketCliente) {
 
         cout << "Comando recibido: " << comando << endl;
 
-        string respuesta = procesarComando(comando);
+        string respuesta = procesarComando(comando, idCafeteriaConectada);
 
         vector<string> camposComando = separarCampos(comando);
         vector<string> camposRespuesta = separarCampos(respuesta);
@@ -107,14 +109,17 @@ void Servidor::atenderCliente(int socketCliente) {
 
             if (tipo == "LOGIN_CLIENTE" && camposRespuesta.size() >= 7) {
                 usuarioConectado = camposRespuesta[6];
+                idCafeteriaConectada.clear();
                 marcarUsuarioEnLinea(usuarioConectado);
             }
             else if (tipo == "LOGIN_CAFETERIA" && camposRespuesta.size() >= 5) {
                 usuarioConectado = camposRespuesta[4];
+                idCafeteriaConectada = camposRespuesta[3];
                 marcarUsuarioEnLinea(usuarioConectado);
             }
             else if (tipo == "LOGIN_ADMIN" && camposRespuesta.size() >= 4) {
                 usuarioConectado = camposRespuesta[3];
+                idCafeteriaConectada.clear();
                 marcarUsuarioEnLinea(usuarioConectado);
             }
         }
@@ -234,7 +239,7 @@ string Servidor::obtenerUsuariosEnLinea() {
     return respuesta;
 }
 
-string Servidor::procesarComando(const string& comando) {
+string Servidor::procesarComando(const string& comando, const string& idCafeteriaSesion) {
     vector<string> campos = separarCampos(comando);
 
     if (campos.empty()) {
@@ -401,8 +406,8 @@ string Servidor::procesarComando(const string& comando) {
 
         string idCafeteria = campos[1];
 
-        if (idCafeteria != "1" && idCafeteria != "2") {
-            return "ERR|Cafeteria invalida.";
+        if (idCafeteria != idCafeteriaSesion || idCafeteriaSesion.empty()) {
+            return "ERR|La sesion no pertenece a esa cafeteria.";
         }
 
         lock_guard<mutex> guard(dbMutex);
@@ -420,13 +425,87 @@ string Servidor::procesarComando(const string& comando) {
         return respuesta;
     }
 
+    // AGREGAR_PRODUCTO|nombre|stock|precio. El ID lo asigna el servidor.
+    if (tipo == "AGREGAR_PRODUCTO") {
+        if (idCafeteriaSesion.empty()) return "ERR|Inicia sesion como cafeteria.";
+        if (campos.size() < 4) return "ERR|Formato invalido.";
+        if (campos[1].empty() || campos[1].find('|') != string::npos) return "ERR|Nombre invalido.";
+
+        int stock = -1;
+        float precio = 0.0f;
+        try {
+            stock = stoi(campos[2]);
+            precio = stof(campos[3]);
+        } catch (...) {
+            return "ERR|Stock o precio invalido.";
+        }
+        if (stock < 0 || !isfinite(precio) || precio <= 0.0f) return "ERR|Stock o precio invalido.";
+
+        lock_guard<mutex> guardDb(dbMutex);
+        string idAsignado;
+        if (!db.agregarProductoAutomatico(idCafeteriaSesion, campos[1], stock, precio, idAsignado)) {
+            return "ERR|No se pudo agregar el producto o la cafeteria ya alcanzo 20 productos.";
+        }
+        actualizarMatrizProducto(idAsignado, stock);
+        return "OK|" + idAsignado;
+    }
+
+    // MODIFICAR_PRODUCTO|id|nombre|stock|precio
+    if (tipo == "MODIFICAR_PRODUCTO") {
+        if (idCafeteriaSesion.empty()) return "ERR|Inicia sesion como cafeteria.";
+        if (campos.size() < 5) return "ERR|Formato invalido.";
+        int fila = 0;
+        int columna = 0;
+        if (!obtenerPosicionProducto(campos[1], fila, columna) ||
+            campos[1][1] != idCafeteriaSesion[0]) return "ERR|ID de producto invalido para esta cafeteria.";
+
+        int stock = -1;
+        float precio = 0.0f;
+        try {
+            stock = stoi(campos[3]);
+            precio = stof(campos[4]);
+        } catch (...) {
+            return "ERR|Stock o precio invalido.";
+        }
+        if (campos[2].empty() || campos[2].find('|') != string::npos || stock < 0 ||
+            !isfinite(precio) || precio <= 0.0f) return "ERR|Datos del producto invalidos.";
+
+        lock_guard<mutex> guardDb(dbMutex);
+        if (!db.modificarProducto(campos[1], campos[2], stock, precio)) {
+            return "ERR|No se pudo modificar el producto.";
+        }
+        actualizarMatrizProducto(campos[1], stock);
+        return "OK|" + campos[1];
+    }
+
+    // ELIMINAR_PRODUCTO|id
+    if (tipo == "ELIMINAR_PRODUCTO") {
+        if (idCafeteriaSesion.empty()) return "ERR|Inicia sesion como cafeteria.";
+        if (campos.size() < 2) return "ERR|Formato invalido.";
+        int fila = 0;
+        int columna = 0;
+        if (!obtenerPosicionProducto(campos[1], fila, columna) ||
+            campos[1][1] != idCafeteriaSesion[0]) return "ERR|ID de producto invalido para esta cafeteria.";
+
+        lock_guard<mutex> guardDb(dbMutex);
+        if (!db.eliminarProducto(campos[1])) {
+            return "ERR|No se pudo eliminar: puede existir en pedidos registrados.";
+        }
+        actualizarMatrizProducto(campos[1], 0);
+        return "OK|" + campos[1];
+    }
+
     // ---------------------------------------------------------------
     // RESTOCK|idProducto|cantidad
     // ---------------------------------------------------------------
     if (tipo == "RESTOCK") {
+        if (idCafeteriaSesion.empty()) return "ERR|Inicia sesion como cafeteria.";
         if (campos.size() < 3) return "ERR|Formato invalido.";
 
         string idProducto = campos[1];
+        if (idProducto.size() != 5 || idProducto[1] != idCafeteriaSesion[0]) {
+            return "ERR|El producto no pertenece a esta cafeteria.";
+        }
         int cantidad = 0;
 
         try {
@@ -483,7 +562,7 @@ string Servidor::procesarComando(const string& comando) {
 
         string idCafeteria = campos[1];
 
-        if (idCafeteria != "1" && idCafeteria != "2") {
+        if (idCafeteriaSesion.empty() || idCafeteria != idCafeteriaSesion) {
             return "ERR|Cafeteria invalida.";
         }
 
@@ -512,6 +591,10 @@ string Servidor::procesarComando(const string& comando) {
 
         string idCafeteria = campos[1];
         string folio = campos[2];
+
+        if (idCafeteriaSesion.empty() || idCafeteria != idCafeteriaSesion) {
+            return "ERR|Ese pedido no pertenece a esta cafeteria.";
+        }
 
         lock_guard<mutex> guard(dbMutex);
 
@@ -550,6 +633,10 @@ string Servidor::procesarComando(const string& comando) {
         string folio = campos[2];
         string nuevoEstado = campos[3];
 
+        if (idCafeteriaSesion.empty() || idCafeteria != idCafeteriaSesion) {
+            return "ERR|Ese pedido no pertenece a esta cafeteria.";
+        }
+
         lock_guard<mutex> guard(dbMutex);
 
         Pedido pedido = db.obtenerPedido_Folio(folio);
@@ -586,9 +673,13 @@ string Servidor::procesarComando(const string& comando) {
     // -> OK|idProducto|nuevoStock|precioUnitario
     // ---------------------------------------------------------------
     if (tipo == "VENTA_CAJA") {
+        if (idCafeteriaSesion.empty()) return "ERR|Inicia sesion como cafeteria.";
         if (campos.size() < 3) return "ERR|Formato invalido.";
 
         string idProducto = campos[1];
+        if (idProducto.size() != 5 || idProducto[1] != idCafeteriaSesion[0]) {
+            return "ERR|El producto no pertenece a esta cafeteria.";
+        }
         int cantidad = 0;
 
         try {

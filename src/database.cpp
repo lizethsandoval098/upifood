@@ -7,6 +7,8 @@
 #include "Pago.h"
 #include "Tarjeta.h"
 
+#include <cstdio>
+#include <cmath>
 #include <iostream>
 
 using namespace std;
@@ -30,6 +32,9 @@ bool BaseDatos::conectar() {
 	}
 
 	cout << "Conexion a SQLite exitosa (" << nombreBD << ")" << endl;
+	if (!ejecutarQuery("PRAGMA foreign_keys = ON;")) {
+		return false;
+	}
 
 	return inicializarTablas();
 }
@@ -770,6 +775,72 @@ bool BaseDatos::guardarProducto(const Producto& producto) {
 	sqlite3_finalize(stmt);
 
 	return exito;
+}
+
+bool BaseDatos::agregarProductoAutomatico(const string& idCafeteria, const string& nombre,
+                                         int stock, float precio, string& idAsignado) {
+	if ((idCafeteria != "1" && idCafeteria != "2") || nombre.empty() ||
+	    nombre.find('|') != string::npos || stock < 0 || !isfinite(precio) || precio <= 0.0f) {
+		return false;
+	}
+
+	vector<bool> ocupados(21, false);
+	for (const Producto& producto : obtenerInventario(idCafeteria)) {
+		const string& id = producto.getIdProducto();
+		if (id.size() == 5 && id[3] >= '0' && id[3] <= '9' && id[4] >= '0' && id[4] <= '9') {
+			int numero = (id[3] - '0') * 10 + (id[4] - '0');
+			if (numero >= 1 && numero <= 20) ocupados[numero] = true;
+		}
+	}
+
+	int numeroDisponible = 0;
+	for (int numero = 1; numero <= 20; ++numero) {
+		if (!ocupados[numero]) {
+			numeroDisponible = numero;
+			break;
+		}
+	}
+	if (numeroDisponible == 0) return false;
+
+	char idBuffer[6];
+	snprintf(idBuffer, sizeof(idBuffer), "C%s-%02d", idCafeteria.c_str(), numeroDisponible);
+	idAsignado = idBuffer;
+	Producto producto(nombre, idAsignado, stock, precio);
+	if (!guardarProducto(producto)) {
+		idAsignado.clear();
+		return false;
+	}
+	return true;
+}
+
+bool BaseDatos::modificarProducto(const string& idProducto, const string& nombre,
+                                  int stock, float precio) {
+	if (nombre.empty() || nombre.find('|') != string::npos || stock < 0 ||
+	    !isfinite(precio) || precio <= 0.0f) return false;
+
+	const string sql = "UPDATE Productos SET nombreProducto = ?, stock = ?, precio = ? "
+	                   "WHERE idProducto = ?;";
+	sqlite3_stmt* stmt = nullptr;
+	if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) return false;
+
+	sqlite3_bind_text(stmt, 1, nombre.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_int(stmt, 2, stock);
+	sqlite3_bind_double(stmt, 3, precio);
+	sqlite3_bind_text(stmt, 4, idProducto.c_str(), -1, SQLITE_TRANSIENT);
+	const bool actualizado = sqlite3_step(stmt) == SQLITE_DONE && sqlite3_changes(db) == 1;
+	sqlite3_finalize(stmt);
+	return actualizado;
+}
+
+bool BaseDatos::eliminarProducto(const string& idProducto) {
+	const string sql = "DELETE FROM Productos WHERE idProducto = ?;";
+	sqlite3_stmt* stmt = nullptr;
+	if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) return false;
+
+	sqlite3_bind_text(stmt, 1, idProducto.c_str(), -1, SQLITE_TRANSIENT);
+	const bool eliminado = sqlite3_step(stmt) == SQLITE_DONE && sqlite3_changes(db) == 1;
+	sqlite3_finalize(stmt);
+	return eliminado;
 }
 
 /*

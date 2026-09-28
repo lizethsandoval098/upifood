@@ -12,7 +12,7 @@
 
 using namespace std;
 
-Cafeteria::Cafeteria() : gananciaCajaTurno(0.0f) {
+Cafeteria::Cafeteria() : siguienteTemporal(1), gananciaCajaTurno(0.0f) {
 	socketCafeteria = -1;
 	ipServidor = "100.70.231.3"; // IP de Tailscale de la compu con la BD/servidor
 	puerto = 5000;
@@ -20,7 +20,7 @@ Cafeteria::Cafeteria() : gananciaCajaTurno(0.0f) {
 
 Cafeteria::Cafeteria(string nombre, string correo, string contrasena, string username, string idCafeteria)
 	: Usuario("Cafe", nombre, correo, contrasena, username),
-	  idCafeteria{idCafeteria}, gananciaCajaTurno(0.0f) {
+	  idCafeteria{idCafeteria}, siguienteTemporal(1), gananciaCajaTurno(0.0f) {
 	socketCafeteria = -1;
 	ipServidor = "100.70.231.3";
 	puerto = 5000;
@@ -32,6 +32,8 @@ Cafeteria::Cafeteria(const Cafeteria& otra)
 	: Usuario(otra),
 	  idCafeteria(otra.idCafeteria),
 	  inventario(otra.inventario),
+	  cambiosInventarioPendientes(otra.cambiosInventarioPendientes),
+	  siguienteTemporal(otra.siguienteTemporal),
 	  listaPedidos(otra.listaPedidos),
 	  gananciaCajaTurno(otra.gananciaCajaTurno),
 	  vendidosCajaTurno(otra.vendidosCajaTurno),
@@ -49,6 +51,8 @@ Cafeteria& Cafeteria::operator=(const Cafeteria& otra) {
 		Usuario::operator=(otra);
 		idCafeteria = otra.idCafeteria;
 		inventario = otra.inventario;
+		cambiosInventarioPendientes = otra.cambiosInventarioPendientes;
+		siguienteTemporal = otra.siguienteTemporal;
 		listaPedidos = otra.listaPedidos;
 		gananciaCajaTurno = otra.gananciaCajaTurno;
 		vendidosCajaTurno = otra.vendidosCajaTurno;
@@ -190,15 +194,12 @@ bool Cafeteria::pedirLista(const string& comando, vector<string>& lineas) {
 		return false;
 	}
 
-	for (int i = 0; i < cantidad; i++) {
+			cambiosInventarioPendientes.push_back({'E', idProducto, producto->getNombreProducto(),
+			                                      producto->getStock(), producto->getPrecio()});
 		string linea;
 
-		if (!recibirMensaje(socketCafeteria, linea)) {
-			ultimoError = "Se perdio la conexion con el servidor.";
-			return false;
 		}
 
-		lineas.push_back(linea);
 	}
 
 	return true;
@@ -332,32 +333,135 @@ bool Cafeteria::restockProducto(const string& idProducto, int cantidad) {
 		return false;
 	}
 
-	string respuesta = enviarComando(socketCafeteria, "RESTOCK|" + idProducto + "|" + to_string(cantidad));
-	vector<string> campos = separarCampos(respuesta);
+	auto producto = find_if(inventario.begin(), inventario.end(), [&idProducto](const Producto& p) {
+		return p.getIdProducto() == idProducto;
+	});
+	if (producto == inventario.end()) {
+		ultimoError = "Producto no encontrado.";
+		return false;
+	}
+	return modificarProducto(idProducto, producto->getNombreProducto(),
+	                         producto->getStock() + cantidad, producto->getPrecio());
+}
 
-	if (campos.empty() || campos[0] != "OK") {
-		ultimoError = (campos.size() > 1) ? campos[1] : "No se pudo actualizar el inventario.";
+bool Cafeteria::agregarProducto(const string& nombre, int stock, float precio) {
+	if (nombre.empty() || nombre.find('|') != string::npos || stock < 0 || precio <= 0.0f) {
+		ultimoError = "Nombre, stock o precio invalido.";
 		return false;
 	}
 
-	// Respuesta esperada: OK|idProducto|nuevoStock
-	if (campos.size() < 3) {
-		ultimoError = "Respuesta invalida del servidor.";
-		return false;
-	}
-
-	for (auto& producto : inventario) {
-		if (producto.getIdProducto() == campos[1]) {
-			try {
-				producto.setStock(stoi(campos[2]));
-			} catch (...) {
-			}
-			break;
-		}
-	}
-
+	string idTemporal = "AUTO-" + to_string(siguienteTemporal++);
+	Producto producto(nombre, idTemporal, stock, precio);
+	inventario.push_back(producto);
+	cambiosInventarioPendientes.push_back({'A', idTemporal, nombre, stock, precio});
 	ultimoError.clear();
 	return true;
+}
+
+bool Cafeteria::modificarProducto(const string& idProducto, const string& nombre, int stock, float precio) {
+	if (nombre.empty() || nombre.find('|') != string::npos || stock < 0 || precio <= 0.0f) {
+		ultimoError = "Nombre, stock o precio invalido.";
+		return false;
+	}
+
+	auto producto = find_if(inventario.begin(), inventario.end(), [&idProducto](const Producto& p) {
+		return p.getIdProducto() == idProducto;
+	});
+	if (producto == inventario.end()) {
+		ultimoError = "Producto no encontrado. Busca por ID o selecciona una fila.";
+		return false;
+	}
+
+	auto cambio = find_if(cambiosInventarioPendientes.begin(), cambiosInventarioPendientes.end(),
+		[&idProducto](const CambioInventario& c) { return c.idProducto == idProducto; });
+	if (cambio != cambiosInventarioPendientes.end() && cambio->accion == 'E') {
+		ultimoError = "El producto ya esta marcado para eliminar.";
+		return false;
+	}
+
+	producto->setNombreProducto(nombre);
+	producto->setStock(stock);
+	producto->setPrecio(precio);
+	if (cambio != cambiosInventarioPendientes.end()) {
+		cambio->nombreProducto = nombre;
+		cambio->stock = stock;
+		cambio->precio = precio;
+	} else {
+		cambiosInventarioPendientes.push_back({'M', idProducto, nombre, stock, precio});
+	}
+	ultimoError.clear();
+	return true;
+}
+
+bool Cafeteria::eliminarProducto(const string& idProducto) {
+	auto producto = find_if(inventario.begin(), inventario.end(), [&idProducto](const Producto& p) {
+		return p.getIdProducto() == idProducto;
+	});
+	if (producto == inventario.end()) {
+		ultimoError = "Producto no encontrado. Busca por ID o selecciona una fila.";
+		return false;
+	}
+
+	auto cambio = find_if(cambiosInventarioPendientes.begin(), cambiosInventarioPendientes.end(),
+		[&idProducto](const CambioInventario& c) { return c.idProducto == idProducto; });
+	if (idProducto.rfind("AUTO-", 0) == 0) {
+		if (cambio != cambiosInventarioPendientes.end()) cambiosInventarioPendientes.erase(cambio);
+	} else if (cambio == cambiosInventarioPendientes.end()) {
+		cambiosInventarioPendientes.push_back({'E', idProducto, "", 0, 0.0f});
+	} else {
+		cambio->accion = 'E';
+		cambio->nombreProducto.clear();
+		cambio->stock = 0;
+		cambio->precio = 0.0f;
+	}
+
+	inventario.erase(producto);
+	ultimoError.clear();
+	return true;
+}
+
+bool Cafeteria::sincronizarCambiosInventario() {
+	while (!cambiosInventarioPendientes.empty()) {
+		CambioInventario cambio = cambiosInventarioPendientes.front();
+		string comando;
+		if (cambio.accion == 'A') {
+			comando = "AGREGAR_PRODUCTO|" + cambio.nombreProducto + "|" +
+			          to_string(cambio.stock) + "|" + to_string(cambio.precio);
+		} else if (cambio.accion == 'M') {
+			comando = "MODIFICAR_PRODUCTO|" + cambio.idProducto + "|" + cambio.nombreProducto + "|" +
+			          to_string(cambio.stock) + "|" + to_string(cambio.precio);
+		} else {
+			comando = "ELIMINAR_PRODUCTO|" + cambio.idProducto;
+		}
+
+		vector<string> respuesta = separarCampos(enviarComando(socketCafeteria, comando));
+		if (respuesta.empty() || respuesta[0] != "OK") {
+			ultimoError = (respuesta.size() > 1) ? respuesta[1] : "No se pudo sincronizar el inventario.";
+			return false;
+		}
+
+		if (cambio.accion == 'A') {
+			if (respuesta.size() < 2) {
+				ultimoError = "El servidor no devolvio el ID asignado al producto.";
+				return false;
+			}
+			for (Producto& producto : inventario) {
+				if (producto.getIdProducto() == cambio.idProducto) {
+					producto.setIdProducto(respuesta[1]);
+					break;
+				}
+			}
+		}
+		cambiosInventarioPendientes.erase(cambiosInventarioPendientes.begin());
+	}
+
+	if (!cargarInventario()) return false;
+	ultimoError.clear();
+	return true;
+}
+
+size_t Cafeteria::cantidadCambiosInventarioPendientes() const {
+	return cambiosInventarioPendientes.size();
 }
 
 bool Cafeteria::cambiarEstadoPedido(const string& folio, const string& nuevoEstado) {
