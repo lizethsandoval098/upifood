@@ -25,14 +25,15 @@ private:
 
     // Matriz de inventario:
     // fila 0 -> cafeteria 1 (C1-01, C1-02, ...)
-    // fila 1 -> cafeteria 2 (C2-01, C2-02, ...)
+    // fila 1 -> cafeteria 2 (C2-01, C2-02, ...)  ... hasta la cafeteria 9
     // columna 0 -> producto 01, columna 1 -> producto 02, etc.
-    static const int MAX_PRODUCTOS_CAFETERIA = 20;
-    int inventario[2][MAX_PRODUCTOS_CAFETERIA];
+    static const int MAX_PRODUCTOS_CAFETERIA = 99; // IDs C1-01 ... C1-99
+    static const int MAX_CAFETERIAS = 9;
+    int inventario[MAX_CAFETERIAS][MAX_PRODUCTOS_CAFETERIA];
     mutex mutexInventario;
 
     void atenderCliente(int socketCliente);
-    string procesarComando(const string& comando, const string& idCafeteriaSesion);
+    string procesarComando(const string& comando);
 
     void cargarMatrizInventario();
     bool actualizarMatrizProducto(const string& idProducto, int stock);

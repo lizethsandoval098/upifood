@@ -15,6 +15,11 @@ class Producto;
 class Pago;
 class Tarjeta;
 
+// Numero de una cafeteria a partir de su ID en la BD: "1" -> 1, "C-01" -> 1,
+// "C-02" -> 2. Sirve para armar los IDs de producto (C1-01, C2-01, ...).
+// Regresa 0 si el ID no trae un numero entre 1 y 9.
+int numeroCafeteria(const string& idCafeteria);
+
 class BaseDatos{
 	private:
 		string nombreBD;
@@ -55,13 +60,12 @@ class BaseDatos{
 
 		// Productos
 		bool guardarProducto(const Producto& producto);
-		bool agregarProductoAutomatico(const string& idCafeteria, const string& nombre,
-		                               int stock, float precio, string& idAsignado);
-		bool modificarProducto(const string& idProducto, const string& nombre,
-		                        int stock, float precio);
-		bool eliminarProducto(const string& idProducto);
 		vector<Producto> obtenerInventario(const string& idCafeteria);
 		bool actualizarExistencia(const string& idProducto, int nuevoStock);
+		bool actualizarProducto(const string& idProducto, const string& nombre,
+		                        float precio, int stock);          // modificar nombre/precio/stock
+		bool eliminarProducto(const string& idProducto);
+		bool productoTienePedidos(const string& idProducto);      // true si aparece en DetallePedido
 
 		// Pagos
 		bool guardarPago(const Pago& pago);

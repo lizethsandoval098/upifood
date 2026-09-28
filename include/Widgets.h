@@ -18,6 +18,8 @@ private:
     std::string texto;
     bool hover;   // el mouse esta encima
     bool activo;  // es la "pestana" seleccionada actualmente
+    sf::Color colorNormal = sf::Color(111, 78, 55);
+    sf::Color colorHover = sf::Color(140, 102, 74);
 
 public:
     Boton();
@@ -25,6 +27,9 @@ public:
 
     void setTexto(const std::string& t);
     void setActivo(bool a);
+
+    // Cambia el color del boton (el color al pasar el mouse se calcula solo).
+    void setColor(const sf::Color& normal);
 
     // Coordenadas del mouse en pixeles de la ventana.
     bool contiene(float x, float y) const;
@@ -55,7 +60,8 @@ public:
     void recibirCaracter(sf::Uint32 unicode);
 
     const std::string& getContenido() const;
-    void setContenido(const std::string& texto);
+    void setContenido(const std::string& texto); // para rellenar el campo desde el programa
+    void setMaxLongitud(std::size_t maximo);
     void limpiar();
 
     void dibujar(Ventana& ventana);
