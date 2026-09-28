@@ -121,7 +121,6 @@ int main(int argc, char* argv[]) {
     Boton botonUsuarios("Usuarios", 20, 110, 180, 44);
     Boton botonCafeterias("Cafeterías", 20, 165, 180, 44);
     Boton botonEnLinea("En línea", 20, 220, 180, 44);
-    Boton botonActualizar("Actualizar ahora", 20, 300, 180, 44);
     Boton botonSalir("Salir", 20, 535, 180, 44);
 
     // ---------------- Estado del programa ----------------
@@ -218,7 +217,6 @@ int main(int argc, char* argv[]) {
                     botonUsuarios.actualizarHover(mx, my);
                     botonCafeterias.actualizarHover(mx, my);
                     botonEnLinea.actualizarHover(mx, my);
-                    botonActualizar.actualizarHover(mx, my);
                     botonSalir.actualizarHover(mx, my);
                 }
                 else if (e.type == sf::Event::MouseButtonPressed && e.mouseButton.button == sf::Mouse::Left) {
@@ -228,7 +226,6 @@ int main(int argc, char* argv[]) {
                     if (botonUsuarios.contiene(mx, my))        cambiarVista(Vista::USUARIOS);
                     else if (botonCafeterias.contiene(mx, my)) cambiarVista(Vista::CAFETERIAS);
                     else if (botonEnLinea.contiene(mx, my))    cambiarVista(Vista::EN_LINEA);
-                    else if (botonActualizar.contiene(mx, my)) cargarVista();
                     else if (botonSalir.contiene(mx, my))      ventana.cerrar();
                 }
                 else if (e.type == sf::Event::MouseWheelScrolled) {
@@ -282,7 +279,6 @@ int main(int argc, char* argv[]) {
             botonUsuarios.dibujar(ventana);
             botonCafeterias.dibujar(ventana);
             botonEnLinea.dibujar(ventana);
-            botonActualizar.dibujar(ventana);
             botonSalir.dibujar(ventana);
 
             ventana.dibujarTexto("Sesión de:", 20, 470, 13, sf::Color(200, 180, 160));

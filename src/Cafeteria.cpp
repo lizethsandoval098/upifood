@@ -41,6 +41,7 @@ Cafeteria::Cafeteria(const Cafeteria& otra)
 	  historialCaja(otra.historialCaja),
 	  folioDetalle(otra.folioDetalle),
 	  detallePedido(otra.detallePedido),
+	  foliosPedidoContabilizados(otra.foliosPedidoContabilizados),
 	  socketCafeteria(-1),
 	  ipServidor(otra.ipServidor),
 	  puerto(otra.puerto),
@@ -59,6 +60,7 @@ Cafeteria& Cafeteria::operator=(const Cafeteria& otra) {
 		historialCaja = otra.historialCaja;
 		folioDetalle = otra.folioDetalle;
 		detallePedido = otra.detallePedido;
+		foliosPedidoContabilizados = otra.foliosPedidoContabilizados;
 		ipServidor = otra.ipServidor;
 		puerto = otra.puerto;
 		ultimoError = otra.ultimoError;
@@ -128,6 +130,15 @@ string Cafeteria::getIdCafeteria() const {
 
 vector<Producto> Cafeteria::getInventario() const {
 	return inventario;
+}
+
+bool Cafeteria::hayProductoAgotado() const {
+	for (const auto& producto : inventario) {
+		if (producto.getStock() == 0) {
+			return true;
+		}
+	}
+	return false;
 }
 
 vector<Pedido> Cafeteria::getListaPedidos() const {
@@ -290,8 +301,41 @@ bool Cafeteria::cargarListaPedidos() {
 		listaPedidos.push_back(pedido);
 	}
 
+	// Suma a la ganancia del turno los pedidos que ya se entregaron desde la
+	// ultima vez que se pidio esta lista (vengan de la web o del simulador).
+	contabilizarPedidosCompletados();
+
 	ultimoError.clear();
 	return true;
+}
+
+// Un pedido pagado/completado (estado "Entregado") suma su total a la
+// ganancia del turno UNA sola vez, sin importar cuantas veces se vuelva a
+// pedir la lista de pedidos (se recuerda su folio en foliosPedidoContabilizados).
+void Cafeteria::contabilizarPedidosCompletados() {
+	for (const auto& pedido : listaPedidos) {
+		if (pedido.getEstado() != "Entregado") {
+			continue;
+		}
+
+		bool yaContado = false;
+
+		for (const auto& folio : foliosPedidoContabilizados) {
+			if (folio == pedido.getFolio()) {
+				yaContado = true;
+				break;
+			}
+		}
+
+		if (yaContado) {
+			continue;
+		}
+
+		foliosPedidoContabilizados.push_back(pedido.getFolio());
+		gananciaCajaTurno += pedido.getTotal();
+		historialCaja.push_back({"Pedido " + pedido.getFolio() + " (" + pedido.getUsernameCliente() + ")",
+		                         1, pedido.getTotal()});
+	}
 }
 
 bool Cafeteria::cargarDetallePedido(const string& folio) {

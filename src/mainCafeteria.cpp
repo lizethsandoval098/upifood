@@ -250,7 +250,6 @@ int main(int argc, char* argv[]) {
     Boton botonPedidos("Pedidos", 20, 110, 180, 44);
     Boton botonInventario("Inventario", 20, 165, 180, 44);
     Boton botonCaja("Caja", 20, 220, 180, 44);
-    Boton botonActualizar("Actualizar ahora", 20, 300, 180, 44);
     Boton botonSalir("Salir", 20, ALTO - 65, 180, 44);
 
     // vista PEDIDOS
@@ -397,12 +396,16 @@ int main(int argc, char* argv[]) {
     };
 
     // Pide al servidor los datos de la vista actual.
+    //
+    // Los pedidos SIEMPRE se refrescan, sin importar la pestana activa: asi
+    // se detectan a tiempo (para la tabla de Pedidos, el punto de stock
+    // agotado y la ganancia del turno) los pedidos que se completan desde
+    // la web o desde el simulador de clientes mientras el encargado esta
+    // viendo Inventario o Caja.
     auto cargarVista = [&]() {
-        bool ok = false;
+        bool ok = cafeteria.cargarListaPedidos();
 
         if (vista == Vista::PEDIDOS) {
-            ok = cafeteria.cargarListaPedidos();
-
             if (ok && !pedidoSel.empty()) {
                 if (estadoDePedido(pedidoSel).empty()) {
                     pedidoSel.clear();                       // ya no existe
@@ -411,7 +414,7 @@ int main(int argc, char* argv[]) {
                 }
             }
         } else {
-            ok = cafeteria.cargarInventario();
+            ok = cafeteria.cargarInventario() && ok;
         }
 
         mensajePanel = ok ? "" : ("Sin datos: " + cafeteria.getUltimoError());
@@ -741,7 +744,6 @@ int main(int argc, char* argv[]) {
                     botonPedidos.actualizarHover(mx, my);
                     botonInventario.actualizarHover(mx, my);
                     botonCaja.actualizarHover(mx, my);
-                    botonActualizar.actualizarHover(mx, my);
                     botonSalir.actualizarHover(mx, my);
 
                     botonFiltro.actualizarHover(mx, my);
@@ -766,7 +768,6 @@ int main(int argc, char* argv[]) {
                     if (botonPedidos.contiene(mx, my))         cambiarVista(Vista::PEDIDOS);
                     else if (botonInventario.contiene(mx, my)) cambiarVista(Vista::INVENTARIO);
                     else if (botonCaja.contiene(mx, my))       cambiarVista(Vista::CAJA);
-                    else if (botonActualizar.contiene(mx, my)) cargarVista();
                     else if (botonSalir.contiene(mx, my))      ventana.cerrar();
 
                     // ---- zona de contenido (depende de la vista) ----
@@ -972,8 +973,15 @@ int main(int argc, char* argv[]) {
             botonPedidos.dibujar(ventana);
             botonInventario.dibujar(ventana);
             botonCaja.dibujar(ventana);
-            botonActualizar.dibujar(ventana);
             botonSalir.dibujar(ventana);
+
+            // puntito rojo sobre "Inventario": alerta de producto agotado (stock 0)
+            if (cafeteria.hayProductoAgotado()) {
+                sf::CircleShape avisoAgotado(7);
+                avisoAgotado.setFillColor(ROJO_ERROR);
+                avisoAgotado.setPosition(20 + 180 - 14, 165 - 6);
+                win.draw(avisoAgotado);
+            }
 
             ventana.dibujarTexto("Sesión de:", 20, ALTO - 150, 13, sf::Color(200, 180, 160));
             ventana.dibujarTexto(recortar(cafeteria.getNombreCafeteria(), 18), 20, ALTO - 130, 16, CREMA);
