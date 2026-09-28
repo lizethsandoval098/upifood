@@ -4,6 +4,7 @@
 #include "Cafeteria.h"
 #include "Usuario.h"
 #include "Producto.h"
+#include "Pedido.h"
 
 #include <iostream>
 #include <thread>
@@ -470,6 +471,174 @@ string Servidor::procesarComando(const string& comando) {
         actualizarMatrizProducto(idProducto, nuevoStock);
 
         return "OK|" + idProducto + "|" + to_string(nuevoStock);
+    }
+
+    // ---------------------------------------------------------------
+    // PEDIDOS_CAFETERIA|idCafeteria
+    // -> OK|N  y luego N lineas:  folio|username|estado|total|fecha
+    // (los mas recientes primero)
+    // ---------------------------------------------------------------
+    if (tipo == "PEDIDOS_CAFETERIA") {
+        if (campos.size() < 2) return "ERR|Formato invalido.";
+
+        string idCafeteria = campos[1];
+
+        if (idCafeteria != "1" && idCafeteria != "2") {
+            return "ERR|Cafeteria invalida.";
+        }
+
+        lock_guard<mutex> guard(dbMutex);
+
+        vector<Pedido> pedidos = db.obtenerPedidosCafeteria(idCafeteria);
+        string respuesta = "OK|" + to_string(pedidos.size());
+
+        for (const auto& pedido : pedidos) {
+            respuesta += "\n" + pedido.getFolio() + "|" +
+                         pedido.getUsernameCliente() + "|" +
+                         pedido.getEstado() + "|" +
+                         to_string(pedido.getTotal()) + "|" +
+                         pedido.getFecha();
+        }
+
+        return respuesta;
+    }
+
+    // ---------------------------------------------------------------
+    // PEDIDO_DETALLE|idCafeteria|folio
+    // -> OK|N  y luego N lineas:  idProducto|nombre|cantidad|precioUnitario
+    // ---------------------------------------------------------------
+    if (tipo == "PEDIDO_DETALLE") {
+        if (campos.size() < 3) return "ERR|Formato invalido.";
+
+        string idCafeteria = campos[1];
+        string folio = campos[2];
+
+        lock_guard<mutex> guard(dbMutex);
+
+        Pedido pedido = db.obtenerPedido_Folio(folio);
+
+        if (pedido.getFolio().empty()) {
+            return "ERR|Pedido no encontrado.";
+        }
+
+        if (pedido.getIdCafeteria() != idCafeteria) {
+            return "ERR|Ese pedido no pertenece a esta cafeteria.";
+        }
+
+        vector<pair<Producto, int>> lista = pedido.getListaProductos();
+        string respuesta = "OK|" + to_string(lista.size());
+
+        for (const auto& par : lista) {
+            respuesta += "\n" + par.first.getIdProducto() + "|" +
+                         par.first.getNombreProducto() + "|" +
+                         to_string(par.second) + "|" +
+                         to_string(par.first.getPrecio());
+        }
+
+        return respuesta;
+    }
+
+    // ---------------------------------------------------------------
+    // CAMBIAR_ESTADO|idCafeteria|folio|nuevoEstado
+    // Flujo permitido:  Pendiente -> Preparando -> Listo -> Entregado
+    //                   (y se puede Cancelar desde Pendiente o Preparando)
+    // ---------------------------------------------------------------
+    if (tipo == "CAMBIAR_ESTADO") {
+        if (campos.size() < 4) return "ERR|Formato invalido.";
+
+        string idCafeteria = campos[1];
+        string folio = campos[2];
+        string nuevoEstado = campos[3];
+
+        lock_guard<mutex> guard(dbMutex);
+
+        Pedido pedido = db.obtenerPedido_Folio(folio);
+
+        if (pedido.getFolio().empty()) {
+            return "ERR|Pedido no encontrado.";
+        }
+
+        if (pedido.getIdCafeteria() != idCafeteria) {
+            return "ERR|Ese pedido no pertenece a esta cafeteria.";
+        }
+
+        string actual = pedido.getEstado();
+
+        bool permitido =
+            (actual == "Pendiente"  && (nuevoEstado == "Preparando" || nuevoEstado == "Cancelado")) ||
+            (actual == "Preparando" && (nuevoEstado == "Listo"      || nuevoEstado == "Cancelado")) ||
+            (actual == "Listo"      &&  nuevoEstado == "Entregado");
+
+        if (!permitido) {
+            return "ERR|No se puede pasar el pedido de " + actual + " a " + nuevoEstado + ".";
+        }
+
+        if (!db.actualizarEstadoPedido(folio, nuevoEstado)) {
+            return "ERR|No se pudo actualizar el pedido.";
+        }
+
+        return "OK|" + folio + "|" + nuevoEstado;
+    }
+
+    // ---------------------------------------------------------------
+    // VENTA_CAJA|idProducto|cantidad
+    // Venta directa en caja: descuenta del inventario.
+    // -> OK|idProducto|nuevoStock|precioUnitario
+    // ---------------------------------------------------------------
+    if (tipo == "VENTA_CAJA") {
+        if (campos.size() < 3) return "ERR|Formato invalido.";
+
+        string idProducto = campos[1];
+        int cantidad = 0;
+
+        try {
+            cantidad = stoi(campos[2]);
+        } catch (...) {
+            return "ERR|Cantidad invalida.";
+        }
+
+        if (cantidad <= 0) {
+            return "ERR|La cantidad debe ser mayor a cero.";
+        }
+
+        int fila = 0;
+        int columna = 0;
+
+        if (!obtenerPosicionProducto(idProducto, fila, columna)) {
+            return "ERR|ID de producto invalido. Use C1-01 o C2-01.";
+        }
+
+        lock_guard<mutex> guardDb(dbMutex);
+
+        vector<Producto> productos = db.obtenerInventario(idProducto.substr(1, 1));
+        int stockActual = -1;
+        float precio = 0.0f;
+
+        for (const auto& producto : productos) {
+            if (producto.getIdProducto() == idProducto) {
+                stockActual = producto.getStock();
+                precio = producto.getPrecio();
+                break;
+            }
+        }
+
+        if (stockActual < 0) {
+            return "ERR|Producto no encontrado.";
+        }
+
+        if (stockActual < cantidad) {
+            return "ERR|Stock insuficiente (quedan " + to_string(stockActual) + ").";
+        }
+
+        int nuevoStock = stockActual - cantidad;
+
+        if (!db.actualizarExistencia(idProducto, nuevoStock)) {
+            return "ERR|No se pudo actualizar el inventario.";
+        }
+
+        actualizarMatrizProducto(idProducto, nuevoStock);
+
+        return "OK|" + idProducto + "|" + to_string(nuevoStock) + "|" + to_string(precio);
     }
 
     return "ERR|Comando desconocido: " + tipo;
