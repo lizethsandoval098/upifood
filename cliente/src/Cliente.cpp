@@ -11,9 +11,9 @@
 
 Cliente::Cliente(){
 
-	socketCliente = -1; 
-	ipServidor ="100.70.231.3"; 
-	puerto =5000; 
+	socketCliente = -1;
+	ipServidor ="100.70.231.3";
+	puerto =5000;
 }
 
 bool Cliente::conectar()
@@ -70,7 +70,7 @@ bool Cliente::conectar()
     std::cout << "Conectado al servidor correctamente" << std::endl;
 
 
-return true; 
+return true;
 }
 
 
