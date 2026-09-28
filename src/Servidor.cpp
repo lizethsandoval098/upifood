@@ -17,18 +17,30 @@
 #include <cstdio>
 #include <cctype>
 #include <algorithm>
+#include <chrono>
+#include <ctime>
+#include <cstdlib>
+#include <sys/wait.h>
+#include <fstream>
 
 using namespace std;
 
 Servidor::Servidor() {
     socketServidor = -1;
     puerto = 5000;
+    contadorPedidos = 0;
+    corriendo = true;
+    simuladorActivo = true;
 
     for (int i = 0; i < MAX_CAFETERIAS; i++) {
         for (int j = 0; j < MAX_PRODUCTOS_CAFETERIA; j++) {
             inventario[i][j] = 0;
         }
     }
+}
+
+Servidor::~Servidor() {
+    detener();
 }
 
 bool Servidor::iniciar() {
@@ -67,13 +79,23 @@ bool Servidor::iniciar() {
 
     cout << "Servidor escuchando en el puerto " << puerto << "..." << endl;
 
-    while (true) {
+    // El simulador de clientes se conecta a este mismo servidor por socket
+    // (127.0.0.1), asi que solo se arranca hasta que ya esta escuchando.
+    asegurarUsuariosSimulados();
+    iniciarSimuladorClientes();
+
+    while (corriendo.load()) {
         sockaddr_in direccionCliente;
         socklen_t tam = sizeof(direccionCliente);
 
         int socketCliente = accept(socketServidor, (sockaddr*)&direccionCliente, &tam);
 
         if (socketCliente == -1) {
+            // Si nos estamos apagando, el cierre de socketServidor desde
+            // detener() es justo lo que hace que accept() regrese -1 aqui.
+            if (!corriendo.load()) {
+                break;
+            }
             cout << "Error aceptando una conexion." << endl;
             continue;
         }
@@ -85,6 +107,7 @@ bool Servidor::iniciar() {
         hiloCliente.detach();
     }
 
+    cout << "Servidor: bucle de aceptacion de conexiones terminado." << endl;
     return true;
 }
 
@@ -841,5 +864,478 @@ string Servidor::procesarComando(const string& comando) {
         return "OK|" + idProducto + "|" + to_string(nuevoStock) + "|" + to_string(precio);
     }
 
+    // ---------------------------------------------------------------
+    // PEDIDO_CREAR|idCafeteria|usernameCliente|idProd1:cant1,idProd2:cant2,...
+    // Usada tanto por clientes reales como por el simulador de clientes.
+    // -> OK|folio|total
+    // ---------------------------------------------------------------
+    if (tipo == "PEDIDO_CREAR") {
+        if (campos.size() < 4) return "ERR|Formato invalido.";
+
+        string idCafeteria = campos[1];
+        string usernameCliente = campos[2];
+        string listaItems = campos[3];
+
+        if (numeroCafeteria(idCafeteria) == 0) {
+            return "ERR|Cafeteria invalida.";
+        }
+
+        if (usernameCliente.empty() || listaItems.empty()) {
+            return "ERR|Formato invalido.";
+        }
+
+        // Parsear "idProducto:cantidad,idProducto:cantidad,..."
+        vector<pair<string, int>> itemsSolicitados;
+        stringstream flujoItems(listaItems);
+        string item;
+
+        while (getline(flujoItems, item, ',')) {
+            size_t posDosPuntos = item.find(':');
+            if (posDosPuntos == string::npos) {
+                return "ERR|Formato invalido en los productos.";
+            }
+
+            string idProducto = item.substr(0, posDosPuntos);
+            int cantidad = 0;
+
+            try {
+                cantidad = stoi(item.substr(posDosPuntos + 1));
+            } catch (...) {
+                return "ERR|Cantidad invalida en los productos.";
+            }
+
+            if (cantidad <= 0) {
+                return "ERR|La cantidad debe ser mayor a cero.";
+            }
+
+            itemsSolicitados.push_back({idProducto, cantidad});
+        }
+
+        if (itemsSolicitados.empty()) {
+            return "ERR|El pedido no tiene productos.";
+        }
+
+        // Orden de bloqueo consistente con el resto del servidor: primero
+        // la base de datos (dbMutex); el inventario en memoria se toca
+        // solo de forma anidada, dentro de actualizarMatrizProducto().
+        // Mantener SIEMPRE este mismo orden evita deadlocks entre hilos.
+        lock_guard<mutex> guardDb(dbMutex);
+
+        vector<Producto> catalogo = db.obtenerInventario(idCafeteria);
+        vector<pair<Producto, int>> listaFinal;
+        float total = 0.0f;
+
+        for (const auto& solicitado : itemsSolicitados) {
+            const Producto* encontrado = nullptr;
+
+            for (const auto& producto : catalogo) {
+                if (producto.getIdProducto() == solicitado.first) {
+                    encontrado = &producto;
+                    break;
+                }
+            }
+
+            if (!encontrado) {
+                return "ERR|Producto no encontrado: " + solicitado.first;
+            }
+
+            if (solicitado.second > encontrado->getStock()) {
+                return "ERR|Stock insuficiente para " + encontrado->getNombreProducto() +
+                       " (quedan " + to_string(encontrado->getStock()) + ").";
+            }
+
+            listaFinal.push_back({*encontrado, solicitado.second});
+            total += encontrado->getPrecio() * solicitado.second;
+        }
+
+        // Descontar existencias (BD + matriz) de forma atomica: ya estamos
+        // dentro de dbMutex, asi que ningun otro hilo puede leer/escribir
+        // el mismo inventario al mismo tiempo (se evita la condicion de carrera).
+        for (const auto& par : listaFinal) {
+            int nuevoStock = par.first.getStock() - par.second;
+
+            if (!db.actualizarExistencia(par.first.getIdProducto(), nuevoStock)) {
+                return "ERR|No se pudo actualizar el inventario.";
+            }
+
+            actualizarMatrizProducto(par.first.getIdProducto(), nuevoStock);
+        }
+
+        contadorPedidos++;
+        long marcaTiempo = static_cast<long>(chrono::system_clock::now().time_since_epoch().count() % 100000000);
+        string folio = "PED-" + to_string(marcaTiempo) + "-" + to_string(contadorPedidos);
+
+        Pedido nuevoPedido(folio, usernameCliente, idCafeteria, total, listaFinal);
+        nuevoPedido.setEstado("Pendiente");
+
+        time_t ahora = time(nullptr);
+        char bufferFecha[32];
+        strftime(bufferFecha, sizeof(bufferFecha), "%Y-%m-%d %H:%M:%S", localtime(&ahora));
+        nuevoPedido.setFecha(bufferFecha);
+
+        if (!db.guardarPedido(nuevoPedido)) {
+            return "ERR|No se pudo guardar el pedido.";
+        }
+
+        return "OK|" + folio + "|" + to_string(total);
+    }
+
     return "ERR|Comando desconocido: " + tipo;
+}
+
+// =====================================================================
+// Apagado seguro (SIGINT / SIGTERM)
+// =====================================================================
+void Servidor::detener() {
+    // exchange(false) regresa el valor anterior: si ya estaba en false,
+    // alguien mas ya disparo el apagado y no hay que repetirlo.
+    if (!corriendo.exchange(false)) {
+        return;
+    }
+
+    cout << "\nApagado seguro solicitado: cerrando socket de escucha..." << endl;
+
+    if (socketServidor != -1) {
+        // shutdown() + close() desbloquean el accept() que este esperando
+        // conexiones nuevas en el hilo principal.
+        shutdown(socketServidor, SHUT_RDWR);
+        close(socketServidor);
+        socketServidor = -1;
+    }
+
+    cout << "Deteniendo hilos simuladores de clientes..." << endl;
+    simuladorActivo.store(false);
+
+    for (auto& hilo : hilosSimulador) {
+        if (hilo.joinable()) {
+            hilo.join();
+        }
+    }
+    hilosSimulador.clear();
+
+    db.desconectar();
+    cout << "Servidor detenido correctamente (sockets cerrados, hilos terminados, BD liberada)." << endl;
+}
+
+// =====================================================================
+// Simulador de clientes (SIGUSR2 lo enciende/apaga en caliente)
+// =====================================================================
+void Servidor::alternarSimulador() {
+    bool activo = simuladorActivo.load();
+    simuladorActivo.store(!activo);
+    cout << "[SIGUSR2] Simulador de clientes ahora esta "
+         << (!activo ? "ACTIVO" : "PAUSADO") << "." << endl;
+}
+
+void Servidor::asegurarUsuariosSimulados() {
+    static const vector<string> usernamesBot = {"bot_sim_1", "bot_sim_2", "bot_sim_3"};
+
+    lock_guard<mutex> guard(dbMutex);
+
+    for (const auto& username : usernamesBot) {
+        Cliente existente = db.obtenerUsuarioCliente(username);
+
+        if (existente.getUsername().empty()) {
+            Cliente bot("Cliente Simulado", username + "@alumno.ipn.mx", "simulado123",
+                        username, "Bot", "Simulador", "INVITADO");
+            db.guardarUsuarioCliente(bot);
+        }
+    }
+}
+
+void Servidor::iniciarSimuladorClientes() {
+    int numHilos = 3;
+
+    if (const char* envHilos = getenv("UPIIFOOD_SIM_HILOS")) {
+        try {
+            numHilos = max(0, stoi(envHilos));
+        } catch (...) {
+            numHilos = 3;
+        }
+    }
+
+    if (const char* envActivar = getenv("UPIIFOOD_SIM_ACTIVAR")) {
+        if (string(envActivar) == "0") {
+            numHilos = 0;
+        }
+    }
+
+    for (int i = 0; i < numHilos; i++) {
+        hilosSimulador.emplace_back(&Servidor::hiloSimuladorClientes, this, i + 1);
+    }
+
+    if (numHilos > 0) {
+        cout << "Simulador de clientes activo (" << numHilos << " hilo(s), pedido automatico cada 8-20s c/u)." << endl;
+    }
+}
+
+// Cada hilo simulador se comporta como un cliente independiente: abre su
+// propio socket TCP hacia el propio servidor (loopback), pide el
+// inventario de una cafeteria al azar y arma un pedido si hay stock.
+void Servidor::hiloSimuladorClientes(int idHilo) {
+    mt19937 generador(random_device{}() ^ static_cast<unsigned int>(idHilo * 7919));
+    uniform_int_distribution<int> distIntervalo(8, 20);
+
+    // Pequena espera inicial escalonada para que los hilos no arranquen
+    // todos en el mismo instante.
+    this_thread::sleep_for(chrono::seconds(idHilo * 2));
+
+    while (simuladorActivo.load() && corriendo.load()) {
+        int segundosEspera = distIntervalo(generador);
+
+        for (int s = 0; s < segundosEspera; s++) {
+            if (!simuladorActivo.load() || !corriendo.load()) {
+                break;
+            }
+            this_thread::sleep_for(chrono::seconds(1));
+        }
+
+        if (!simuladorActivo.load() || !corriendo.load()) {
+            break;
+        }
+
+        crearPedidoSimulado(idHilo, generador);
+    }
+
+    cout << "[Simulador #" << idHilo << "] Hilo terminado." << endl;
+}
+
+bool Servidor::crearPedidoSimulado(int idHilo, mt19937& generador) {
+    static const vector<string> usernamesBot = {"bot_sim_1", "bot_sim_2", "bot_sim_3"};
+
+    uniform_int_distribution<int> distCafeteria(1, MAX_CAFETERIAS);
+    uniform_int_distribution<int> distUsuario(0, static_cast<int>(usernamesBot.size()) - 1);
+
+    string idCafeteria = to_string(distCafeteria(generador));
+    string usernameBot = usernamesBot[distUsuario(generador)];
+
+    // Se conecta como lo haria un cliente real: socket TCP hacia 127.0.0.1.
+    int socketSimulado = socket(AF_INET, SOCK_STREAM, 0);
+    if (socketSimulado == -1) {
+        return false;
+    }
+
+    sockaddr_in direccion;
+    memset(&direccion, 0, sizeof(direccion));
+    direccion.sin_family = AF_INET;
+    direccion.sin_port = htons(puerto);
+    inet_pton(AF_INET, "127.0.0.1", &direccion.sin_addr);
+
+    if (connect(socketSimulado, (sockaddr*)&direccion, sizeof(direccion)) == -1) {
+        close(socketSimulado);
+        return false;
+    }
+
+    // Igual que Cafeteria::pedirLista(): primero llega "OK|N", y luego N
+    // mensajes mas por el MISMO socket, uno por cada linea de la lista.
+    string respuestaInventario = enviarComando(socketSimulado, "INVENTARIO|" + idCafeteria);
+    vector<string> encabezado = separarCampos(respuestaInventario);
+
+    if (encabezado.empty() || encabezado[0] != "OK" || encabezado.size() < 2) {
+        close(socketSimulado);
+        return false;
+    }
+
+    int cantidadProductos = 0;
+    try {
+        cantidadProductos = stoi(encabezado[1]);
+    } catch (...) {
+        close(socketSimulado);
+        return false;
+    }
+
+    vector<pair<string, int>> productosConStock; // idProducto, stock
+
+    for (int i = 0; i < cantidadProductos; i++) {
+        string linea;
+        if (!recibirMensaje(socketSimulado, linea)) {
+            close(socketSimulado);
+            return false;
+        }
+
+        vector<string> campos = separarCampos(linea);
+        if (campos.size() < 3) continue;
+
+        try {
+            int stock = stoi(campos[2]);
+            if (stock > 0) {
+                productosConStock.push_back({campos[0], stock});
+            }
+        } catch (...) {
+            continue;
+        }
+    }
+
+    if (productosConStock.empty()) {
+        close(socketSimulado);
+        return false;
+    }
+
+    uniform_int_distribution<int> distCantidadItems(1, min(3, static_cast<int>(productosConStock.size())));
+    int numItems = distCantidadItems(generador);
+    shuffle(productosConStock.begin(), productosConStock.end(), generador);
+
+    string listaItems;
+    for (int i = 0; i < numItems; i++) {
+        uniform_int_distribution<int> distCantidad(1, min(5, productosConStock[i].second));
+        int cantidad = distCantidad(generador);
+
+        if (!listaItems.empty()) listaItems += ",";
+        listaItems += productosConStock[i].first + ":" + to_string(cantidad);
+    }
+
+    string comando = "PEDIDO_CREAR|" + idCafeteria + "|" + usernameBot + "|" + listaItems;
+    string respuestaPedido = enviarComando(socketSimulado, comando);
+
+    close(socketSimulado);
+
+    cout << "[Simulador #" << idHilo << "] " << usernameBot << " -> Cafeteria " << idCafeteria
+         << " | " << comando << " => " << respuestaPedido << endl;
+
+    vector<string> campos = separarCampos(respuestaPedido);
+    return !campos.empty() && campos[0] == "OK";
+}
+
+// =====================================================================
+// Reporte de ventas via fork() + pipe() (SIGUSR1)
+//
+// El proceso PADRE junta los datos bajo dbMutex (la conexion SQLite no es
+// segura para compartirse entre procesos), y se los manda al HIJO por una
+// tuberia. El HIJO hace el trabajo pesado (formatear y escribir a disco)
+// sin bloquear al servidor, y regresa un resumen al padre por otra
+// tuberia. El padre espera al hijo con waitpid() para no dejar zombies.
+// =====================================================================
+bool Servidor::generarReporteVentas() {
+    string datosCrudos;
+
+    {
+        lock_guard<mutex> guard(dbMutex);
+
+        vector<Cafeteria> cafeterias = db.obtenerCafeterias();
+
+        for (const auto& cafeteria : cafeterias) {
+            vector<Pedido> pedidos = db.obtenerPedidosCafeteria(cafeteria.getIdCafeteria());
+
+            for (const auto& pedido : pedidos) {
+                datosCrudos += cafeteria.getIdCafeteria() + "|" + cafeteria.getNombreCafeteria() + "|" +
+                               pedido.getFolio() + "|" + pedido.getEstado() + "|" +
+                               to_string(pedido.getTotal()) + "\n";
+            }
+        }
+    }
+
+    int tuberiaEntrada[2]; // padre -> hijo (datos crudos)
+    int tuberiaSalida[2];  // hijo -> padre (resumen final)
+
+    if (pipe(tuberiaEntrada) == -1 || pipe(tuberiaSalida) == -1) {
+        cout << "[SIGUSR1] No se pudieron crear las tuberias para el reporte." << endl;
+        return false;
+    }
+
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        cout << "[SIGUSR1] No se pudo crear el proceso hijo (fork fallo)." << endl;
+        close(tuberiaEntrada[0]); close(tuberiaEntrada[1]);
+        close(tuberiaSalida[0]); close(tuberiaSalida[1]);
+        return false;
+    }
+
+    if (pid == 0) {
+        // ---------------- Proceso HIJO ----------------
+        // fork() duplica todos los descriptores de archivo del padre; el
+        // hijo no necesita el socket de escucha, asi que cierra su copia
+        // (esto NO afecta la conexion real que sigue usando el padre).
+        int socketHeredado = socketServidor.load();
+        if (socketHeredado != -1) {
+            close(socketHeredado);
+        }
+
+        close(tuberiaEntrada[1]);
+        close(tuberiaSalida[0]);
+
+        string recibido;
+        char buffer[4096];
+        ssize_t leidos;
+
+        while ((leidos = read(tuberiaEntrada[0], buffer, sizeof(buffer))) > 0) {
+            recibido.append(buffer, leidos);
+        }
+        close(tuberiaEntrada[0]);
+
+        // "Tarea pesada": acumular totales por cafeteria y armar el texto del reporte.
+        vector<string> lineas = separarCampos(recibido, '\n');
+        vector<pair<string, float>> totalesPorCafeteria; // idCafeteria|nombre -> total
+        int pedidosProcesados = 0;
+
+        for (const auto& linea : lineas) {
+            if (linea.empty()) continue;
+
+            vector<string> campos = separarCampos(linea);
+            if (campos.size() < 5) continue;
+
+            string clave = campos[0] + "|" + campos[1];
+            float total = 0.0f;
+            try { total = stof(campos[4]); } catch (...) { continue; }
+
+            bool encontrada = false;
+            for (auto& par : totalesPorCafeteria) {
+                if (par.first == clave) {
+                    par.second += total;
+                    encontrada = true;
+                    break;
+                }
+            }
+            if (!encontrada) totalesPorCafeteria.push_back({clave, total});
+
+            pedidosProcesados++;
+        }
+
+        time_t ahora = time(nullptr);
+        char bufferFecha[32];
+        strftime(bufferFecha, sizeof(bufferFecha), "%Y%m%d_%H%M%S", localtime(&ahora));
+
+        string nombreArchivo = string("reporte_ventas_") + bufferFecha + ".txt";
+        ofstream archivo(nombreArchivo);
+
+        if (archivo.is_open()) {
+            archivo << "Reporte de ventas UPIIFOOD - generado por el proceso hijo (PID " << getpid() << ")\n";
+            archivo << "Pedidos procesados: " << pedidosProcesados << "\n\n";
+
+            for (const auto& par : totalesPorCafeteria) {
+                archivo << par.first << " -> total vendido: $" << par.second << "\n";
+            }
+
+            archivo.close();
+        }
+
+        string mensajeFinal = "OK|" + to_string(pedidosProcesados) + "|" + nombreArchivo;
+        write(tuberiaSalida[1], mensajeFinal.c_str(), mensajeFinal.size());
+        close(tuberiaSalida[1]);
+
+        _exit(0); // el hijo termina aqui; nunca debe seguir ejecutando el resto del programa
+    }
+
+    // ---------------- Proceso PADRE ----------------
+    close(tuberiaEntrada[0]);
+    close(tuberiaSalida[1]);
+
+    write(tuberiaEntrada[1], datosCrudos.c_str(), datosCrudos.size());
+    close(tuberiaEntrada[1]); // EOF: asi el hijo deja de esperar mas datos
+
+    string resultado;
+    char buffer[256];
+    ssize_t leidos;
+
+    while ((leidos = read(tuberiaSalida[0], buffer, sizeof(buffer))) > 0) {
+        resultado.append(buffer, leidos);
+    }
+    close(tuberiaSalida[0]);
+
+    int estado = 0;
+    waitpid(pid, &estado, 0); // evita procesos zombie
+
+    cout << "[SIGUSR1] Reporte de ventas generado por el proceso hijo (PID " << pid << "): " << resultado << endl;
+
+    return true;
 }
