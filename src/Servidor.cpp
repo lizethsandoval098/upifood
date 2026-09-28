@@ -867,7 +867,7 @@ string Servidor::procesarComando(const string& comando) {
     // ---------------------------------------------------------------
     // PEDIDO_CREAR|idCafeteria|usernameCliente|idProd1:cant1,idProd2:cant2,...
     // Usada tanto por clientes reales como por el simulador de clientes.
-    // -> OK|folio|total
+    // -> OK|folio|total|idCafeteria (el idCafeteria EXACTO, ver mas abajo)
     // ---------------------------------------------------------------
     if (tipo == "PEDIDO_CREAR") {
         if (campos.size() < 4) return "ERR|Formato invalido.";
@@ -876,7 +876,9 @@ string Servidor::procesarComando(const string& comando) {
         string usernameCliente = campos[2];
         string listaItems = campos[3];
 
-        if (numeroCafeteria(idCafeteria) == 0) {
+        int numeroSolicitado = numeroCafeteria(idCafeteria);
+
+        if (numeroSolicitado == 0) {
             return "ERR|Cafeteria invalida.";
         }
 
@@ -921,7 +923,27 @@ string Servidor::procesarComando(const string& comando) {
         // Mantener SIEMPRE este mismo orden evita deadlocks entre hilos.
         lock_guard<mutex> guardDb(dbMutex);
 
-        vector<Producto> catalogo = db.obtenerInventario(idCafeteria);
+        // El idCafeteria que manda el cliente (ej. "1") puede no ser el
+        // mismo formato exacto que esta guardado en la tabla Cafeterias
+        // (ej. "C-01"). PEDIDOS_CAFETERIA/CAMBIAR_ESTADO/PEDIDO_DETALLE
+        // comparan el idCafeteria del pedido con un "=" exacto (sin
+        // normalizar), asi que hay que guardar el pedido con el idCafeteria
+        // EXACTO tal como esta en la tabla; si no, el pedido se crea pero
+        // la cafeteria jamas lo encuentra al pedir su lista de pedidos.
+        string idCafeteriaCanonico;
+
+        for (const auto& cafeteriaExistente : db.obtenerCafeterias()) {
+            if (numeroCafeteria(cafeteriaExistente.getIdCafeteria()) == numeroSolicitado) {
+                idCafeteriaCanonico = cafeteriaExistente.getIdCafeteria();
+                break;
+            }
+        }
+
+        if (idCafeteriaCanonico.empty()) {
+            return "ERR|Cafeteria invalida.";
+        }
+
+        vector<Producto> catalogo = db.obtenerInventario(idCafeteriaCanonico);
         vector<pair<Producto, int>> listaFinal;
         float total = 0.0f;
 
@@ -965,7 +987,7 @@ string Servidor::procesarComando(const string& comando) {
         long marcaTiempo = static_cast<long>(chrono::system_clock::now().time_since_epoch().count() % 100000000);
         string folio = "PED-" + to_string(marcaTiempo) + "-" + to_string(contadorPedidos);
 
-        Pedido nuevoPedido(folio, usernameCliente, idCafeteria, total, listaFinal);
+        Pedido nuevoPedido(folio, usernameCliente, idCafeteriaCanonico, total, listaFinal);
         nuevoPedido.setEstado("Pendiente");
 
         time_t ahora = time(nullptr);
@@ -977,7 +999,7 @@ string Servidor::procesarComando(const string& comando) {
             return "ERR|No se pudo guardar el pedido.";
         }
 
-        return "OK|" + folio + "|" + to_string(total);
+        return "OK|" + folio + "|" + to_string(total) + "|" + idCafeteriaCanonico;
     }
 
     return "ERR|Comando desconocido: " + tipo;
@@ -1187,13 +1209,38 @@ bool Servidor::crearPedidoSimulado(int idHilo, mt19937& generador) {
     string comando = "PEDIDO_CREAR|" + idCafeteria + "|" + usernameBot + "|" + listaItems;
     string respuestaPedido = enviarComando(socketSimulado, comando);
 
-    close(socketSimulado);
-
     cout << "[Simulador #" << idHilo << "] " << usernameBot << " -> Cafeteria " << idCafeteria
          << " | " << comando << " => " << respuestaPedido << endl;
 
     vector<string> campos = separarCampos(respuestaPedido);
-    return !campos.empty() && campos[0] == "OK";
+    bool creado = !campos.empty() && campos[0] == "OK";
+
+    // El pedido queda "Pendiente" (se ve llegar en la pestana Pedidos de la
+    // cafeteria). Aqui simulamos que el bot lo recoge poco despues,
+    // avanzandolo por el MISMO flujo que usaria la cafeteria (Preparando ->
+    // Listo -> Entregado); asi tambien cuenta en la ganancia del turno de
+    // Caja, que solo suma pedidos ya "Entregado".
+    if (creado && campos.size() >= 4) {
+        string folio = campos[1];
+        string idCafeteriaCanonico = campos[3]; // idCafeteria EXACTO como esta en la BD
+
+        vector<string> estados = {"Preparando", "Listo", "Entregado"};
+        uniform_int_distribution<int> distEspera(2, 6);
+
+        for (const string& siguienteEstado : estados) {
+            if (!simuladorActivo.load() || !corriendo.load()) break;
+
+            this_thread::sleep_for(chrono::seconds(distEspera(generador)));
+
+            string cambio = "CAMBIAR_ESTADO|" + idCafeteriaCanonico + "|" + folio + "|" + siguienteEstado;
+            string respuestaCambio = enviarComando(socketSimulado, cambio);
+
+            cout << "[Simulador #" << idHilo << "] " << cambio << " => " << respuestaCambio << endl;
+        }
+    }
+
+    close(socketSimulado);
+    return creado;
 }
 
 // =====================================================================
