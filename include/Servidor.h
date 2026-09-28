@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include <thread>
+#include <atomic>
+#include <random>
 
 #include "BaseDatos.h"
 
@@ -12,7 +15,7 @@ using namespace std;
 class Servidor {
 
 private:
-    int socketServidor;
+    atomic<int> socketServidor;
     int puerto;
 
     // Una sola conexion a SQLite, compartida por los hilos del servidor.
@@ -32,6 +35,18 @@ private:
     int inventario[MAX_CAFETERIAS][MAX_PRODUCTOS_CAFETERIA];
     mutex mutexInventario;
 
+    // Contador de folios de pedidos. Solo se toca dentro de dbMutex
+    // (misma seccion critica donde se genera e inserta el pedido), por
+    // eso no necesita su propio mutex.
+    long contadorPedidos;
+
+    // ---- Control de apagado seguro (SIGINT/SIGTERM) ----
+    atomic<bool> corriendo;
+
+    // ---- Simulador de clientes (hilos + sockets hacia el propio servidor) ----
+    atomic<bool> simuladorActivo;
+    vector<thread> hilosSimulador;
+
     void atenderCliente(int socketCliente);
     string procesarComando(const string& comando);
 
@@ -43,10 +58,31 @@ private:
     void marcarUsuarioFueraDeLinea(const string& username);
     string obtenerUsuariosEnLinea();
 
+    // ---- Simulador de clientes ----
+    void asegurarUsuariosSimulados();
+    void iniciarSimuladorClientes();
+    void hiloSimuladorClientes(int idHilo);
+    bool crearPedidoSimulado(int idHilo, mt19937& generador);
+
 public:
     Servidor();
+    ~Servidor();
 
     bool iniciar();
+
+    // Apagado seguro: deja de aceptar conexiones, detiene los hilos
+    // simuladores y libera la base de datos. Pensado para llamarse desde
+    // un manejador de SIGINT/SIGTERM (indirectamente, via un hilo monitor).
+    void detener();
+
+    // Enciende/apaga el simulador de clientes en caliente (pensado para
+    // invocarse al recibir SIGUSR2).
+    void alternarSimulador();
+
+    // Genera un reporte de ventas usando un proceso hijo (fork + pipe)
+    // para aislar el trabajo pesado de formateo/escritura a disco.
+    // Pensado para invocarse al recibir SIGUSR1.
+    bool generarReporteVentas();
 };
 
 #endif
