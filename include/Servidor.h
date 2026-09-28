@@ -32,7 +32,7 @@ private:
     mutex mutexInventario;
 
     void atenderCliente(int socketCliente);
-    string procesarComando(const string& comando);
+    string procesarComando(const string& comando, const string& idCafeteriaSesion);
 
     void cargarMatrizInventario();
     bool actualizarMatrizProducto(const string& idProducto, int stock);

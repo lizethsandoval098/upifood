@@ -25,8 +25,18 @@ struct VentaCaja {
 // cambia a traves del SERVIDOR (por el socket), igual que Administrador.
 class Cafeteria : public Usuario {
 	private:
+		struct CambioInventario {
+			char accion; // A = alta, M = modificar, E = eliminar
+			string idProducto;
+			string nombreProducto;
+			int stock;
+			float precio;
+		};
+
 		string idCafeteria;
 		vector<Producto> inventario;
+		vector<CambioInventario> cambiosInventarioPendientes;
+		size_t siguienteTemporal;
 		vector<Pedido> listaPedidos;
 
 		// para la barra de "Atendiendo cajas..." (ventas directas sin pedido/QR)
@@ -82,6 +92,11 @@ class Cafeteria : public Usuario {
 
 		// ---- Acciones (todas pasan por el servidor; false = revisar getUltimoError) ----
 		bool restockProducto(const string& idProducto, int cantidad);
+		bool agregarProducto(const string& nombre, int stock, float precio);
+		bool modificarProducto(const string& idProducto, const string& nombre, int stock, float precio);
+		bool eliminarProducto(const string& idProducto);
+		bool sincronizarCambiosInventario();
+		size_t cantidadCambiosInventarioPendientes() const;
 		bool cambiarEstadoPedido(const string& folio, const string& nuevoEstado);
 		bool elaborarPedido(const string& folio);   // Pendiente  -> Preparando
 		bool marcarListo(const string& folio);      // Preparando -> Listo

@@ -55,6 +55,11 @@ class BaseDatos{
 
 		// Productos
 		bool guardarProducto(const Producto& producto);
+		bool agregarProductoAutomatico(const string& idCafeteria, const string& nombre,
+		                               int stock, float precio, string& idAsignado);
+		bool modificarProducto(const string& idProducto, const string& nombre,
+		                        int stock, float precio);
+		bool eliminarProducto(const string& idProducto);
 		vector<Producto> obtenerInventario(const string& idCafeteria);
 		bool actualizarExistencia(const string& idProducto, int nuevoStock);
 

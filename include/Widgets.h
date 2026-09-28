@@ -55,6 +55,7 @@ public:
     void recibirCaracter(sf::Uint32 unicode);
 
     const std::string& getContenido() const;
+    void setContenido(const std::string& texto);
     void limpiar();
 
     void dibujar(Ventana& ventana);
