@@ -37,6 +37,8 @@ class Cliente : public Usuario {
 
 		~Cliente();
 
+		void setIpServidor(const string& ip);
+
 		bool conectar();
 
 		string getApellidoPaterno() const;
