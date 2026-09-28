@@ -9,6 +9,7 @@ export default function OrderSection({
   guestMode = false,
   onGuestConfirmOrder = () => {},
   modal = false,
+  paymentMethod = null,
 }) {
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const [paymentForm, setPaymentForm] = useState({
@@ -18,7 +19,8 @@ export default function OrderSection({
     cvv: '',
     postal: '',
   });
-  const [cvvError, setCvvError] = useState('');
+  const [paymentError, setPaymentError] = useState('');
+  const [guestPaymentError, setGuestPaymentError] = useState('');
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -38,14 +40,13 @@ export default function OrderSection({
 
     if (name === 'cvv') {
       nextValue = value.replace(/\D/g, '').slice(0, 3);
-      if (cvvError) {
-        setCvvError(nextValue.length === 3 ? '' : 'El CVV debe tener exactamente 3 dígitos.');
-      }
     }
 
     if (name === 'postal') {
       nextValue = value.replace(/\D/g, '').slice(0, 5);
     }
+
+    if (paymentError) setPaymentError('');
 
     setPaymentForm((current) => ({
       ...current,
@@ -55,20 +56,64 @@ export default function OrderSection({
 
   const handleProceedToPayment = () => {
     if (!items.length) return;
-    if (!/^\d{3}$/.test(paymentForm.cvv)) {
-      setCvvError('El CVV debe tener exactamente 3 dígitos.');
+
+    if (!paymentForm.holder.trim()) {
+      setPaymentError('Ingresa el nombre que aparece en la tarjeta.');
       return;
     }
 
-    setCvvError('');
+    const cardDigits = paymentForm.cardNumber.replace(/\D/g, '');
+    if (!/^\d{16}$/.test(cardDigits)) {
+      setPaymentError('El número de tarjeta debe tener 16 dígitos.');
+      return;
+    }
+
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(paymentForm.expiry)) {
+      setPaymentError('Ingresa una fecha válida con formato MM/AA.');
+      return;
+    }
+
+    if (!/^\d{3}$/.test(paymentForm.cvv)) {
+      setPaymentError('El CVV debe tener exactamente 3 dígitos.');
+      return;
+    }
+
+    setPaymentError('');
 
     onProceedToPayment({
-      holder: paymentForm.holder.trim() || 'Cliente',
-      cardNumber: paymentForm.cardNumber,
+      holder: paymentForm.holder.trim(),
+      last4: cardDigits.slice(-4),
       expiry: paymentForm.expiry,
-      cvv: paymentForm.cvv,
-      postal: paymentForm.postal,
     });
+  };
+
+  const handleGuestPaymentSubmit = (event) => {
+    event.preventDefault();
+    if (!items.length) return;
+
+    if (!paymentForm.holder.trim()) {
+      setGuestPaymentError('Ingresa el nombre que aparece en la tarjeta.');
+      return;
+    }
+
+    if (!/^\d{16}$/.test(paymentForm.cardNumber.replace(/\s/g, ''))) {
+      setGuestPaymentError('El número de tarjeta debe tener 16 dígitos.');
+      return;
+    }
+
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(paymentForm.expiry)) {
+      setGuestPaymentError('Ingresa una fecha válida con formato MM/AA.');
+      return;
+    }
+
+    if (!/^\d{3}$/.test(paymentForm.cvv)) {
+      setGuestPaymentError('El CVV debe tener exactamente 3 dígitos.');
+      return;
+    }
+
+    setGuestPaymentError('');
+    // Los datos de tarjeta solo se validan en este formulario y nunca se envían ni persisten.
+    onGuestConfirmOrder();
   };
 
   return (
@@ -310,6 +355,23 @@ export default function OrderSection({
           font-weight: 600;
         }
 
+        .saved-payment-card {
+          display: grid;
+          gap: 7px;
+          padding: 16px;
+          border: 1px solid #e7c9a3;
+          border-radius: 14px;
+          background: linear-gradient(135deg, #fff9f2 0%, #f5e8d8 100%);
+          color: #4a3020;
+        }
+
+        .saved-payment-number {
+          color: #3c2a21;
+          font-size: 1.15rem;
+          font-weight: 800;
+          letter-spacing: 1px;
+        }
+
         .payment-grid {
           display: grid;
           grid-template-columns: 1.7fr 0.8fr 0.6fr;
@@ -440,11 +502,87 @@ export default function OrderSection({
               {guestMode ? (
                 <>
                   <div className="payment-badge">Pedido como invitado</div>
-                  <p className="payment-small-note">Puedes confirmar tu pedido sin registrarte ni proporcionar datos personales.</p>
+                  <p className="payment-small-note">Ingresa los datos de tu tarjeta para validar el pago simulado de este pedido. No se guardarán ni se asociarán a una cuenta.</p>
+                  <form className="payment-form" onSubmit={handleGuestPaymentSubmit}>
+                    <input
+                      className="payment-input"
+                      type="text"
+                      name="holder"
+                      placeholder="Nombre en la tarjeta"
+                      autoComplete="cc-name"
+                      value={paymentForm.holder}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    <input
+                      className="payment-input"
+                      type="text"
+                      name="cardNumber"
+                      placeholder="Número de tarjeta"
+                      inputMode="numeric"
+                      autoComplete="cc-number"
+                      maxLength={19}
+                      value={paymentForm.cardNumber}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    <div className="payment-grid">
+                      <input
+                        className="payment-input"
+                        type="text"
+                        name="expiry"
+                        placeholder="MM/AA"
+                        inputMode="numeric"
+                        autoComplete="cc-exp"
+                        maxLength={5}
+                        pattern="(0[1-9]|1[0-2])/[0-9]{2}"
+                        value={paymentForm.expiry}
+                        onChange={handleInputChange}
+                        required
+                      />
+                      <input
+                        className="payment-input"
+                        type="text"
+                        name="cvv"
+                        placeholder="CVV"
+                        inputMode="numeric"
+                        autoComplete="cc-csc"
+                        pattern="[0-9]{3}"
+                        maxLength={3}
+                        value={paymentForm.cvv}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    {guestPaymentError ? <p className="payment-error" role="alert">{guestPaymentError}</p> : null}
+                    <button
+                      type="submit"
+                      className="payment-button"
+                      disabled={!items.length}
+                      style={{ opacity: items.length ? 1 : 0.55, cursor: items.length ? 'pointer' : 'not-allowed' }}
+                    >
+                      Confirmar pedido
+                    </button>
+                  </form>
+                </>
+              ) : paymentMethod ? (
+                <>
+                  <div className="payment-badge">Método de pago guardado</div>
+                  <div className="saved-payment-card">
+                    <strong>{paymentMethod.holder}</strong>
+                    <span className="saved-payment-number">•••• {paymentMethod.last4}</span>
+                    <span>Expira {paymentMethod.expiry}</span>
+                  </div>
+                  <p className="payment-small-note">Confirma tu pedido con tu método principal guardado.</p>
                   <button
                     type="button"
                     className="payment-button"
-                    onClick={onGuestConfirmOrder}
+                    onClick={() => onProceedToPayment({
+                      holder: paymentMethod.holder,
+                      last4: paymentMethod.last4,
+                      expiry: paymentMethod.expiry,
+                      savedPaymentMethod: true,
+                    })}
                     disabled={!items.length}
                     style={{ opacity: items.length ? 1 : 0.55, cursor: items.length ? 'pointer' : 'not-allowed' }}
                   >
@@ -492,8 +630,8 @@ export default function OrderSection({
                     maxLength={3}
                     value={paymentForm.cvv}
                     onChange={handleInputChange}
-                    aria-invalid={Boolean(cvvError)}
-                    aria-describedby={cvvError ? 'payment-cvv-error' : undefined}
+                    aria-invalid={Boolean(paymentError)}
+                    aria-describedby={paymentError ? 'payment-form-error' : undefined}
                   />
                   <input
                     className="payment-input"
@@ -505,7 +643,7 @@ export default function OrderSection({
                     onChange={handleInputChange}
                   />
                 </div>
-                {cvvError ? <p className="payment-error" id="payment-cvv-error" role="alert">{cvvError}</p> : null}
+                {paymentError ? <p className="payment-error" id="payment-form-error" role="alert">{paymentError}</p> : null}
                 <button type="button" className="payment-button" onClick={handleProceedToPayment}>
                   Proceder al pago
                 </button>

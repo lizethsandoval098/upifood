@@ -16,7 +16,7 @@ const schoolNames = {
   otra: 'Otra',
 };
 
-export default function ConfiguracionModal({ open, userData, onClose }) {
+export default function ConfiguracionModal({ open, userData, onClose, onRemovePaymentMethod = () => {} }) {
   if (!open) return null;
 
   const profile = {
@@ -48,7 +48,10 @@ export default function ConfiguracionModal({ open, userData, onClose }) {
         onClick={(event) => event.stopPropagation()}
         style={{
           width: 'min(560px, 100%)',
-          overflow: 'hidden',
+          maxHeight: 'calc(100vh - 40px)',
+          overflowX: 'hidden',
+          overflowY: 'auto',
+          overscrollBehavior: 'contain',
           border: '1px solid rgba(93, 67, 49, 0.14)',
           borderRadius: '24px',
           background: '#FDF8F2',
@@ -78,6 +81,31 @@ export default function ConfiguracionModal({ open, userData, onClose }) {
               </div>
             </div>
           ))}
+
+          <section style={{ display: 'grid', gap: '12px', padding: '15px', border: '1px solid #ead8c2', borderRadius: '14px', background: '#fffaf4' }}>
+            <div>
+              <h3 style={{ margin: '0 0 5px', color: '#3c2a21', fontSize: '1.05rem' }}>Método de pago</h3>
+              <p style={{ margin: 0, color: '#7a5b45', fontSize: '0.9rem' }}>Tarjeta principal</p>
+            </div>
+            {userData?.paymentMethod ? (
+              <>
+                <div style={{ display: 'grid', gap: '5px', padding: '12px', border: '1px solid #ead8c2', borderRadius: '11px', background: '#fffdfb', color: '#3c2a21' }}>
+                  <strong>{userData.paymentMethod.holder}</strong>
+                  <span>•••• {userData.paymentMethod.last4}</span>
+                  <span style={{ color: '#7a5b45', fontSize: '0.9rem' }}>Expira {userData.paymentMethod.expiry}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={onRemovePaymentMethod}
+                  style={{ justifySelf: 'start', border: '1px solid #d9a69b', borderRadius: '10px', padding: '10px 13px', background: '#fff0ec', color: '#8d4638', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Eliminar método de pago
+                </button>
+              </>
+            ) : (
+              <p style={{ margin: 0, color: '#7a5b45', fontSize: '0.92rem' }}>No tienes un método de pago guardado.</p>
+            )}
+          </section>
         </div>
 
         <footer style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 26px 24px' }}>

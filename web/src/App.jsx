@@ -83,8 +83,10 @@ function App() {
 
   const handleProceedToPayment = (paymentInfo) => {
     setReceiptData({
-      ...paymentInfo,
-      last4: (paymentInfo.cardNumber || '').replace(/\D/g, '').slice(-4),
+      holder: paymentInfo.holder,
+      last4: paymentInfo.last4 || (paymentInfo.cardNumber || '').replace(/\D/g, '').slice(-4),
+      expiry: paymentInfo.expiry,
+      savedPaymentMethod: Boolean(paymentInfo.savedPaymentMethod),
     });
     setIsCartOpen(false);
     setIsPaymentConfirmed(false);
@@ -98,6 +100,24 @@ function App() {
 
   const handleConfirmPayment = () => {
     if (!cartItems.length || isSubmittingOrder) return;
+
+    if (isLoggedIn && !userData?.paymentMethod && receiptData?.last4) {
+      const updatedUser = {
+        ...(userData || {}),
+        paymentMethod: {
+          holder: receiptData.holder,
+          last4: receiptData.last4,
+          expiry: receiptData.expiry,
+        },
+      };
+
+      setUserData(updatedUser);
+      try {
+        localStorage.setItem('upifood_user', JSON.stringify(updatedUser));
+      } catch {
+        // El método solo se conserva en el estado de esta sesión si el almacenamiento no está disponible.
+      }
+    }
 
     const now = new Date();
     const createdPedido = {
@@ -167,6 +187,18 @@ function App() {
 
   const handleOpenOrders = () => {
     setIsOrdersModalOpen(true);
+  };
+
+  const handleRemovePaymentMethod = () => {
+    if (!userData) return;
+
+    const updatedUser = { ...userData, paymentMethod: null };
+    setUserData(updatedUser);
+    try {
+      localStorage.setItem('upifood_user', JSON.stringify(updatedUser));
+    } catch {
+      // La eliminación también se refleja en el estado actual si el almacenamiento no está disponible.
+    }
   };
 
   useEffect(() => {
@@ -430,6 +462,7 @@ function App() {
                   onDecreaseItem={handleDecreaseItem}
                   onIncreaseItem={handleIncreaseItem}
                   onProceedToPayment={handleProceedToPayment}
+                  paymentMethod={isLoggedIn ? userData?.paymentMethod : null}
                   guestMode={isGuest}
                   onGuestConfirmOrder={handleConfirmPayment}
                   modal
@@ -493,6 +526,12 @@ function App() {
                   <span>Tarjeta</span>
                   <strong>•••• {receiptData.last4}</strong>
                 </div>
+                {receiptData.expiry ? (
+                  <div className="receipt-detail">
+                    <span>Expira</span>
+                    <strong>{receiptData.expiry}</strong>
+                  </div>
+                ) : null}
                 <div className="receipt-total">
                   <span>Total a pagar</span>
                   <span>${totalToPay}</span>
@@ -522,6 +561,7 @@ function App() {
       <ConfiguracionModal
         open={isSettingsOpen}
         userData={userData}
+        onRemovePaymentMethod={handleRemovePaymentMethod}
         onClose={() => setIsSettingsOpen(false)}
       />
 
