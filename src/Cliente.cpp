@@ -333,3 +333,7 @@ string Cliente::asignarUsername(const string& correo) {
 
     return correo.substr(0, posArroba);
 }
+
+void Cliente::setIpServidor(const string& ip) {
+    ipServidor = ip;
+}

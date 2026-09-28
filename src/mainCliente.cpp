@@ -1,6 +1,8 @@
 #include "Cliente.h"
 #include "Ventana.h"
 
+#include "Config.h"
+
 #include <iostream>
 #include <limits>
 
@@ -11,8 +13,9 @@ void limpiarEntrada() {
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     Cliente cliente;
+    cliente.setIpServidor(resolverIpServidor(argc, argv));
 
     if (!cliente.conectar()) {
         cout << "No se pudo conectar al servidor. Revisa la IP/Tailscale y que 'servidor' este corriendo." << endl;

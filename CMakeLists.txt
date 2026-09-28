@@ -28,8 +28,13 @@ add_library(
 	src/Pago.cpp
 	src/database.cpp
 	src/Ventana.cpp
+	src/Widgets.cpp
 	src/Protocolo.cpp
 )
+
+# Ruta ABSOLUTA de la carpeta recursos/ (asi la fuente se encuentra sin
+# importar desde que carpeta ejecutes el programa).
+target_compile_definitions(modelo PRIVATE RECURSOS_DIR="${CMAKE_SOURCE_DIR}/recursos")
 
 target_link_libraries(
 	modelo

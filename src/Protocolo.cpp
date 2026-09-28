@@ -1,6 +1,13 @@
 #include "Protocolo.h"
 
 #include <sys/socket.h>
+
+// Sin esto, escribir en un socket que el otro lado ya cerro manda la senal
+// SIGPIPE y el sistema MATA el programa sin avisar. Con MSG_NOSIGNAL, send()
+// solo regresa error y nosotros lo manejamos.
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
 #include <sstream>
 #include <iostream>
 
@@ -13,7 +20,7 @@ bool enviarMensaje(int socket, const string& mensaje) {
 
 	while (totalEnviado < aEnviar.size()) {
 		ssize_t enviado = send(socket, aEnviar.c_str() + totalEnviado,
-		                        aEnviar.size() - totalEnviado, 0);
+		                        aEnviar.size() - totalEnviado, MSG_NOSIGNAL);
 
 		if (enviado <= 0) {
 			return false; // el socket se cerro o hubo error
