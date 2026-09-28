@@ -5,6 +5,8 @@
 #include "Usuario.h"
 #include "Producto.h"
 #include "Pedido.h"
+#include "Pago.h"
+#include "Tarjeta.h"
 
 #include <iostream>
 #include <thread>
@@ -804,6 +806,115 @@ string Servidor::procesarComando(const string& comando) {
     }
 
     // ---------------------------------------------------------------
+    // PAGAR_PEDIDO|folio|numeroTarjeta|cvv
+    // Procesa el pago de un pedido con una tarjeta REGISTRADA y deja el
+    // registro completo en la tabla Pagos (aprobado o rechazado) para
+    // auditoria. El monto SIEMPRE es el total del pedido guardado en la BD.
+    // -> OK|folio|monto|referencia|fecha|tarjetaEnmascarada
+    // -> ERR|Pago rechazado: motivo
+    // ---------------------------------------------------------------
+    if (tipo == "PAGAR_PEDIDO") {
+        if (campos.size() < 4) return "ERR|Formato invalido.";
+
+        string folio = campos[1];
+        string numeroTarjeta = campos[2];
+        string cvv = campos[3];
+
+        lock_guard<mutex> guard(dbMutex);
+
+        Pedido pedido = db.obtenerPedido_Folio(folio);
+
+        if (pedido.getFolio().empty()) {
+            return "ERR|Pedido no encontrado.";
+        }
+
+        if (db.pedidoTienePagoAprobado(folio)) {
+            return "ERR|Ese pedido ya fue pagado.";
+        }
+
+        Pago pago;
+        pago.setFolioPedido(folio);
+        pago.setMonto(pedido.getTotal());
+        pago.setUsernameCliente(pedido.getUsernameCliente());
+        pago.setIdCafeteria(pedido.getIdCafeteria());
+        pago.setReferencia("PAG-" + folio);
+
+        time_t ahoraPago = time(nullptr);
+        char bufferFechaPago[32];
+        strftime(bufferFechaPago, sizeof(bufferFechaPago), "%Y-%m-%d %H:%M:%S", localtime(&ahoraPago));
+        pago.setFechaPago(bufferFechaPago);
+
+        Tarjeta tarjeta;
+        string duenoTarjeta;
+        string motivoRechazo;
+
+        if (!db.obtenerTarjetaPorNumero(numeroTarjeta, tarjeta, duenoTarjeta)) {
+            motivoRechazo = "Tarjeta no registrada.";
+        } else {
+            pago.asignarTarjeta(tarjeta);
+
+            if (duenoTarjeta != pedido.getUsernameCliente()) {
+                motivoRechazo = "La tarjeta no pertenece al cliente del pedido.";
+            } else if (!Tarjeta::luhnValido(tarjeta.getNumeroTarjeta())) {
+                motivoRechazo = "Numero de tarjeta invalido.";
+            } else if (tarjeta.getCVV() != cvv) {
+                motivoRechazo = "CVV incorrecto.";
+            } else if (tarjeta.estaVencida()) {
+                motivoRechazo = "Tarjeta vencida.";
+            }
+        }
+
+        pago.setAprobado(motivoRechazo.empty());
+        pago.setMotivo(motivoRechazo);
+
+        if (!db.guardarPago(pago)) {
+            return "ERR|No se pudo registrar el pago.";
+        }
+
+        cout << "[PAGO] " << pago.getReferencia() << " | " << pedido.getUsernameCliente()
+             << " | " << (tarjeta.getNumeroTarjeta().empty() ? string("(sin tarjeta)") : tarjeta.enmascarada())
+             << " | $" << pedido.getTotal() << " | "
+             << (pago.getAprobado() ? "APROBADO" : "RECHAZADO: " + motivoRechazo) << endl;
+
+        if (!pago.getAprobado()) {
+            return "ERR|Pago rechazado: " + motivoRechazo;
+        }
+
+        char bufferMonto[32];
+        snprintf(bufferMonto, sizeof(bufferMonto), "%.2f", pedido.getTotal());
+
+        return "OK|" + folio + "|" + bufferMonto + "|" + pago.getReferencia() + "|" +
+               pago.getFechaPago() + "|" + tarjeta.enmascarada();
+    }
+
+    // ---------------------------------------------------------------
+    // PAGO_CONSULTAR|folio   (consulta / auditoria de un pago)
+    // -> OK|folio|monto|aprobado(1/0)|tarjetaEnmascarada|titular|fecha|referencia|motivo|cliente|cafeteria
+    // Nunca se manda el numero completo ni el CVV.
+    // ---------------------------------------------------------------
+    if (tipo == "PAGO_CONSULTAR") {
+        if (campos.size() < 2) return "ERR|Formato invalido.";
+
+        lock_guard<mutex> guard(dbMutex);
+
+        Pago pago = db.obtenerPago(campos[1]);
+
+        if (pago.getFolioPedido().empty()) {
+            return "ERR|No hay pago registrado para ese pedido.";
+        }
+
+        char bufferMonto[32];
+        snprintf(bufferMonto, sizeof(bufferMonto), "%.2f", pago.getMonto());
+
+        return "OK|" + pago.getFolioPedido() + "|" + bufferMonto + "|" +
+               (pago.getAprobado() ? "1" : "0") + "|" +
+               (pago.getTarjeta().getNumeroTarjeta().empty() ? string("-") : pago.getTarjeta().enmascarada()) + "|" +
+               pago.getTarjeta().getNombrePropietario() + "|" + pago.getFechaPago() + "|" +
+               pago.getReferencia() + "|" + pago.getMotivo() + "|" +
+               pago.getUsernameCliente() + "|" + pago.getIdCafeteria();
+    }
+
+    // ---------------------------------------------------------------
     // CIERRE_DIA|idCafeteria|ventasDirectas
     // Corte de caja: marca como Cerrados los pedidos Entregados y Cancelados
     // de la cafeteria (los activos pasan al siguiente turno) y guarda el corte.
@@ -1099,12 +1210,83 @@ void Servidor::alternarSimulador() {
          << (!activo ? "ACTIVO" : "PAUSADO") << "." << endl;
 }
 
-void Servidor::asegurarUsuariosSimulados() {
-    static const vector<string> usernamesBot = {"bot_sim_1", "bot_sim_2", "bot_sim_3"};
+// Bots del simulador: bot_sim_1 ... bot_sim_N (por defecto 3; se cambia con
+// la variable de entorno UPIIFOOD_SIM_BOTS, entre 1 y 50).
+static vector<string> nombresBots() {
+    int cantidad = 3;
 
+    if (const char* envBots = getenv("UPIIFOOD_SIM_BOTS")) {
+        try {
+            cantidad = max(1, min(50, stoi(envBots)));
+        } catch (...) {
+            cantidad = 3;
+        }
+    }
+
+    vector<string> nombres;
+
+    for (int i = 1; i <= cantidad; i++) {
+        nombres.push_back("bot_sim_" + to_string(i));
+    }
+
+    return nombres;
+}
+
+// Titular (simulado) que aparece en la tarjeta de cada bot.
+static string titularSimulado(const string& username) {
+    static const vector<string> nombres = {
+        "MARIA LOPEZ SIM", "JORGE RAMIREZ SIM", "LUCIA TORRES SIM", "DIEGO HERNANDEZ SIM",
+        "SOFIA MENDOZA SIM", "ANDRES CASTRO SIM", "VALERIA ORTEGA SIM", "RICARDO SILVA SIM"
+    };
+
+    size_t pos = username.find_last_of('_');
+    int numero = 0;
+
+    if (pos != string::npos) {
+        try {
+            numero = stoi(username.substr(pos + 1));
+        } catch (...) {
+            numero = 0;
+        }
+    }
+
+    string base = nombres[static_cast<size_t>(max(numero, 1) - 1) % nombres.size()];
+
+    return numero > static_cast<int>(nombres.size()) ? base + " " + to_string(numero) : base;
+}
+
+// Cada bot tiene UNA tarjeta propia y unica, guardada en la BD (tabla
+// Tarjetas, esSimulada = 1). Se crea la primera vez y se reutiliza siempre.
+Tarjeta Servidor::tarjetaBotSinBloqueo(const string& username) {
+    Tarjeta tarjeta;
+
+    if (db.obtenerTarjetaSimulada(username, tarjeta)) {
+        return tarjeta;
+    }
+
+    mt19937 generador(random_device{}());
+
+    for (int intento = 0; intento < 50; intento++) {
+        Tarjeta candidata = Tarjeta::generarSimulada(titularSimulado(username), generador);
+
+        if (db.existeNumeroTarjeta(candidata.getNumeroTarjeta())) {
+            continue; // colision (muy improbable): se genera otra
+        }
+
+        if (db.guardarTarjetaSimulada(username, candidata)) {
+            cout << "[Simulador] Tarjeta creada para " << username << ": " << candidata.enmascarada()
+                 << " | " << candidata.getNombrePropietario() << " | vence " << candidata.getFechaVencimiento() << endl;
+            return candidata;
+        }
+    }
+
+    return Tarjeta(); // sin numero: el pago se rechazara como "tarjeta no registrada"
+}
+
+void Servidor::asegurarUsuariosSimulados() {
     lock_guard<mutex> guard(dbMutex);
 
-    for (const auto& username : usernamesBot) {
+    for (const auto& username : nombresBots()) {
         Cliente existente = db.obtenerUsuarioCliente(username);
 
         if (existente.getUsername().empty()) {
@@ -1112,6 +1294,8 @@ void Servidor::asegurarUsuariosSimulados() {
                         username, "Bot", "Simulador", "INVITADO");
             db.guardarUsuarioCliente(bot);
         }
+
+        tarjetaBotSinBloqueo(username); // crea su tarjeta si todavia no tiene
     }
 }
 
@@ -1173,7 +1357,7 @@ void Servidor::hiloSimuladorClientes(int idHilo) {
 }
 
 bool Servidor::crearPedidoSimulado(int idHilo, mt19937& generador) {
-    static const vector<string> usernamesBot = {"bot_sim_1", "bot_sim_2", "bot_sim_3"};
+    const vector<string> usernamesBot = nombresBots();
 
     uniform_int_distribution<int> distCafeteria(1, MAX_CAFETERIAS);
     uniform_int_distribution<int> distUsuario(0, static_cast<int>(usernamesBot.size()) - 1);
@@ -1274,6 +1458,29 @@ bool Servidor::crearPedidoSimulado(int idHilo, mt19937& generador) {
         string folio = campos[1];
         string idCafeteriaCanonico = campos[3]; // idCafeteria EXACTO como esta en la BD
 
+        // ---- Pago automatico con la tarjeta propia del bot ----
+        Tarjeta tarjetaBot;
+
+        {
+            lock_guard<mutex> guardTarjeta(dbMutex);
+            tarjetaBot = tarjetaBotSinBloqueo(usernameBot);
+        }
+
+        string comandoPago = "PAGAR_PEDIDO|" + folio + "|" + tarjetaBot.getNumeroTarjeta() + "|" + tarjetaBot.getCVV();
+        string respuestaPago = enviarComando(socketSimulado, comandoPago);
+        vector<string> camposPago = separarCampos(respuestaPago);
+
+        cout << "[Simulador #" << idHilo << "] PAGAR_PEDIDO " << folio << " (" << tarjetaBot.enmascarada()
+             << ") => " << (camposPago.empty() ? string("sin respuesta") : camposPago[0]) << endl;
+
+        if (camposPago.empty() || camposPago[0] != "OK") {
+            // Pago rechazado: el pedido no se atiende, se cancela.
+            string cancelar = "CAMBIAR_ESTADO|" + idCafeteriaCanonico + "|" + folio + "|Cancelado";
+            enviarComando(socketSimulado, cancelar);
+            close(socketSimulado);
+            return false;
+        }
+
         vector<string> estados = {"Preparando", "Listo", "Entregado"};
         uniform_int_distribution<int> distEspera(2, 6);
 
@@ -1311,7 +1518,7 @@ bool Servidor::generarReporteVentas() {
         vector<Cafeteria> cafeterias = db.obtenerCafeterias();
 
         for (const auto& cafeteria : cafeterias) {
-            vector<Pedido> pedidos = db.obtenerPedidosCafeteria(cafeteria.getIdCafeteria());
+            vector<Pedido> pedidos = db.obtenerPedidosCafeteria(cafeteria.getIdCafeteria(), true); // el reporte incluye los pedidos ya cerrados
 
             for (const auto& pedido : pedidos) {
                 datosCrudos += cafeteria.getIdCafeteria() + "|" + cafeteria.getNombreCafeteria() + "|" +

@@ -164,6 +164,11 @@ bool BaseDatos::inicializarTablas() {
 			 "monto REAL NOT NULL CHECK (monto > 0.0), "
 			 "aprobado INTEGER NOT NULL CHECK (aprobado IN (0,1)), "
 			 "numTarjeta TEXT, "
+			 "fechaPago TEXT, "
+			 "referencia TEXT, "
+			 "usernameCliente TEXT, "
+			 "idCafeteria TEXT, "
+			 "motivo TEXT, "
 			 "FOREIGN KEY (folioPedido) REFERENCES Pedidos(folio) ON DELETE RESTRICT, "
 			 "FOREIGN KEY (numTarjeta) REFERENCES Tarjetas(numeroTarjeta) "
 			 "ON DELETE SET NULL);";
@@ -173,6 +178,9 @@ bool BaseDatos::inicializarTablas() {
 			     "usernameCliente TEXT NOT NULL, "
 			     "fechaVencimiento TEXT NOT NULL, "
 			     "CVV TEXT NOT NULL, "
+			     "titular TEXT, "
+			     "esSimulada INTEGER NOT NULL DEFAULT 0, "
+			     "fechaCreacion TEXT, "
 			     "FOREIGN KEY (usernameCliente) "
 			     "REFERENCES Usuarios(username) "
 			     "ON DELETE CASCADE ON UPDATE CASCADE);";
@@ -197,6 +205,31 @@ bool BaseDatos::inicializarTablas() {
 			 ejecutarQuery(sqlTarjetas) &&
 			 ejecutarQuery(sqlPagos) &&
 			 ejecutarQuery(sqlCierresCaja);
+
+	// Migracion: columnas de tarjetas simuladas y de auditoria de pagos
+	// (bases creadas antes de esta version). No se pierde ningun dato.
+	auto agregarColumna = [&](const string& tabla, const string& columna, const string& definicion) {
+		if(resultado && !tablaTieneColumna(db, tabla, columna)) {
+			resultado = ejecutarQuery("ALTER TABLE " + tabla + " ADD COLUMN " + columna + " " + definicion + ";");
+		}
+	};
+
+	agregarColumna("Tarjetas", "titular", "TEXT");
+	agregarColumna("Tarjetas", "esSimulada", "INTEGER NOT NULL DEFAULT 0");
+	agregarColumna("Tarjetas", "fechaCreacion", "TEXT");
+	agregarColumna("Pagos", "fechaPago", "TEXT");
+	agregarColumna("Pagos", "referencia", "TEXT");
+	agregarColumna("Pagos", "usernameCliente", "TEXT");
+	agregarColumna("Pagos", "idCafeteria", "TEXT");
+	agregarColumna("Pagos", "motivo", "TEXT");
+
+	// Dos tarjetas simuladas nunca comparten numero (las tarjetas de clientes
+	// reales no se restringen para no cambiar como funcionaban antes).
+	if(resultado) {
+		ejecutarQuery("CREATE UNIQUE INDEX IF NOT EXISTS idx_tarjetas_simuladas_numero "
+		              "ON Tarjetas(numeroTarjeta) WHERE esSimulada = 1;");
+		ejecutarQuery("CREATE INDEX IF NOT EXISTS idx_pagos_folio ON Pagos(folioPedido);");
+	}
 
 	// Migracion: las bases creadas antes del "Cierre de dia" no tienen la
 	// columna Pedidos.cerrado. Se agrega sin perder ningun dato.
@@ -651,12 +684,12 @@ vector<pair<Producto, int>> BaseDatos::listaProductosPedido(const string& folio)
 	return listaProductos;
 }
 
-vector<Pedido> BaseDatos::obtenerPedidosCafeteria(const string& idCafeteria) {        // para cafeteria
+vector<Pedido> BaseDatos::obtenerPedidosCafeteria(const string& idCafeteria, bool incluirCerrados) {        // para cafeteria
 	vector<Pedido> listaP;
 
 	string sql = "SELECT folio, fecha, estado, total, usernameCliente "
 	       	     "FROM Pedidos "
-		     "WHERE idCafeteria = ? AND cerrado = 0 " // los pedidos ya cerrados en un corte no se muestran
+		     "WHERE idCafeteria = ? " + string(incluirCerrados ? "" : "AND cerrado = 0 ") + // los cerrados en un corte no se muestran
 		     "ORDER BY rowid DESC;"; // mas recientes primero
 
 	sqlite3_stmt* stmt;
@@ -1069,8 +1102,9 @@ bool BaseDatos::productoTienePedidos(const string& idProducto) {
 
 bool BaseDatos::guardarPago(const Pago& pago) {
 	sqlite3_stmt* stmt;
-	string sqlP = "INSERT INTO Pagos (folioPedido, monto, aprobado, numTarjeta) "
-		      "VALUES (?, ?, ?, ?);";
+	string sqlP = "INSERT INTO Pagos (folioPedido, monto, aprobado, numTarjeta, fechaPago, "
+		      "referencia, usernameCliente, idCafeteria, motivo) "
+		      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
 	if(sqlite3_prepare_v2(db, sqlP.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
 		cerr << "Error al preparar insercion de pago: " << sqlite3_errmsg(db) << endl;
@@ -1080,23 +1114,48 @@ bool BaseDatos::guardarPago(const Pago& pago) {
 	sqlite3_bind_text(stmt, 1, pago.getFolioPedido().c_str(), -1, SQLITE_TRANSIENT);
 	sqlite3_bind_double(stmt, 2, pago.getMonto());
 	sqlite3_bind_int(stmt, 3, pago.getAprobado() ? 1 : 0);
-	sqlite3_bind_text(stmt, 4, pago.getTarjeta().getNumeroTarjeta().c_str(), -1, SQLITE_TRANSIENT);
+
+	// Un rechazo por "tarjeta no registrada" no tiene tarjeta que referenciar.
+	if(pago.getTarjeta().getNumeroTarjeta().empty()) {
+		sqlite3_bind_null(stmt, 4);
+	} else {
+		sqlite3_bind_text(stmt, 4, pago.getTarjeta().getNumeroTarjeta().c_str(), -1, SQLITE_TRANSIENT);
+	}
+
+	sqlite3_bind_text(stmt, 5, pago.getFechaPago().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 6, pago.getReferencia().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 7, pago.getUsernameCliente().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 8, pago.getIdCafeteria().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 9, pago.getMotivo().c_str(), -1, SQLITE_TRANSIENT);
 
 	bool exito = (sqlite3_step(stmt) == SQLITE_DONE);
+
+	if(!exito) {
+		cerr << "Error al guardar el pago: " << sqlite3_errmsg(db) << endl;
+	}
+
 	sqlite3_finalize(stmt);
 
 	return exito;
 }
 
+static string textoColumna(sqlite3_stmt* stmt, int columna) {
+	const unsigned char* t = sqlite3_column_text(stmt, columna);
+	return t ? reinterpret_cast<const char*>(t) : "";
+}
+
+// Regresa el pago MAS RECIENTE del pedido (puede ser un rechazo).
 Pago BaseDatos::obtenerPago(const string& folio) {
 	Pago pago;
 
-	string sql1 = "SELECT P.monto, P.aprobado, P.numTarjeta, "
-		     "T.CVV, T.fechaVencimiento, U.nombre "
-	       	     "FROM Pagos P "
-		     "JOIN Tarjetas T ON P.numTarjeta = T.numeroTarjeta "
-		     "JOIN Usuarios U ON T.usernameCliente = U.username "
-		     "WHERE P.folioPedido = ?;";
+	string sql1 = "SELECT P.monto, P.aprobado, P.numTarjeta, T.CVV, T.fechaVencimiento, "
+		      "COALESCE(T.titular, U.nombre), P.fechaPago, P.referencia, "
+		      "P.usernameCliente, P.idCafeteria, P.motivo "
+		      "FROM Pagos P "
+		      "LEFT JOIN Tarjetas T ON P.numTarjeta = T.numeroTarjeta "
+		      "LEFT JOIN Usuarios U ON T.usernameCliente = U.username "
+		      "WHERE P.folioPedido = ? "
+		      "ORDER BY P.rowid DESC LIMIT 1;";
 
 	sqlite3_stmt* stmt;
 
@@ -1113,17 +1172,38 @@ Pago BaseDatos::obtenerPago(const string& folio) {
 		pago.setFolioPedido(folio);
 
 		Tarjeta t;
-		t.setNumeroTarjeta(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-		t.setCVV(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-		t.setFechaVencimiento(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
-		t.setNombrePropietario(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+		t.setNumeroTarjeta(textoColumna(stmt, 2));
+		t.setCVV(textoColumna(stmt, 3));
+		t.setFechaVencimiento(textoColumna(stmt, 4));
+		t.setNombrePropietario(textoColumna(stmt, 5));
 
 		pago.asignarTarjeta(t);
+		pago.setFechaPago(textoColumna(stmt, 6));
+		pago.setReferencia(textoColumna(stmt, 7));
+		pago.setUsernameCliente(textoColumna(stmt, 8));
+		pago.setIdCafeteria(textoColumna(stmt, 9));
+		pago.setMotivo(textoColumna(stmt, 10));
 	}
 
 	sqlite3_finalize(stmt);
 
 	return pago;
+}
+
+bool BaseDatos::pedidoTienePagoAprobado(const string& folio) {
+	string sql = "SELECT COUNT(*) FROM Pagos WHERE folioPedido = ? AND aprobado = 1;";
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, folio.c_str(), -1, SQLITE_TRANSIENT);
+
+	bool existe = (sqlite3_step(stmt) == SQLITE_ROW && sqlite3_column_int(stmt, 0) > 0);
+	sqlite3_finalize(stmt);
+
+	return existe;
 }
 
 
@@ -1173,4 +1253,106 @@ bool BaseDatos::guardarTarjeta(const Tarjeta& tarjeta) {
 	sqlite3_finalize(stmt);
 
 	return exito;
+}
+
+
+// ---------------------------------------------------------------------
+// Tarjetas simuladas (bots)
+// ---------------------------------------------------------------------
+bool BaseDatos::existeNumeroTarjeta(const string& numero) {
+	string sql = "SELECT COUNT(*) FROM Tarjetas WHERE numeroTarjeta = ?;";
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		return true; // ante la duda, se considera ocupado
+	}
+
+	sqlite3_bind_text(stmt, 1, numero.c_str(), -1, SQLITE_TRANSIENT);
+
+	bool existe = (sqlite3_step(stmt) != SQLITE_ROW || sqlite3_column_int(stmt, 0) > 0);
+	sqlite3_finalize(stmt);
+
+	return existe;
+}
+
+// Guarda la tarjeta simulada de un bot ligada a SU username (los bots
+// comparten el mismo nombre, asi que aqui no se busca el dueno por nombre).
+bool BaseDatos::guardarTarjetaSimulada(const string& username, const Tarjeta& tarjeta) {
+	string sql = "INSERT INTO Tarjetas (numeroTarjeta, usernameCliente, fechaVencimiento, CVV, "
+		     "titular, esSimulada, fechaCreacion) "
+		     "VALUES (?, ?, ?, ?, ?, 1, DATETIME('now', 'localtime'));";
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al preparar insercion de tarjeta simulada: " << sqlite3_errmsg(db) << endl;
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, tarjeta.getNumeroTarjeta().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 2, username.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 3, tarjeta.getFechaVencimiento().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 4, tarjeta.getCVV().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 5, tarjeta.getNombrePropietario().c_str(), -1, SQLITE_TRANSIENT);
+
+	bool exito = (sqlite3_step(stmt) == SQLITE_DONE);
+
+	if(!exito) {
+		cerr << "Error al guardar la tarjeta simulada: " << sqlite3_errmsg(db) << endl;
+	}
+
+	sqlite3_finalize(stmt);
+
+	return exito;
+}
+
+bool BaseDatos::obtenerTarjetaSimulada(const string& username, Tarjeta& tarjeta) {
+	string sql = "SELECT numeroTarjeta, CVV, COALESCE(titular, ''), fechaVencimiento "
+		     "FROM Tarjetas WHERE usernameCliente = ? AND esSimulada = 1 "
+		     "ORDER BY rowid ASC LIMIT 1;";
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+
+	bool encontrada = false;
+
+	if(sqlite3_step(stmt) == SQLITE_ROW) {
+		tarjeta = Tarjeta(textoColumna(stmt, 0), textoColumna(stmt, 1),
+		                  textoColumna(stmt, 2), textoColumna(stmt, 3));
+		encontrada = true;
+	}
+
+	sqlite3_finalize(stmt);
+
+	return encontrada;
+}
+
+bool BaseDatos::obtenerTarjetaPorNumero(const string& numero, Tarjeta& tarjeta, string& usernameDueno) {
+	string sql = "SELECT T.numeroTarjeta, T.CVV, COALESCE(T.titular, U.nombre, ''), "
+		     "T.fechaVencimiento, T.usernameCliente "
+		     "FROM Tarjetas T LEFT JOIN Usuarios U ON T.usernameCliente = U.username "
+		     "WHERE T.numeroTarjeta = ? ORDER BY T.rowid ASC LIMIT 1;";
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, numero.c_str(), -1, SQLITE_TRANSIENT);
+
+	bool encontrada = false;
+
+	if(sqlite3_step(stmt) == SQLITE_ROW) {
+		tarjeta = Tarjeta(textoColumna(stmt, 0), textoColumna(stmt, 1),
+		                  textoColumna(stmt, 2), textoColumna(stmt, 3));
+		usernameDueno = textoColumna(stmt, 4);
+		encontrada = true;
+	}
+
+	sqlite3_finalize(stmt);
+
+	return encontrada;
 }

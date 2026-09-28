@@ -44,3 +44,15 @@ void Pago::setAprobado(bool a) {
 void Pago::setFolioPedido(const string& folio) {
     folioPedido = folio;
 }
+
+string Pago::getFechaPago() const { return fechaPago; }
+string Pago::getReferencia() const { return referencia; }
+string Pago::getMotivo() const { return motivo; }
+string Pago::getUsernameCliente() const { return usernameCliente; }
+string Pago::getIdCafeteria() const { return idCafeteria; }
+
+void Pago::setFechaPago(const string& f) { fechaPago = f; }
+void Pago::setReferencia(const string& r) { referencia = r; }
+void Pago::setMotivo(const string& m) { motivo = m; }
+void Pago::setUsernameCliente(const string& u) { usernameCliente = u; }
+void Pago::setIdCafeteria(const string& c) { idCafeteria = c; }
