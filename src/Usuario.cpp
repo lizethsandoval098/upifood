@@ -4,12 +4,12 @@
 Usuario::Usuario() { }
 
 Usuario::Usuario(string tipoUsuario, string nombre, string correo, string contrasena)
-    : tipoUsuario{tipoUsuario}, nombre{nombre}, correo{correo} {
+    : nombre{nombre}, correo{correo}, tipoUsuario{tipoUsuario} {
     setContrasena(contrasena);
 }
 
 Usuario::Usuario(string tipoUsuario, string nombre, string correo, string contrasena, string username)
-    : tipoUsuario{tipoUsuario}, nombre{nombre}, correo{correo}, username{username} {
+    : nombre{nombre}, correo{correo}, tipoUsuario{tipoUsuario}, username{username} {
     setContrasena(contrasena);
 }
 

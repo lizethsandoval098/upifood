@@ -14,7 +14,7 @@ Cliente::Cliente() {
     tipoCliente = "INVITADO";
 
     socketCliente = -1;
-    ipServidor = "100.91.99.27";
+    ipServidor = "100.70.231.3";
     puerto = 5000;
 }
 
@@ -24,7 +24,7 @@ Cliente::Cliente(string nombre, string correo, string contrasena, string usernam
       apellidoPaterno{apellidoPaterno}, apellidoMaterno{apellidoMaterno}, tipoCliente{tipoCliente} {
 
     socketCliente = -1;
-    ipServidor = "100.91.99.27";
+    ipServidor = "100.70.231.3";
     puerto = 5000;
 }
 
@@ -332,4 +332,8 @@ string Cliente::asignarUsername(const string& correo) {
     }
 
     return correo.substr(0, posArroba);
+}
+
+void Cliente::setIpServidor(const string& ip) {
+    ipServidor = ip;
 }
