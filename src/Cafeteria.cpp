@@ -1,8 +1,8 @@
 #include "Cafeteria.h"
-#include "BaseDatos.h"
-#include "Pago.h"
 #include "Protocolo.h"
+#include "Senales.h"
 
+#include <iomanip>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -12,16 +12,16 @@ using namespace std;
 
 Cafeteria::Cafeteria() : gananciaCajaTurno(0.0f) {
 	socketCafeteria = -1;
-	ipServidor = "100.91.99.27"; // IP de Tailscale de la compu con la BD/servidor
-	puerto = 5000;
+	ipServidor = obtenerIpServidor(); // por defecto la IP de Tailscale; cambia con UPIIFOOD_IP
+	puerto = obtenerPuertoServidor();
 }
 
 Cafeteria::Cafeteria(string nombre, string correo, string contrasena, string username, string idCafeteria)
 	: Usuario("Cafe", nombre, correo, contrasena, username),
 	  idCafeteria{idCafeteria}, gananciaCajaTurno(0.0f) {
 	socketCafeteria = -1;
-	ipServidor = "100.91.99.27";
-	puerto = 5000;
+	ipServidor = obtenerIpServidor();
+	puerto = obtenerPuertoServidor();
 }
 
 Cafeteria::~Cafeteria() {
@@ -32,20 +32,10 @@ Cafeteria::~Cafeteria() {
 }
 
 bool Cafeteria::conectar() {
-	socketCafeteria = socket(AF_INET, SOCK_STREAM, 0);
+	socketCafeteria = conectarAlServidor(ipServidor, puerto);
 
 	if (socketCafeteria == -1) {
-		cout << "Error creando socket." << endl;
-		return false;
-	}
-
-	sockaddr_in direccionServidor;
-	direccionServidor.sin_family = AF_INET;
-	direccionServidor.sin_port = htons(puerto);
-	inet_pton(AF_INET, ipServidor.c_str(), &direccionServidor.sin_addr);
-
-	if (connect(socketCafeteria, (sockaddr*)&direccionServidor, sizeof(direccionServidor)) == -1) {
-		cout << "Error conectando al servidor. Revisa la IP/Tailscale." << endl;
+		cout << "Error conectando al servidor " << ipServidor << ":" << puerto << ". Revisa la IP/Tailscale." << endl;
 		return false;
 	}
 
@@ -148,11 +138,57 @@ void Cafeteria::verInventario() {
 }
 
 void Cafeteria::cargarListaPedidos() {
-	BaseDatos db;
+	listaPedidos.clear();
+	foliosPagados.clear();
 
-	if(db.conectar()) {
-		listaPedidos = db.obtenerPedidosCafeteria(idCafeteria);
-		db.desconectar();
+	// LISTAR_PEDIDOS|idCaf -> OK|N y N lineas: folio|fecha|estado|total|username|pagado
+	vector<string> encabezado = separarCampos(enviarComando(socketCafeteria, "LISTAR_PEDIDOS|" + idCafeteria));
+
+	if (encabezado.size() < 2 || encabezado[0] != "OK") {
+		cout << "No se pudo cargar la lista de pedidos." << endl;
+		return;
+	}
+
+	int cantidad = 0;
+	try { cantidad = stoi(encabezado[1]); } catch (...) { return; }
+
+	for (const string& linea : leerLineas(socketCafeteria, cantidad)) {
+		vector<string> c = separarCampos(linea);
+		if (c.size() < 6) continue;
+
+		Pedido p;
+		p.setFolio(c[0]);
+		p.setFecha(c[1]);
+		p.setEstado(c[2]);
+		try { p.setTotal(stof(c[3])); } catch (...) {}
+		p.setUsernameCliente(c[4]);
+		p.setIdCafeteria(idCafeteria);
+
+		listaPedidos.push_back(p);
+		if (c[5] == "1") foliosPagados.insert(c[0]);
+	}
+}
+
+bool Cafeteria::estaPagado(const string& folio) const {
+	return foliosPagados.count(folio) > 0;
+}
+
+void Cafeteria::verPedidos() {
+	cargarListaPedidos();
+
+	if (listaPedidos.empty()) {
+		cout << "No hay pedidos registrados en esta cafeteria." << endl;
+		return;
+	}
+
+	cout << left << setw(12) << "FOLIO" << setw(21) << "FECHA" << setw(12) << "ESTADO"
+	     << setw(10) << "TOTAL" << setw(8) << "PAGADO" << "CLIENTE" << endl;
+
+	for (const auto& p : listaPedidos) {
+		cout << left << setw(12) << p.getFolio() << setw(21) << p.getFecha() << setw(12) << p.getEstado()
+		     << "$" << setw(9) << fixed << setprecision(2) << p.getTotal()
+		     << setw(8) << (estaPagado(p.getFolio()) ? "si" : "no")
+		     << p.getUsernameCliente() << endl;
 	}
 }
 
@@ -190,52 +226,92 @@ void Cafeteria::restockProducto(const string& idProducto, int cantidad) {
     cout << "Producto reabastecido correctamente." << endl;
 }
 
-void Cafeteria::elaborarPedido(const string& folio) {
-	for(auto& p : listaPedidos) {
-		if(p.getFolio() == folio) {
-			p.cambiarEstado("Preparando");
-			cout << "Elaborando pedido: " << folio << endl;
-			return;
-		}
+// Pide al servidor cambiar el estado de un pedido. Es el SERVIDOR quien valida
+// que la transicion sea legal (asi, si dos cafeterias o dos hilos lo intentan
+// a la vez, solo uno gana y no hay estados imposibles).
+static bool cambiarEstadoEnServidor(int socket, const string& folio, const string& nuevoEstado) {
+	vector<string> r = separarCampos(enviarComando(socket, "CAMBIAR_ESTADO|" + folio + "|" + nuevoEstado));
+
+	if (r.empty() || r[0] != "OK") {
+		cout << (r.size() > 1 ? r[1] : "No se pudo cambiar el estado.") << endl;
+		return false;
 	}
 
-	cout << "Pedido no encontrado." << endl;
+	return true;
+}
+
+void Cafeteria::elaborarPedido(const string& folio) {
+	if (cambiarEstadoEnServidor(socketCafeteria, folio, "Preparando")) {
+		cout << "Elaborando pedido: " << folio << endl;
+	}
+}
+
+void Cafeteria::marcarListo(const string& folio) {
+	if (cambiarEstadoEnServidor(socketCafeteria, folio, "Listo")) {
+		cout << "Pedido " << folio << " LISTO para recoger." << endl;
+	}
 }
 
 void Cafeteria::entregarPedido(const string& folio) {
-	for(auto& p : listaPedidos) {
-		if(p.getFolio() == folio) {
-			p.cambiarEstado("Entregado");
-			cout << "Pedido " << folio << " entregado." << endl;
-			return;
-		}
+	if (cambiarEstadoEnServidor(socketCafeteria, folio, "Entregado")) {
+		cout << "Pedido " << folio << " entregado." << endl;
 	}
+}
 
-	cout << "Pedido no encontrado." << endl;
+void Cafeteria::cancelarPedido(const string& folio) {
+	if (cambiarEstadoEnServidor(socketCafeteria, folio, "Cancelado")) {
+		cout << "Pedido " << folio << " cancelado (el stock se libero)." << endl;
+	}
 }
 
 void Cafeteria::gestionarPedido(const string& folio) {
-	elaborarPedido(folio);
-	entregarPedido(folio);
+	vector<string> r = separarCampos(enviarComando(socketCafeteria, "ESTADO_PEDIDO|" + folio));
+
+	if (r.size() < 6 || r[0] != "OK") {
+		cout << "Pedido no encontrado." << endl;
+		return;
+	}
+
+	const string& estado = r[2];
+
+	if (estado == "Pendiente") elaborarPedido(folio);
+	else if (estado == "Preparando") marcarListo(folio);
+	else if (estado == "Listo") entregarPedido(folio);
+	else cout << "El pedido " << folio << " ya esta en estado final (" << estado << ")." << endl;
 }
 
 void Cafeteria::verificarPago(const string& folio) {
-	BaseDatos db;
+	// ESTADO_PEDIDO|folio -> OK|folio|estado|total|pagado|idCaf|user
+	vector<string> r = separarCampos(enviarComando(socketCafeteria, "ESTADO_PEDIDO|" + folio));
 
-	if(db.conectar()) {
-		Pago pago = db.obtenerPago(folio);
-
-		cout << "Pago consultado para el pedido " << folio
-		     << " -> " << (pago.getAprobado() ? "Aprobado" : "No aprobado") << endl;
-
-		db.desconectar();
+	if (r.size() < 6 || r[0] != "OK") {
+		cout << "Pedido no encontrado." << endl;
+		return;
 	}
+
+	cout << "Pago consultado para el pedido " << folio
+	     << " -> " << (r[4] == "1" ? "Aprobado" : "No aprobado") << endl;
 }
 
 void Cafeteria::atenderCajas(const Producto& producto, int cantidad) {
+	// VENTA_CAJA|idProducto|cantidad -> OK|idProducto|nuevoStock
+	vector<string> r = separarCampos(enviarComando(socketCafeteria,
+	                                 "VENTA_CAJA|" + producto.getIdProducto() + "|" + to_string(cantidad)));
+
+	if (r.empty() || r[0] != "OK") {
+		cout << (r.size() > 1 ? r[1] : "No se pudo registrar la venta.") << endl;
+		return;
+	}
+
 	float ganancia = producto.getPrecio() * cantidad;
 	gananciaCajaTurno += ganancia;
 	vendidosCajaTurno.push_back(producto);
+
+	for (auto& p : inventario) {
+		if (p.getIdProducto() == producto.getIdProducto() && r.size() >= 3) {
+			try { p.setStock(stoi(r[2])); } catch (...) {}
+		}
+	}
 
 	cout << "Atendiendo cajas.... +$" << ganancia << " [" << producto.getNombreProducto() << "]" << endl;
 }
@@ -246,11 +322,11 @@ bool Cafeteria::iniciarSesionCafeteria() {
 
 	string username, contrasena;
 
-	cout << "Ingrese username: ";
-	cin >> username;
+	cout << "Ingrese username: " << flush;
+	if (!Senales::leerLinea(username)) return false;
 
-	cout << "Ingrese contrasena: ";
-	cin >> contrasena;
+	cout << "Ingrese contrasena: " << flush;
+	if (!Senales::leerLinea(contrasena)) return false;
 
 	// Peticion al servidor: LOGIN_CAFETERIA|username|contrasena
 	string respuesta = enviarComando(socketCafeteria, "LOGIN_CAFETERIA|" + username + "|" + contrasena);

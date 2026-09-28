@@ -1,5 +1,8 @@
 #include "Administrador.h"
 #include "Protocolo.h"
+#include "Senales.h"
+
+#include <iomanip>
 
 #include <unistd.h>
 #include <arpa/inet.h>
@@ -10,15 +13,15 @@ using namespace std;
 
 Administrador::Administrador() {
     socketAdmin = -1;
-    ipServidor = "100.91.99.27";
-    puerto = 5000;
+    ipServidor = obtenerIpServidor();
+    puerto = obtenerPuertoServidor();
 }
 
 Administrador::Administrador(string nombre, string correo, string contrasena, string username)
     : Usuario("Admin", nombre, correo, contrasena, username) {
     socketAdmin = -1;
-    ipServidor = "100.91.99.27";
-    puerto = 5000;
+    ipServidor = obtenerIpServidor();
+    puerto = obtenerPuertoServidor();
 }
 
 Administrador::~Administrador() {
@@ -29,22 +32,10 @@ Administrador::~Administrador() {
 }
 
 bool Administrador::conectar() {
-    socketAdmin = socket(AF_INET, SOCK_STREAM, 0);
+    socketAdmin = conectarAlServidor(ipServidor, puerto);
 
     if (socketAdmin == -1) {
-        cout << "Error creando socket." << endl;
-        return false;
-    }
-
-    sockaddr_in direccionServidor;
-    direccionServidor.sin_family = AF_INET;
-    direccionServidor.sin_port = htons(puerto);
-    inet_pton(AF_INET, ipServidor.c_str(), &direccionServidor.sin_addr);
-
-    if (connect(socketAdmin, (sockaddr*)&direccionServidor, sizeof(direccionServidor)) == -1) {
-        cout << "Error conectando al servidor. Revisa la IP/Tailscale." << endl;
-        close(socketAdmin);
-        socketAdmin = -1;
+        cout << "Error conectando al servidor " << ipServidor << ":" << puerto << ". Revisa la IP/Tailscale." << endl;
         return false;
     }
 
@@ -195,17 +186,43 @@ void Administrador::verUsuariosEnLinea() {
     }
 }
 
+void Administrador::verEstadisticas() {
+    // ESTADISTICAS -> OK|2 y 2 lineas: idCaf|stockTotal|unidadesVendidas|pend|prep|listo|entr|canc
+    vector<string> encabezado = separarCampos(enviarComando(socketAdmin, "ESTADISTICAS"));
+
+    if (encabezado.size() < 2 || encabezado[0] != "OK") {
+        cout << "No se pudieron obtener las estadisticas." << endl;
+        return;
+    }
+
+    int cantidad = 0;
+    try { cantidad = stoi(encabezado[1]); } catch (...) { return; }
+
+    cout << "\n" << left << setw(11) << "Cafeteria" << setw(8) << "Stock" << setw(10) << "Vendidas"
+         << setw(11) << "Pendiente" << setw(12) << "Preparando" << setw(7) << "Listo"
+         << setw(11) << "Entregado" << "Cancelado" << endl;
+
+    for (const string& linea : leerLineas(socketAdmin, cantidad)) {
+        vector<string> c = separarCampos(linea);
+        if (c.size() < 8) continue;
+
+        cout << left << setw(11) << c[0] << setw(8) << c[1] << setw(10) << c[2]
+             << setw(11) << c[3] << setw(12) << c[4] << setw(7) << c[5]
+             << setw(11) << c[6] << c[7] << endl;
+    }
+}
+
 bool Administrador::iniciarSesionAdmin() {
     cout << "==================================" << endl;
     cout << "Inicio de sesion (Administrador)" << endl;
 
     string username, contrasena;
 
-    cout << "Ingrese username: ";
-    cin >> username;
+    cout << "Ingrese username: " << flush;
+    if (!Senales::leerLinea(username)) return false;
 
-    cout << "Ingrese contrasena: ";
-    cin >> contrasena;
+    cout << "Ingrese contrasena: " << flush;
+    if (!Senales::leerLinea(contrasena)) return false;
 
     string respuesta = enviarComando(socketAdmin, "LOGIN_ADMIN|" + username + "|" + contrasena);
     vector<string> campos = separarCampos(respuesta);

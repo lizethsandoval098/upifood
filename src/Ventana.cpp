@@ -32,6 +32,11 @@ void Ventana::limpiar() {
     textos.clear();
 }
 
+void Ventana::setLineasVivas(const std::vector<std::string>& lineas) {
+    std::lock_guard<std::mutex> guard(mutexLineas);
+    lineasVivas = lineas;
+}
+
 bool Ventana::estaAbierta() const {
     return window.isOpen();
 }
@@ -50,6 +55,25 @@ void Ventana::loop() {
 
         for (const auto& t : textos) {
             window.draw(t);
+        }
+
+        // Copia rapida bajo el candado; se dibuja ya sin el candado tomado.
+        std::vector<std::string> copia;
+        {
+            std::lock_guard<std::mutex> guard(mutexLineas);
+            copia = lineasVivas;
+        }
+
+        float y = 130.f;
+        for (const auto& linea : copia) {
+            sf::Text t;
+            t.setFont(font);
+            t.setString(linea);
+            t.setCharacterSize(14);
+            t.setFillColor(sf::Color(40, 40, 40));
+            t.setPosition(20.f, y);
+            window.draw(t);
+            y += 22.f;
         }
 
         window.display();

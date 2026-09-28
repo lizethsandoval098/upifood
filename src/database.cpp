@@ -921,3 +921,62 @@ bool BaseDatos::guardarTarjeta(const Tarjeta& tarjeta) {
 
 	return exito;
 }
+
+
+// =====================================================================
+// Agregados para el flujo completo de pedidos por socket
+// =====================================================================
+
+bool BaseDatos::actualizarEstadoPedido(const string& folio, const string& nuevoEstado) {
+	string sql = "UPDATE Pedidos SET estado = ? WHERE folio = ?;";
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al actualizar estado del pedido: " << sqlite3_errmsg(db) << endl;
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, nuevoEstado.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 2, folio.c_str(), -1, SQLITE_TRANSIENT);
+
+	bool exito = (sqlite3_step(stmt) == SQLITE_DONE);
+	sqlite3_finalize(stmt);
+
+	return exito;
+}
+
+int BaseDatos::contarPedidosTotales() {
+	string sql = "SELECT COUNT(*) FROM Pedidos;";
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		return 0;
+	}
+
+	int cantidad = 0;
+	if(sqlite3_step(stmt) == SQLITE_ROW) {
+		cantidad = sqlite3_column_int(stmt, 0);
+	}
+
+	sqlite3_finalize(stmt);
+	return cantidad;
+}
+
+int BaseDatos::estadoPago(const string& folio) {
+	string sql = "SELECT aprobado FROM Pagos WHERE folioPedido = ? ORDER BY rowid DESC LIMIT 1;";
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		return -1;
+	}
+
+	sqlite3_bind_text(stmt, 1, folio.c_str(), -1, SQLITE_TRANSIENT);
+
+	int resultado = -1;
+	if(sqlite3_step(stmt) == SQLITE_ROW) {
+		resultado = sqlite3_column_int(stmt, 0);
+	}
+
+	sqlite3_finalize(stmt);
+	return resultado;
+}
