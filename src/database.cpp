@@ -591,8 +591,7 @@ vector<Pedido> BaseDatos::obtenerPedidosCafeteria(const string& idCafeteria) {  
 
 	string sql = "SELECT folio, fecha, estado, total, usernameCliente "
 	       	     "FROM Pedidos "
-		     "WHERE idCafeteria = ? "
-		     "ORDER BY rowid DESC;"; // mas recientes primero
+		     "WHERE idCafeteria = ?;";
 
 	sqlite3_stmt* stmt;
 
@@ -621,27 +620,6 @@ vector<Pedido> BaseDatos::obtenerPedidosCafeteria(const string& idCafeteria) {  
 	sqlite3_finalize(stmt);
 
 	return listaP;
-}
-
-// Cambia el estado de un pedido (Pendiente/Preparando/Listo/Entregado/Cancelado).
-// Regresa true solo si de verdad se modifico una fila (el folio existe).
-bool BaseDatos::actualizarEstadoPedido(const string& folio, const string& nuevoEstado) {
-	string sql = "UPDATE Pedidos SET estado = ? WHERE folio = ?;";
-	sqlite3_stmt* stmt;
-
-	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
-		cerr << "Error al actualizar el estado del pedido: " << sqlite3_errmsg(db) << endl;
-		return false;
-	}
-
-	sqlite3_bind_text(stmt, 1, nuevoEstado.c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(stmt, 2, folio.c_str(), -1, SQLITE_TRANSIENT);
-
-	bool exito = (sqlite3_step(stmt) == SQLITE_DONE) && (sqlite3_changes(db) > 0);
-
-	sqlite3_finalize(stmt);
-
-	return exito;
 }
 
 vector<Pedido> BaseDatos::obtenerHistorialPedidos(const string& username) {        // para cliente
