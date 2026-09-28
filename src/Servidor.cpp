@@ -425,39 +425,12 @@ string Servidor::procesarComando(const string& comando, const string& idCafeteri
         return respuesta;
     }
 
-    // AGREGAR_PRODUCTO|nombre|stock|precio. El ID lo asigna el servidor.
+    // AGREGAR_PRODUCTO|idCafeteria|nombre|stock|precio. El ID lo asigna el servidor.
     if (tipo == "AGREGAR_PRODUCTO") {
-        if (idCafeteriaSesion.empty()) return "ERR|Inicia sesion como cafeteria.";
-        if (campos.size() < 4) return "ERR|Formato invalido.";
-        if (campos[1].empty() || campos[1].find('|') != string::npos) return "ERR|Nombre invalido.";
-
-        int stock = -1;
-        float precio = 0.0f;
-        try {
-            stock = stoi(campos[2]);
-            precio = stof(campos[3]);
-        } catch (...) {
-            return "ERR|Stock o precio invalido.";
-        }
-        if (stock < 0 || !isfinite(precio) || precio <= 0.0f) return "ERR|Stock o precio invalido.";
-
-        lock_guard<mutex> guardDb(dbMutex);
-        string idAsignado;
-        if (!db.agregarProductoAutomatico(idCafeteriaSesion, campos[1], stock, precio, idAsignado)) {
-            return "ERR|No se pudo agregar el producto o la cafeteria ya alcanzo 20 productos.";
-        }
-        actualizarMatrizProducto(idAsignado, stock);
-        return "OK|" + idAsignado;
-    }
-
-    // MODIFICAR_PRODUCTO|id|nombre|stock|precio
-    if (tipo == "MODIFICAR_PRODUCTO") {
-        if (idCafeteriaSesion.empty()) return "ERR|Inicia sesion como cafeteria.";
+        if (idCafeteriaSesion.empty()) return "ERR|La sesion de cafeteria no esta activa.";
         if (campos.size() < 5) return "ERR|Formato invalido.";
-        int fila = 0;
-        int columna = 0;
-        if (!obtenerPosicionProducto(campos[1], fila, columna) ||
-            campos[1][1] != idCafeteriaSesion[0]) return "ERR|ID de producto invalido para esta cafeteria.";
+        if (campos[1] != idCafeteriaSesion) return "ERR|La cafeteria no coincide con la sesion activa.";
+        if (campos[2].empty() || campos[2].find('|') != string::npos) return "ERR|Nombre invalido.";
 
         int stock = -1;
         float precio = 0.0f;
@@ -467,32 +440,60 @@ string Servidor::procesarComando(const string& comando, const string& idCafeteri
         } catch (...) {
             return "ERR|Stock o precio invalido.";
         }
-        if (campos[2].empty() || campos[2].find('|') != string::npos || stock < 0 ||
+        if (stock < 0 || !isfinite(precio) || precio <= 0.0f) return "ERR|Stock o precio invalido.";
+
+        lock_guard<mutex> guardDb(dbMutex);
+        string idAsignado;
+        if (!db.agregarProductoAutomatico(idCafeteriaSesion, campos[2], stock, precio, idAsignado)) {
+            return "ERR|No se pudo agregar el producto o la cafeteria ya alcanzo 20 productos.";
+        }
+        actualizarMatrizProducto(idAsignado, stock);
+        return "OK|" + idAsignado;
+    }
+
+    // MODIFICAR_PRODUCTO|idCafeteria|id|nombre|stock|precio
+    if (tipo == "MODIFICAR_PRODUCTO") {
+        if (idCafeteriaSesion.empty()) return "ERR|La sesion de cafeteria no esta activa.";
+        if (campos.size() < 6) return "ERR|Formato invalido.";
+        if (campos[1] != idCafeteriaSesion) return "ERR|La cafeteria no coincide con la sesion activa.";
+        int fila = 0;
+        int columna = 0;
+        if (!obtenerPosicionProducto(campos[2], fila, columna)) return "ERR|ID de producto invalido.";
+
+        int stock = -1;
+        float precio = 0.0f;
+        try {
+            stock = stoi(campos[4]);
+            precio = stof(campos[5]);
+        } catch (...) {
+            return "ERR|Stock o precio invalido.";
+        }
+        if (campos[3].empty() || campos[3].find('|') != string::npos || stock < 0 ||
             !isfinite(precio) || precio <= 0.0f) return "ERR|Datos del producto invalidos.";
 
         lock_guard<mutex> guardDb(dbMutex);
-        if (!db.modificarProducto(campos[1], campos[2], stock, precio)) {
+        if (!db.modificarProducto(campos[2], campos[3], stock, precio)) {
             return "ERR|No se pudo modificar el producto.";
         }
-        actualizarMatrizProducto(campos[1], stock);
-        return "OK|" + campos[1];
+        actualizarMatrizProducto(campos[2], stock);
+        return "OK|" + campos[2];
     }
 
-    // ELIMINAR_PRODUCTO|id
+    // ELIMINAR_PRODUCTO|idCafeteria|id
     if (tipo == "ELIMINAR_PRODUCTO") {
-        if (idCafeteriaSesion.empty()) return "ERR|Inicia sesion como cafeteria.";
-        if (campos.size() < 2) return "ERR|Formato invalido.";
+        if (idCafeteriaSesion.empty()) return "ERR|La sesion de cafeteria no esta activa.";
+        if (campos.size() < 3) return "ERR|Formato invalido.";
+        if (campos[1] != idCafeteriaSesion) return "ERR|La cafeteria no coincide con la sesion activa.";
         int fila = 0;
         int columna = 0;
-        if (!obtenerPosicionProducto(campos[1], fila, columna) ||
-            campos[1][1] != idCafeteriaSesion[0]) return "ERR|ID de producto invalido para esta cafeteria.";
+        if (!obtenerPosicionProducto(campos[2], fila, columna)) return "ERR|ID de producto invalido.";
 
         lock_guard<mutex> guardDb(dbMutex);
-        if (!db.eliminarProducto(campos[1])) {
+        if (!db.eliminarProducto(campos[2])) {
             return "ERR|No se pudo eliminar: puede existir en pedidos registrados.";
         }
-        actualizarMatrizProducto(campos[1], 0);
-        return "OK|" + campos[1];
+        actualizarMatrizProducto(campos[2], 0);
+        return "OK|" + campos[2];
     }
 
     // ---------------------------------------------------------------

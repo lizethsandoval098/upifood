@@ -218,14 +218,14 @@ int main(int argc, char* argv[]) {
     Boton botonCompletarPedido("Completar pedido", 700, 522, 250, 40);
 
     // vista INVENTARIO
-    CampoTexto campoNombreProducto("Nombre", 260, 410, 220, 38);
-    CampoTexto campoStockProducto("Stock", 490, 410, 110, 38);
-    CampoTexto campoPrecioProducto("Precio", 610, 410, 140, 38);
-    Boton botonAgregarProducto("Agregar", 760, 410, 190, 38);
-    CampoTexto campoBuscarProducto("ID para modificar", 260, 475, 220, 38);
-    Boton botonBuscarProducto("Buscar", 490, 475, 120, 38);
-    Boton botonModificarProducto("Modificar", 620, 475, 150, 38);
-    Boton botonEliminarProducto("Eliminar", 780, 475, 170, 38);
+    CampoTexto campoNombreProducto("Nombre", 260, 410, 270, 38);
+    CampoTexto campoStockProducto("Stock", 550, 410, 110, 38);
+    CampoTexto campoPrecioProducto("Precio", 680, 410, 140, 38);
+    CampoTexto campoBuscarProducto("Buscar ID existente", 260, 485, 190, 38);
+    Boton botonBuscarProducto("Buscar", 460, 485, 90, 38);
+    Boton botonAgregarProducto("Agregar", 560, 485, 115, 38);
+    Boton botonModificarProducto("Modificar", 685, 485, 135, 38);
+    Boton botonEliminarProducto("Eliminar", 830, 485, 120, 38);
     CampoTexto campoRestock("Cantidad a agregar", 260, 545, 200, 38);
     Boton botonRestock("Reabastecer", 470, 545, 180, 38);
     Boton botonSincronizar("Sincronizar cambios", 670, 545, 280, 38);
@@ -390,7 +390,6 @@ int main(int argc, char* argv[]) {
             return;
         }
         productoSel = cafeteria.getInventario().back().getIdProducto();
-        campoBuscarProducto.setContenido(productoSel);
         campoNombreProducto.limpiar();
         campoStockProducto.limpiar();
         campoPrecioProducto.limpiar();
@@ -419,12 +418,12 @@ int main(int argc, char* argv[]) {
             avisar("Selecciona una fila o busca el producto por ID.", false);
             return;
         }
-        const bool eraTemporal = id.rfind("AUTO-", 0) == 0;
+        const size_t cambiosAntes = cafeteria.cantidadCambiosInventarioPendientes();
         if (!cafeteria.eliminarProducto(id)) {
             avisar(cafeteria.getUltimoError(), false);
             return;
         }
-        if (eraTemporal) {
+        if (cafeteria.cantidadCambiosInventarioPendientes() < cambiosAntes) {
             productoSel.clear();
             campoBuscarProducto.limpiar();
             campoNombreProducto.limpiar();
@@ -926,8 +925,8 @@ int main(int argc, char* argv[]) {
                 }
 
                 rectangulo(ventana, 250, 355, 620, 2, sf::Color(200, 190, 178));
-                ventana.dibujarTexto("Alta / edición · ID automático al sincronizar",
-                                     260, 360, 14, TEXTO_SUAVE);
+                ventana.dibujarTexto("ID (solo lectura): " +
+                    (productoSel.empty() ? "selecciona un producto" : productoSel), 260, 360, 14, TEXTO_SUAVE);
                 campoNombreProducto.dibujar(ventana);
                 campoStockProducto.dibujar(ventana);
                 campoPrecioProducto.dibujar(ventana);
