@@ -49,6 +49,10 @@ class Cafeteria : public Usuario {
 		string folioDetalle;
 		vector<pair<Producto, int>> detallePedido;
 
+		// folios de pedidos (web o simulador) ya sumados a gananciaCajaTurno,
+		// para no volver a contarlos en cada refresco.
+		vector<string> foliosPedidoContabilizados;
+
 		// conexion al servidor (mismo patron que Cliente / Administrador)
 		int socketCafeteria;
 		string ipServidor;
@@ -58,6 +62,10 @@ class Cafeteria : public Usuario {
 
 		// Manda un comando de tipo lista ("OK|N" + N lineas) y regresa las N lineas.
 		bool pedirLista(const string& comando, vector<string>& lineas);
+
+		// Revisa listaPedidos por pedidos ya Entregados (hechos desde la web o
+		// por el simulador) que todavia no se sumaron a la ganancia del turno.
+		void contabilizarPedidosCompletados();
 
 	public:
 		Cafeteria();
@@ -76,6 +84,7 @@ class Cafeteria : public Usuario {
 		string getNombreCafeteria() const;
 		string getIdCafeteria() const;
 		vector<Producto> getInventario() const;
+		bool hayProductoAgotado() const; // true si algun producto tiene stock 0 (para el aviso en la barra lateral)
 		vector<Pedido> getListaPedidos() const;
 		float getGananciaCajaTurno() const;
 		vector<Producto> getVendidosCajaTurno() const;
