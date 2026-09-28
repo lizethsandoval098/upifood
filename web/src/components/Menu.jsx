@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 const menuItems = [
   {
@@ -281,6 +281,7 @@ export default function Menu({ onAddToCart = () => {} }) {
           position: relative;
           padding: 72px 22px 84px;
           background:
+            var(--upifood-floral-pattern) left top / 300px repeat,
             radial-gradient(circle at 18% 0%, rgba(250, 236, 219, 0.92) 0%, rgba(250, 236, 219, 0) 42%),
             linear-gradient(180deg, #f8eedf 0%, #f2e2cd 55%, #ecd6bc 100%);
           overflow: hidden;

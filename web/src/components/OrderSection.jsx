@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 export default function OrderSection({
   items = [],
@@ -6,6 +6,8 @@ export default function OrderSection({
   onDecreaseItem = () => {},
   onIncreaseItem = () => {},
   onProceedToPayment = () => {},
+  guestMode = false,
+  onGuestConfirmOrder = () => {},
   modal = false,
 }) {
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -16,6 +18,7 @@ export default function OrderSection({
     cvv: '',
     postal: '',
   });
+  const [cvvError, setCvvError] = useState('');
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -34,7 +37,10 @@ export default function OrderSection({
     }
 
     if (name === 'cvv') {
-      nextValue = value.replace(/\D/g, '').slice(0, 4);
+      nextValue = value.replace(/\D/g, '').slice(0, 3);
+      if (cvvError) {
+        setCvvError(nextValue.length === 3 ? '' : 'El CVV debe tener exactamente 3 dígitos.');
+      }
     }
 
     if (name === 'postal') {
@@ -49,6 +55,12 @@ export default function OrderSection({
 
   const handleProceedToPayment = () => {
     if (!items.length) return;
+    if (!/^\d{3}$/.test(paymentForm.cvv)) {
+      setCvvError('El CVV debe tener exactamente 3 dígitos.');
+      return;
+    }
+
+    setCvvError('');
 
     onProceedToPayment({
       holder: paymentForm.holder.trim() || 'Cliente',
@@ -290,6 +302,14 @@ export default function OrderSection({
           box-shadow: 0 0 0 3px rgba(166, 107, 61, 0.14);
         }
 
+        .payment-error {
+          grid-column: 1 / -1;
+          margin: -4px 0 0;
+          color: #8d4638;
+          font-size: 0.82rem;
+          font-weight: 600;
+        }
+
         .payment-grid {
           display: grid;
           grid-template-columns: 1.7fr 0.8fr 0.6fr;
@@ -417,6 +437,22 @@ export default function OrderSection({
             </header>
 
             <div className="payment-body">
+              {guestMode ? (
+                <>
+                  <div className="payment-badge">Pedido como invitado</div>
+                  <p className="payment-small-note">Puedes confirmar tu pedido sin registrarte ni proporcionar datos personales.</p>
+                  <button
+                    type="button"
+                    className="payment-button"
+                    onClick={onGuestConfirmOrder}
+                    disabled={!items.length}
+                    style={{ opacity: items.length ? 1 : 0.55, cursor: items.length ? 'pointer' : 'not-allowed' }}
+                  >
+                    Confirmar pedido
+                  </button>
+                </>
+              ) : (
+                <>
               <div className="payment-badge">Solo pago con tarjeta</div>
               <form className="payment-form" onSubmit={(event) => event.preventDefault()}>
                 <input
@@ -451,9 +487,13 @@ export default function OrderSection({
                     type="text"
                     name="cvv"
                     placeholder="CVV"
-                    maxLength="4"
+                    inputMode="numeric"
+                    pattern="[0-9]{3}"
+                    maxLength={3}
                     value={paymentForm.cvv}
                     onChange={handleInputChange}
+                    aria-invalid={Boolean(cvvError)}
+                    aria-describedby={cvvError ? 'payment-cvv-error' : undefined}
                   />
                   <input
                     className="payment-input"
@@ -465,6 +505,7 @@ export default function OrderSection({
                     onChange={handleInputChange}
                   />
                 </div>
+                {cvvError ? <p className="payment-error" id="payment-cvv-error" role="alert">{cvvError}</p> : null}
                 <button type="button" className="payment-button" onClick={handleProceedToPayment}>
                   Proceder al pago
                 </button>
@@ -472,6 +513,8 @@ export default function OrderSection({
               <p className="payment-small-note">
                 La compra se procesara con tarjeta bancaria o tarjeta de debito. 
               </p>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -1,9 +1,8 @@
-import React from 'react';
-
 const statusColors = {
   'En preparación': '#c77a2a',
   'Listo para recolección': '#1d7a52',
   Entregado: '#4d5d74',
+  Cancelado: '#8d4638',
 };
 
 const formatDate = (isoDate) => {
@@ -30,8 +29,17 @@ const getStatusBadgeStyle = (estatus) => ({
 export default function PedidosModal({ open, onClose, activePedido, historialPedidos }) {
   if (!open) return null;
 
-  const entregados = (historialPedidos || []).filter((pedido) => pedido?.estatus === 'Entregado');
-  const currentPedido = activePedido || entregados[0] || null;
+  const pedidos = [...(historialPedidos || [])];
+  if (activePedido && !pedidos.some((pedido) => pedido.id === activePedido.id)) {
+    pedidos.unshift(activePedido);
+  }
+
+  const pedidosFinalizados = pedidos.filter((pedido) =>
+    ['Entregado', 'Cancelado'].includes(pedido?.estatus)
+  );
+  const pedidosActivos = pedidos.filter((pedido) =>
+    !['Entregado', 'Cancelado'].includes(pedido?.estatus)
+  );
 
   return (
     <div
@@ -100,65 +108,67 @@ export default function PedidosModal({ open, onClose, activePedido, historialPed
 
         <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 0.9fr', gap: '22px', padding: '22px 28px 28px' }}>
           <section style={{ display: 'grid', gap: '18px' }}>
-            <div style={{ background: '#fff9f4', border: '1px solid #f0d7b9', borderRadius: '20px', padding: '18px 18px 12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
-                <div>
-                  <p style={{ margin: 0, color: '#8a5a2b', fontSize: '0.74rem', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase' }}>
-                    Pedido en curso
-                  </p>
-                  <h3 style={{ margin: '6px 0 0', color: '#3c2a21', fontSize: '1.55rem' }}>
-                    {currentPedido ? currentPedido.id : 'Sin pedido activo'}
-                  </h3>
-                </div>
-                {currentPedido ? (
-                  <span style={{ ...getStatusBadgeStyle(currentPedido.estatus), borderRadius: '999px', padding: '8px 12px', fontWeight: 700, fontSize: '0.82rem' }}>
-                    {currentPedido.estatus}
-                  </span>
-                ) : null}
+            <div style={{ background: '#fff9f4', border: '1px solid #f0d7b9', borderRadius: '20px', padding: '18px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+                <h3 style={{ margin: 0, color: '#8a5a2b', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase' }}>
+                  Pedido en curso
+                </h3>
+                <span style={{ color: '#7a5b45', fontSize: '0.9rem', fontWeight: 700 }}>{pedidosActivos.length}</span>
               </div>
 
-              {currentPedido ? (
-                <>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: '12px', marginBottom: '12px' }}>
-                    <div style={{ background: '#fff3e7', borderRadius: '14px', padding: '12px', border: '1px solid #e7c9a3' }}>
-                      <div style={{ fontSize: '0.72rem', color: '#7a5b45', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Fecha</div>
-                      <strong style={{ display: 'block', marginTop: '6px', color: '#3c2a21' }}>{formatDate(currentPedido.fecha)}</strong>
-                    </div>
-                    <div style={{ background: '#fff3e7', borderRadius: '14px', padding: '12px', border: '1px solid #e7c9a3' }}>
-                      <div style={{ fontSize: '0.72rem', color: '#7a5b45', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Tiempo estimado</div>
-                      <strong style={{ display: 'block', marginTop: '6px', color: '#3c2a21' }}>{currentPedido.tiempoEstimado} min</strong>
-                    </div>
-                    <div style={{ background: '#fff3e7', borderRadius: '14px', padding: '12px', border: '1px solid #e7c9a3' }}>
-                      <div style={{ fontSize: '0.72rem', color: '#7a5b45', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Total</div>
-                      <strong style={{ display: 'block', marginTop: '6px', color: '#3c2a21' }}>${currentPedido.total}</strong>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gap: '10px' }}>
-                    {currentPedido.items.map((item) => (
-                      <div key={`${currentPedido.id}-${item.id}`} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '10px 12px', borderRadius: '12px', background: '#fffaf5', border: '1px solid #efdcc2' }}>
-                        <div>
-                          <strong style={{ color: '#402d1f' }}>{item.name}</strong>
-                          <div style={{ color: '#755a41', fontSize: '0.9rem' }}>Cantidad: {item.quantity}</div>
-                        </div>
-                        <span style={{ color: '#8b5728', fontWeight: 800 }}>${item.quantity * item.price}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
+              {!pedidosActivos.length ? (
+                <div style={{ padding: '8px 0', color: '#6d4f3b' }}>Todavía no tienes pedidos activos.</div>
               ) : (
-                <div style={{ padding: '16px 0 8px', color: '#6d4f3b' }}>Todavía no tienes un pedido activo.</div>
+                <div style={{ display: 'grid', gap: '12px', maxHeight: '430px', overflowY: 'auto', paddingRight: '6px' }}>
+                  {pedidosActivos.map((pedido) => (
+                    <article key={pedido.id} style={{ background: '#fffdfb', border: '1px solid #f0d7b9', borderRadius: '16px', padding: '14px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
+                        <h4 style={{ margin: 0, color: '#3c2a21', fontSize: '1.2rem' }}>{pedido.id}</h4>
+                        <span style={{ ...getStatusBadgeStyle(pedido.estatus), borderRadius: '999px', padding: '7px 10px', fontWeight: 700, fontSize: '0.78rem' }}>
+                          {pedido.estatus}
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: '8px', marginBottom: '12px' }}>
+                        <div style={{ background: '#fff3e7', borderRadius: '12px', padding: '10px', border: '1px solid #e7c9a3' }}>
+                          <div style={{ fontSize: '0.68rem', color: '#7a5b45', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Fecha</div>
+                          <strong style={{ display: 'block', marginTop: '5px', color: '#3c2a21', fontSize: '0.86rem' }}>{formatDate(pedido.fecha)}</strong>
+                        </div>
+                        <div style={{ background: '#fff3e7', borderRadius: '12px', padding: '10px', border: '1px solid #e7c9a3' }}>
+                          <div style={{ fontSize: '0.68rem', color: '#7a5b45', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Tiempo estimado</div>
+                          <strong style={{ display: 'block', marginTop: '5px', color: '#3c2a21', fontSize: '0.86rem' }}>{pedido.tiempoEstimado} min</strong>
+                        </div>
+                        <div style={{ background: '#fff3e7', borderRadius: '12px', padding: '10px', border: '1px solid #e7c9a3' }}>
+                          <div style={{ fontSize: '0.68rem', color: '#7a5b45', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Total</div>
+                          <strong style={{ display: 'block', marginTop: '5px', color: '#3c2a21', fontSize: '0.86rem' }}>${pedido.total}</strong>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gap: '8px' }}>
+                        {(pedido.items || []).map((item, index) => (
+                          <div key={`${pedido.id}-${item.id ?? index}`} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '9px 10px', borderRadius: '10px', background: '#fffaf5', border: '1px solid #efdcc2' }}>
+                            <div>
+                              <strong style={{ color: '#402d1f' }}>{item.name}</strong>
+                              <div style={{ color: '#755a41', fontSize: '0.88rem' }}>Cantidad: {item.quantity}</div>
+                            </div>
+                            <span style={{ color: '#8b5728', fontWeight: 800 }}>${item.quantity * item.price}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </article>
+                  ))}
+                </div>
               )}
             </div>
 
             <div style={{ background: '#fff9f4', border: '1px solid #f0d7b9', borderRadius: '20px', padding: '18px' }}>
               <h3 style={{ margin: '0 0 14px', color: '#3c2a21', fontSize: '1.35rem' }}>Historial de pedidos</h3>
 
-              {!entregados.length ? (
+              {!pedidosFinalizados.length ? (
                 <div style={{ color: '#6d4f3b' }}>Aún no hay pedidos entregados.</div>
               ) : (
                 <div style={{ display: 'grid', gap: '12px' }}>
-                  {entregados.map((pedido) => (
+                  {pedidosFinalizados.map((pedido) => (
                     <div key={pedido.id} style={{ border: '1px solid #f0d7b9', background: '#fffaf5', borderRadius: '16px', padding: '14px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                         <strong style={{ color: '#3c2a21' }}>{pedido.id}</strong>
@@ -168,8 +178,8 @@ export default function PedidosModal({ open, onClose, activePedido, historialPed
                       </div>
                       <div style={{ color: '#725740', fontSize: '0.9rem', marginBottom: '10px' }}>{formatDate(pedido.fecha)}</div>
                       <div style={{ display: 'grid', gap: '6px' }}>
-                        {pedido.items.map((item) => (
-                          <div key={`${pedido.id}-${item.id}`} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', color: '#4a3020' }}>
+                        {(pedido.items || []).map((item, index) => (
+                          <div key={`${pedido.id}-${item.id ?? index}`} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', color: '#4a3020' }}>
                             <span>{item.name} x{item.quantity}</span>
                             <span>${item.quantity * item.price}</span>
                           </div>
@@ -191,15 +201,15 @@ export default function PedidosModal({ open, onClose, activePedido, historialPed
             <div style={{ display: 'grid', gap: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: '#5c4636' }}>
                 <span>Pedidos activos</span>
-                <strong>{(historialPedidos || []).filter((pedido) => pedido?.estatus !== 'Entregado').length}</strong>
+                <strong>{pedidosActivos.length}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: '#5c4636' }}>
                 <span>Pedidos entregados</span>
-                <strong>{entregados.length}</strong>
+                <strong>{pedidosFinalizados.length}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: '#5c4636' }}>
                 <span>Valor total</span>
-                <strong>${(historialPedidos || []).reduce((sum, pedido) => sum + Number(pedido?.total || 0), 0)}</strong>
+                <strong>${pedidos.reduce((sum, pedido) => sum + Number(pedido?.total || 0), 0)}</strong>
               </div>
             </div>
           </aside>

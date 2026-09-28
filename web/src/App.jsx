@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
+import Inicio from './components/Inicio';
 import Menu from './components/Menu';
 import OrderSection from './components/OrderSection';
 import PedidosModal from './components/PedidosModal';
-
-const DEMO_USER_ID = 'usuario-demo';
+import ConfiguracionModal from './components/ConfiguracionModal';
 
 function App() {
   const [cartItems, setCartItems] = useState([]);
@@ -18,6 +18,16 @@ function App() {
   const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false);
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [pedidoError, setPedidoError] = useState('');
+  const [activeView, setActiveView] = useState('inicio');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [registeredCredentials, setRegisteredCredentials] = useState(null);
+  const [userData, setUserData] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('upifood_user') || 'null');
+    } catch {
+      return null;
+    }
+  });
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     try {
       return localStorage.getItem('cafeteria_session') === 'true';
@@ -25,6 +35,8 @@ function App() {
       return false;
     }
   });
+  const [isGuest, setIsGuest] = useState(false);
+  const hasAccess = isLoggedIn || isGuest;
 
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
   const totalToPay = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -114,20 +126,42 @@ function App() {
   };
 
   const handleLogin = () => {
+    setIsGuest(false);
     setIsLoggedIn(true);
+    setActiveView('inicio');
+    window.location.hash = 'inicio';
+  };
+
+  const handleGuestAccess = () => {
+    setIsGuest(true);
+    setActiveView('menu');
+    window.location.hash = 'menu';
+  };
+
+  const handleRegister = (registeredUser, credentials) => {
+    setUserData(registeredUser);
+    setRegisteredCredentials(credentials);
+    try {
+      localStorage.setItem('upifood_user', JSON.stringify(registeredUser));
+    } catch {
+      // El perfil también queda disponible en el estado actual de la aplicación.
+    }
   };
 
   const handleLogout = () => {
+    setIsGuest(false);
     setIsLoggedIn(false);
     setCartItems([]);
     setIsCartOpen(false);
     setIsReceiptOpen(false);
     setIsPaymentConfirmed(false);
     setIsOrdersModalOpen(false);
+    setIsSettingsOpen(false);
     setReceiptData(null);
     setPedidoActual(null);
     setHistorialPedidos([]);
     setPedidoError('');
+    setActiveView('inicio');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -148,16 +182,13 @@ function App() {
   }, [isLoggedIn]);
 
   useEffect(() => {
-    if (isLoggedIn) {
-      const scrollTimeout = setTimeout(() => {
-        document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 120);
+    const handleNavigation = () => {
+      setActiveView(window.location.hash === '#menu' ? 'menu' : 'inicio');
+    };
 
-      return () => clearTimeout(scrollTimeout);
-    }
-
-    return undefined;
-  }, [isLoggedIn]);
+    window.addEventListener('hashchange', handleNavigation);
+    return () => window.removeEventListener('hashchange', handleNavigation);
+  }, []);
 
   return (
     <>
@@ -328,14 +359,25 @@ function App() {
           cartCount={cartCount}
           onCartClick={() => setIsCartOpen(true)}
           isLoggedIn={isLoggedIn}
+          isGuest={isGuest}
+          userData={userData}
           onLogout={handleLogout}
           onOpenOrders={handleOpenOrders}
+          onOpenSettings={() => setIsSettingsOpen(true)}
         />
 
         <main>
-          {!isLoggedIn ? <Hero onLogin={handleLogin} /> : null}
+          {!hasAccess ? (
+            <Hero
+              onLogin={handleLogin}
+              onRegister={handleRegister}
+              registeredCredentials={registeredCredentials}
+              onGuest={handleGuestAccess}
+            />
+          ) : null}
 
-          {isLoggedIn ? <Menu onAddToCart={handleAddToCart} /> : null}
+          {hasAccess && activeView === 'inicio' ? <Inicio /> : null}
+          {hasAccess && activeView === 'menu' ? <Menu onAddToCart={handleAddToCart} /> : null}
 
           {isCartOpen ? (
             <div
@@ -388,6 +430,8 @@ function App() {
                   onDecreaseItem={handleDecreaseItem}
                   onIncreaseItem={handleIncreaseItem}
                   onProceedToPayment={handleProceedToPayment}
+                  guestMode={isGuest}
+                  onGuestConfirmOrder={handleConfirmPayment}
                   modal
                 />
               </div>
@@ -473,6 +517,12 @@ function App() {
         activePedido={pedidoActual}
         historialPedidos={historialPedidos}
         onClose={() => setIsOrdersModalOpen(false)}
+      />
+
+      <ConfiguracionModal
+        open={isSettingsOpen}
+        userData={userData}
+        onClose={() => setIsSettingsOpen(false)}
       />
 
       {isPaymentConfirmed ? (

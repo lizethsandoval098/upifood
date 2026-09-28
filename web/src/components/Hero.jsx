@@ -1,8 +1,52 @@
 import logo from '../assets/logo.jpg';
 import { useState } from 'react';
 
-export default function Hero({ onLogin = () => {} }) {
+export default function Hero({ onLogin = () => {}, onRegister = () => {}, onGuest = () => {}, registeredCredentials = null }) {
   const [activePanel, setActivePanel] = useState('');
+  const [loginError, setLoginError] = useState('');
+
+  const handleRegistration = (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const registeredUser = {
+      nombreCompleto: formData.get('nombreCompleto').trim(),
+      correo: formData.get('correo').trim(),
+      anioIngreso: formData.get('anioIngreso'),
+      escuela: formData.get('escuela'),
+    };
+    onRegister(registeredUser, {
+      correo: registeredUser.correo,
+      password: formData.get('password'),
+    });
+    setLoginError('');
+    setActivePanel('registro-exitoso');
+  };
+
+  const handleLogin = (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const correo = String(formData.get('loginCorreo') || '');
+    const password = String(formData.get('loginPassword') || '');
+
+    if (!correo.trim() || !password) {
+      setLoginError('Por favor, ingresa tu correo y contraseña.');
+      return;
+    }
+
+    if (!registeredCredentials) {
+      setLoginError('No hay una cuenta registrada en esta sesión. Crea una cuenta para continuar.');
+      return;
+    }
+
+    if (correo !== registeredCredentials.correo || password !== registeredCredentials.password) {
+      setLoginError('El correo o la contraseña son incorrectos.');
+      return;
+    }
+
+    setLoginError('');
+    setActivePanel('');
+    onLogin();
+  };
 
   return (
     <>
@@ -220,6 +264,17 @@ export default function Hero({ onLogin = () => {} }) {
           gap: 10px;
         }
 
+        .hero-form-error {
+          margin: 0;
+          padding: 10px 12px;
+          border: 1px solid #d9a69b;
+          border-radius: 10px;
+          background: #fff0ec;
+          color: #8d4638;
+          font-size: 0.9rem;
+          line-height: 1.4;
+        }
+
         .hero-mini-input {
           width: 100%;
           box-sizing: border-box;
@@ -375,17 +430,17 @@ export default function Hero({ onLogin = () => {} }) {
                       Guarda tus pedidos, recibe promos y vuelve a pedir en segundos.
                     </p>
                     <p className="hero-modal-visual-text">
-                      Queremos que se vea y se sienta como una ventana importante, igual que tu pedido.
+                      Queremos brindarte la mejor experiencia, por eso necesitamos algunos datos para crear tu perfil.
                     </p>
                   </div>
                   <div className="hero-modal-form-area">
                     <h3>Crear cuenta</h3>
                     <p>Llena estos datos para registrar tu acceso.</p>
-                    <form className="hero-mini-form">
-                      <input className="hero-mini-input" type="text" placeholder="Nombre completo" />
-                      <input className="hero-mini-input" type="email" placeholder="Correo institucional" />
-                      <input className="hero-mini-input" type="number" min="1960" max="2035" placeholder="Año en que entro al Poli" />
-                      <select className="hero-mini-select" defaultValue="">
+                    <form className="hero-mini-form" onSubmit={handleRegistration}>
+                      <input className="hero-mini-input" name="nombreCompleto" type="text" placeholder="Nombre completo" autoComplete="name" required />
+                      <input className="hero-mini-input" name="correo" type="email" placeholder="Correo institucional" autoComplete="email" required />
+                      <input className="hero-mini-input" name="anioIngreso" type="number" min="1960" max="2035" placeholder="Año en que entro al Poli" required />
+                      <select className="hero-mini-select" name="escuela" defaultValue="" required>
                         <option value="" disabled>
                           Escuela de procedencia del Poli
                         </option>
@@ -398,8 +453,8 @@ export default function Hero({ onLogin = () => {} }) {
                         <option value="cecyt">CECyT 9</option>
                         <option value="otra">Otra</option>
                       </select>
-                      <input className="hero-mini-input" type="password" placeholder="Crear contraseña" />
-                      <button type="button" className="hero-mini-button">
+                      <input className="hero-mini-input" name="password" type="password" placeholder="Crear contraseña" minLength="6" required />
+                      <button type="submit" className="hero-mini-button">
                         Registrarme
                       </button>
                     </form>
@@ -407,8 +462,33 @@ export default function Hero({ onLogin = () => {} }) {
                       <button type="button" className="hero-card-close" onClick={() => setActivePanel('')}>
                         Cerrar
                       </button>
-                      <button type="button" className="hero-card-switch" onClick={() => setActivePanel('login')}>
-                        Ir a iniciar sesion
+                    </div>
+                  </div>
+                </>
+              ) : null}
+
+              {activePanel === 'registro-exitoso' ? (
+                <>
+                  <div className="hero-modal-visual">
+                    <div className="hero-modal-visual-badge">Registro completado</div>
+                    <h3 className="hero-modal-visual-title">Tu cuenta está lista</h3>
+                    <p className="hero-modal-visual-text">
+                      Ya puedes iniciar sesión para entrar al menú y empezar a preparar tu pedido.
+                    </p>
+                  </div>
+                  <div className="hero-modal-form-area">
+                    <h3>¡Registro exitoso!</h3>
+                    <p>Tu cuenta ha sido creada correctamente.</p>
+                    <button
+                      type="button"
+                      className="hero-mini-button"
+                      onClick={() => setActivePanel('login')}
+                    >
+                      Iniciar sesión
+                    </button>
+                    <div className="hero-card-actions">
+                      <button type="button" className="hero-card-close" onClick={() => setActivePanel('')}>
+                        Cerrar
                       </button>
                     </div>
                   </div>
@@ -421,7 +501,7 @@ export default function Hero({ onLogin = () => {} }) {
                     <div className="hero-modal-visual-badge">Acceso rapido</div>
                     <h3 className="hero-modal-visual-title">Entra y sigue tu pedido sin perder tu historial</h3>
                     <p className="hero-modal-visual-text">
-                      El acceso se muestra como ventana grande, con el fondo difuminado para que destaque.
+                      El servicio más eficiente para gestionar tu pedido. <br />¡Inicia sesión y disfruta de la experiencia Upiifood!
                     </p>
                     <p className="hero-modal-visual-text">
                       Al ingresar te llevamos directo al menú.
@@ -430,17 +510,11 @@ export default function Hero({ onLogin = () => {} }) {
                   <div className="hero-modal-form-area">
                     <h3>Iniciar sesión</h3>
                     <p>Usa tus datos para entrar al sistema.</p>
-                    <form className="hero-mini-form">
-                      <input className="hero-mini-input" type="email" placeholder="Correo" />
-                      <input className="hero-mini-input" type="password" placeholder="Contraseña" />
-                      <button
-                        type="button"
-                        className="hero-mini-button hero-mini-button--light"
-                        onClick={() => {
-                          setActivePanel('');
-                          onLogin();
-                        }}
-                      >
+                    <form className="hero-mini-form" onSubmit={handleLogin} noValidate>
+                      <input className="hero-mini-input" name="loginCorreo" type="email" placeholder="Correo" autoComplete="email" aria-describedby={loginError ? 'login-error' : undefined} />
+                      <input className="hero-mini-input" name="loginPassword" type="password" placeholder="Contraseña" autoComplete="current-password" aria-describedby={loginError ? 'login-error' : undefined} />
+                      {loginError ? <p className="hero-form-error" id="login-error" role="alert">{loginError}</p> : null}
+                      <button type="submit" className="hero-mini-button hero-mini-button--light">
                         Ingresar
                       </button>
                     </form>
@@ -465,15 +539,22 @@ export default function Hero({ onLogin = () => {} }) {
                       Podrás ver el menú, agregar productos y revisar tu pedido con una ventana grande y elegante.
                     </p>
                     <p className="hero-modal-visual-text">
-                      El fondo borroso ayuda a que la atención se vaya a esta ventana emergente.
+                      Animate a registrarte y disfrutar de más beneficios.
                     </p>
                   </div>
                   <div className="hero-modal-form-area">
                     <h3>Entrar como invitado</h3>
                     <p>Accede rápido al menú y arma tu pedido.</p>
-                    <a href="#menu" className="hero-mini-button" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <button
+                      type="button"
+                      className="hero-mini-button"
+                      onClick={() => {
+                        setActivePanel('');
+                        onGuest();
+                      }}
+                    >
                       Ir al menu
-                    </a>
+                    </button>
                     <div className="hero-card-actions">
                       <button type="button" className="hero-card-close" onClick={() => setActivePanel('')}>
                         Cerrar

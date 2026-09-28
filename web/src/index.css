@@ -1,1 +1,28 @@
+:root {
+	font-family: Arial, sans-serif;
+	color: #3c2a21;
+	background-color: #f7eddf;
+	--upifood-floral-pattern: url('/flowers-pattern.svg');
+	--upifood-cream-gradient: linear-gradient(120deg, #f7eddf 0%, #ead7bd 100%);
+}
+
+html {
+	min-width: 320px;
+	min-height: 100%;
+	background-color: #f7eddf;
+}
+
+body {
+	min-width: 320px;
+	min-height: 100vh;
+	margin: 0;
+	background-image: var(--upifood-floral-pattern), var(--upifood-cream-gradient);
+	background-size: 300px 300px, auto;
+	background-repeat: repeat, no-repeat;
+	background-attachment: fixed;
+}
+
+#root {
+	min-height: 100vh;
+}
 

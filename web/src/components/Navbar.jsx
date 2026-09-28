@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import logo from '../assets/logo.jpg';
 
-export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLoggedIn = false, onLogout = () => {}, onOpenOrders = () => {} }) {
+export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLoggedIn = false, isGuest = false, userData = null, onLogout = () => {}, onOpenOrders = () => {}, onOpenSettings = () => {} }) {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   return (
@@ -114,6 +114,16 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
           padding: 2px 7px;
           font-size: 12px;
           font-weight: 700;
+        }
+
+        .guest-tag {
+          padding: 9px 14px;
+          border: 1px solid rgba(255, 248, 239, 0.22);
+          border-radius: 999px;
+          background: rgba(255, 248, 239, 0.1);
+          color: #fff8ef;
+          font-size: 0.9rem;
+          font-weight: 600;
         }
 
         .profile-button {
@@ -256,7 +266,7 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          {isLoggedIn ? (
+          {isLoggedIn || isGuest ? (
             <>
               <button type="button" className="cart-button" onClick={onCartClick} aria-label="Abrir mi pedido">
                 <span>🛒</span>
@@ -264,7 +274,9 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
                 <span className="cart-badge">{cartCount}</span>
               </button>
 
-              <div
+              {isGuest ? <span className="guest-tag">Invitado</span> : null}
+
+              {isLoggedIn ? <div
                 className="profile-wrapper"
                 onBlur={(event) => {
                   if (!event.currentTarget.contains(event.relatedTarget)) {
@@ -289,7 +301,7 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
                   <span className="profile-avatar" aria-hidden="true">U</span>
                   <span className="profile-labels">
                     <span>Perfil</span>
-                    <span>Usuario</span>
+                    <span>{userData?.nombreCompleto || 'Usuario'}</span>
                   </span>
                 </div>
 
@@ -298,8 +310,8 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
                     <div className="profile-dropdown-header">
                       <div className="profile-avatar" aria-hidden="true">U</div>
                       <div className="profile-dropdown-title">
-                        <strong>Usuario</strong>
-                        <span>Cuenta activa</span>
+                        <strong>{userData?.nombreCompleto || 'Usuario'}</strong>
+                        <span>{userData?.correo || 'Cuenta activa'}</span>
                       </div>
                     </div>
 
@@ -318,7 +330,10 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
                     <button
                       type="button"
                       className="profile-option"
-                      onClick={() => setProfileMenuOpen(false)}
+                      onClick={() => {
+                        setProfileMenuOpen(false);
+                        onOpenSettings();
+                      }}
                     >
                       <span>Configuración</span>
                       <span>›</span>
@@ -337,7 +352,7 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
                     </button>
                   </div>
                 ) : null}
-              </div>
+              </div> : null}
             </>
           ) : null}
         </div>
