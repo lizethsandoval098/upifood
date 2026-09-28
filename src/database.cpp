@@ -33,6 +33,30 @@ int numeroCafeteria(const string& idCafeteria) {
 	return (numero >= 1 && numero <= 9) ? numero : 0;
 }
 
+// true si la tabla ya tiene una columna con ese nombre (sirve para migrar bases
+// de datos viejas sin borrarlas).
+static bool tablaTieneColumna(sqlite3* db, const string& tabla, const string& columna) {
+	sqlite3_stmt* info = nullptr;
+	string sql = "PRAGMA table_info(" + tabla + ");";
+	bool encontrada = false;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &info, nullptr) != SQLITE_OK) {
+		return false;
+	}
+
+	while(sqlite3_step(info) == SQLITE_ROW) {
+		const unsigned char* nombre = sqlite3_column_text(info, 1);
+
+		if(nombre != nullptr && columna == reinterpret_cast<const char*>(nombre)) {
+			encontrada = true;
+		}
+	}
+
+	sqlite3_finalize(info);
+
+	return encontrada;
+}
+
 BaseDatos::BaseDatos() {
 	nombreBD = "upifood.db";
 	db = nullptr;
@@ -118,6 +142,7 @@ bool BaseDatos::inicializarTablas() {
 			    "total REAL NOT NULL CHECK (total > 0.0), "
 			    "usernameCliente TEXT NOT NULL, "
 			    "idCafeteria TEXT NOT NULL, "
+			    "cerrado INTEGER NOT NULL DEFAULT 0, "
 			    "FOREIGN KEY (usernameCliente) REFERENCES Usuarios(username) "
 			    "ON DELETE RESTRICT, "
 			    "FOREIGN KEY (idCafeteria) REFERENCES Cafeterias(idCafeteria) ON DELETE "
@@ -152,6 +177,17 @@ bool BaseDatos::inicializarTablas() {
 			     "REFERENCES Usuarios(username) "
 			     "ON DELETE CASCADE ON UPDATE CASCADE);";
 
+	// Historial de cortes de caja (una fila por cada "Cerrar Dia").
+	string sqlCierresCaja = "CREATE TABLE IF NOT EXISTS CierresCaja ("
+				"idCierre INTEGER PRIMARY KEY AUTOINCREMENT, "
+				"idCafeteria TEXT NOT NULL, "
+				"fechaCierre TEXT NOT NULL, "
+				"pedidosEntregados INTEGER NOT NULL DEFAULT 0, "
+				"pedidosCancelados INTEGER NOT NULL DEFAULT 0, "
+				"totalPedidos REAL NOT NULL DEFAULT 0, "
+				"ventasDirectas REAL NOT NULL DEFAULT 0, "
+				"totalCaja REAL NOT NULL DEFAULT 0);";
+
 	bool resultado = ejecutarQuery(sqlUsuarios) &&
 			 ejecutarQuery(sqlCafeterias) &&
 			 ejecutarQuery(sqlClientes) &&
@@ -159,7 +195,14 @@ bool BaseDatos::inicializarTablas() {
 			 ejecutarQuery(sqlPedidos) &&
 			 ejecutarQuery(sqlDetallePedido) &&
 			 ejecutarQuery(sqlTarjetas) &&
-			 ejecutarQuery(sqlPagos);
+			 ejecutarQuery(sqlPagos) &&
+			 ejecutarQuery(sqlCierresCaja);
+
+	// Migracion: las bases creadas antes del "Cierre de dia" no tienen la
+	// columna Pedidos.cerrado. Se agrega sin perder ningun dato.
+	if(resultado && !tablaTieneColumna(db, "Pedidos", "cerrado")) {
+		resultado = ejecutarQuery("ALTER TABLE Pedidos ADD COLUMN cerrado INTEGER NOT NULL DEFAULT 0;");
+	}
 
 	if(resultado) {
 		ejecutarQuery("COMMIT;");
@@ -613,7 +656,7 @@ vector<Pedido> BaseDatos::obtenerPedidosCafeteria(const string& idCafeteria) {  
 
 	string sql = "SELECT folio, fecha, estado, total, usernameCliente "
 	       	     "FROM Pedidos "
-		     "WHERE idCafeteria = ? "
+		     "WHERE idCafeteria = ? AND cerrado = 0 " // los pedidos ya cerrados en un corte no se muestran
 		     "ORDER BY rowid DESC;"; // mas recientes primero
 
 	sqlite3_stmt* stmt;
@@ -664,6 +707,101 @@ bool BaseDatos::actualizarEstadoPedido(const string& folio, const string& nuevoE
 	sqlite3_finalize(stmt);
 
 	return exito;
+}
+
+// Corte de caja / cierre de dia de UNA cafeteria.
+// En una sola transaccion:
+//   1) suma los pedidos Entregados que todavia no estan cerrados,
+//   2) marca como cerrados (cerrado = 1) los pedidos Entregados y Cancelados,
+//   3) guarda el corte en CierresCaja.
+// Los pedidos activos (Pendiente/Preparando/Listo) NO se tocan: siguen en la
+// lista y pasan al siguiente turno.
+bool BaseDatos::cerrarDiaCafeteria(const string& idCafeteria, float ventasDirectas,
+                                   const string& fechaCierre, int& pedidosEntregados,
+                                   int& pedidosCancelados, float& totalPedidos) {
+	pedidosEntregados = 0;
+	pedidosCancelados = 0;
+	totalPedidos = 0.0f;
+
+	if(!ejecutarQuery("BEGIN TRANSACTION;")) {
+		return false;
+	}
+
+	// 1) Consolidar lo que se va a cerrar
+	string sqlSuma = "SELECT "
+			 "COALESCE(SUM(CASE WHEN estado = 'Entregado' THEN 1 ELSE 0 END), 0), "
+			 "COALESCE(SUM(CASE WHEN estado = 'Cancelado' THEN 1 ELSE 0 END), 0), "
+			 "COALESCE(SUM(CASE WHEN estado = 'Entregado' THEN total ELSE 0 END), 0) "
+			 "FROM Pedidos "
+			 "WHERE idCafeteria = ? AND cerrado = 0 "
+			 "AND estado IN ('Entregado', 'Cancelado');";
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sqlSuma.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al consolidar el corte de caja: " << sqlite3_errmsg(db) << endl;
+		ejecutarQuery("ROLLBACK;");
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, idCafeteria.c_str(), -1, SQLITE_TRANSIENT);
+
+	if(sqlite3_step(stmt) == SQLITE_ROW) {
+		pedidosEntregados = sqlite3_column_int(stmt, 0);
+		pedidosCancelados = sqlite3_column_int(stmt, 1);
+		totalPedidos = static_cast<float>(sqlite3_column_double(stmt, 2));
+	}
+
+	sqlite3_finalize(stmt);
+
+	// 2) Marcar como cerrados
+	string sqlCerrar = "UPDATE Pedidos SET cerrado = 1 "
+			   "WHERE idCafeteria = ? AND cerrado = 0 "
+			   "AND estado IN ('Entregado', 'Cancelado');";
+
+	if(sqlite3_prepare_v2(db, sqlCerrar.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al cerrar los pedidos: " << sqlite3_errmsg(db) << endl;
+		ejecutarQuery("ROLLBACK;");
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, idCafeteria.c_str(), -1, SQLITE_TRANSIENT);
+
+	bool exito = (sqlite3_step(stmt) == SQLITE_DONE);
+	sqlite3_finalize(stmt);
+
+	if(!exito) {
+		ejecutarQuery("ROLLBACK;");
+		return false;
+	}
+
+	// 3) Guardar el corte
+	string sqlCorte = "INSERT INTO CierresCaja (idCafeteria, fechaCierre, pedidosEntregados, "
+			  "pedidosCancelados, totalPedidos, ventasDirectas, totalCaja) "
+			  "VALUES (?, ?, ?, ?, ?, ?, ?);";
+
+	if(sqlite3_prepare_v2(db, sqlCorte.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al guardar el corte de caja: " << sqlite3_errmsg(db) << endl;
+		ejecutarQuery("ROLLBACK;");
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, idCafeteria.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 2, fechaCierre.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_int(stmt, 3, pedidosEntregados);
+	sqlite3_bind_int(stmt, 4, pedidosCancelados);
+	sqlite3_bind_double(stmt, 5, totalPedidos);
+	sqlite3_bind_double(stmt, 6, ventasDirectas);
+	sqlite3_bind_double(stmt, 7, static_cast<double>(totalPedidos) + ventasDirectas);
+
+	exito = (sqlite3_step(stmt) == SQLITE_DONE);
+	sqlite3_finalize(stmt);
+
+	if(!exito) {
+		ejecutarQuery("ROLLBACK;");
+		return false;
+	}
+
+	return ejecutarQuery("COMMIT;");
 }
 
 vector<Pedido> BaseDatos::obtenerHistorialPedidos(const string& username) {        // para cliente

@@ -45,6 +45,9 @@ using namespace std;
 
 enum class Pantalla { LOGIN, PANEL };
 enum class Vista { PEDIDOS, INVENTARIO, CAJA };
+// Ventana emergente del "Cerrar Dia": primero pide confirmar (con el resumen),
+// despues muestra el resumen final de lo recaudado.
+enum class ModalCierre { NINGUNO, CONFIRMAR, RESUMEN };
 
 // ---- Colores (los mismos del administrador) ----
 static const sf::Color FONDO(245, 241, 233);
@@ -74,6 +77,12 @@ static const float SEGUNDOS_REFRESCO = 3.0f;
 static const float SEGUNDOS_MENSAJE = 5.0f;
 static const float SEGUNDOS_CONFIRMAR = 4.0f;
 static const sf::Color FILA_NUEVA(255, 243, 210);
+
+// Ventana emergente del cierre de dia (centrada)
+static const float MODAL_ANCHO = 560.0f;
+static const float MODAL_ALTO = 400.0f;
+static const float MODAL_X = (ANCHO - MODAL_ANCHO) / 2.0f;
+static const float MODAL_Y = (ALTO - MODAL_ALTO) / 2.0f;
 
 // Acorta un texto largo para que no se salga de su columna
 // (cuidando no partir a la mitad una letra con acento).
@@ -283,6 +292,16 @@ int main(int argc, char* argv[]) {
     // vista CAJA
     CampoTexto campoCaja("Cantidad vendida", 260, 488, 150, 38);
     Boton botonCobrar("Cobrar venta", 430, 488, 170, 38);
+    Boton botonCerrarDia("Cerrar Día", 800, 540, 280, 44);
+    botonCerrarDia.setColor(AMBAR);
+
+    // ventana emergente del cierre de dia
+    Boton botonConfirmarCierre("Confirmar cierre", MODAL_X + 30, MODAL_Y + MODAL_ALTO - 70, 250, 44);
+    Boton botonCancelarCierre("Cancelar", MODAL_X + MODAL_ANCHO - 30 - 250, MODAL_Y + MODAL_ALTO - 70, 250, 44);
+    Boton botonAceptarCierre("Aceptar", MODAL_X + (MODAL_ANCHO - 250) / 2.0f, MODAL_Y + MODAL_ALTO - 70, 250, 44);
+    botonConfirmarCierre.setColor(VERDE);
+    botonCancelarCierre.setColor(ROJO_ERROR);
+    botonAceptarCierre.setColor(VERDE);
 
     // ---------------- Estado del programa ----------------
     Pantalla pantalla = Pantalla::LOGIN;
@@ -301,6 +320,8 @@ int main(int argc, char* argv[]) {
     string pedidoSel;            // folio seleccionado (pedidos)
     bool soloActivos = true;     // filtro de la vista PEDIDOS
     bool confirmandoEliminar = false;
+    ModalCierre modalCierre = ModalCierre::NINGUNO;
+    ResumenCierre resumenFinal;  // el corte ya hecho (se muestra en la ventana final)
 
     auto avisar = [&](const string& texto, bool ok) {
         mensajeAccion = texto;
@@ -495,6 +516,26 @@ int main(int argc, char* argv[]) {
             campoCaja.limpiar();
         } else {
             avisar(cafeteria.getUltimoError(), false);
+        }
+    };
+
+    // ---- Cierre de dia / corte de caja ----
+    auto abrirCierreDia = [&]() {
+        cafeteria.cargarListaPedidos(); // pone al dia los pedidos entregados antes de mostrar el resumen
+        modalCierre = ModalCierre::CONFIRMAR;
+    };
+
+    auto confirmarCierreDia = [&]() {
+        ResumenCierre corte;
+
+        if (cafeteria.cerrarDia(corte)) {
+            resumenFinal = corte;
+            modalCierre = ModalCierre::RESUMEN;
+            productoSel.clear();
+            cargarVista();
+        } else {
+            modalCierre = ModalCierre::NINGUNO;
+            avisar("No se pudo cerrar el día: " + cafeteria.getUltimoError(), false);
         }
     };
 
@@ -737,6 +778,39 @@ int main(int argc, char* argv[]) {
             }
             else { // Pantalla::PANEL
 
+                // Mientras la ventana de cierre esta abierta, solo ella recibe eventos.
+                if (modalCierre != ModalCierre::NINGUNO) {
+                    if (e.type == sf::Event::MouseMoved) {
+                        float mx = static_cast<float>(e.mouseMove.x);
+                        float my = static_cast<float>(e.mouseMove.y);
+
+                        botonConfirmarCierre.actualizarHover(mx, my);
+                        botonCancelarCierre.actualizarHover(mx, my);
+                        botonAceptarCierre.actualizarHover(mx, my);
+                    }
+                    else if (e.type == sf::Event::MouseButtonPressed && e.mouseButton.button == sf::Mouse::Left) {
+                        float mx = static_cast<float>(e.mouseButton.x);
+                        float my = static_cast<float>(e.mouseButton.y);
+
+                        if (modalCierre == ModalCierre::CONFIRMAR) {
+                            if (botonConfirmarCierre.contiene(mx, my))      confirmarCierreDia();
+                            else if (botonCancelarCierre.contiene(mx, my))  modalCierre = ModalCierre::NINGUNO;
+                        } else if (botonAceptarCierre.contiene(mx, my)) {
+                            modalCierre = ModalCierre::NINGUNO;
+                        }
+                    }
+                    else if (e.type == sf::Event::KeyPressed) {
+                        if (e.key.code == sf::Keyboard::Escape) {
+                            modalCierre = ModalCierre::NINGUNO;
+                        } else if (e.key.code == sf::Keyboard::Return) {
+                            if (modalCierre == ModalCierre::CONFIRMAR) confirmarCierreDia();
+                            else                                       modalCierre = ModalCierre::NINGUNO;
+                        }
+                    }
+
+                    continue;
+                }
+
                 if (e.type == sf::Event::MouseMoved) {
                     float mx = static_cast<float>(e.mouseMove.x);
                     float my = static_cast<float>(e.mouseMove.y);
@@ -759,6 +833,7 @@ int main(int argc, char* argv[]) {
                     botonRestock.actualizarHover(mx, my);
 
                     botonCobrar.actualizarHover(mx, my);
+                    botonCerrarDia.actualizarHover(mx, my);
                 }
                 else if (e.type == sf::Event::MouseButtonPressed && e.mouseButton.button == sf::Mouse::Left) {
                     float mx = static_cast<float>(e.mouseButton.x);
@@ -795,6 +870,8 @@ int main(int argc, char* argv[]) {
 
                         if (botonCobrar.contiene(mx, my)) {
                             hacerCobro();
+                        } else if (botonCerrarDia.contiene(mx, my)) {
+                            abrirCierreDia();
                         } else {
                             int fila = filaClicada(mx, my, FILAS_CAJA);
                             vector<Producto> inv = cafeteria.getInventario();
@@ -1226,6 +1303,7 @@ int main(int argc, char* argv[]) {
                 // ganancia del turno (a la derecha)
                 ventana.dibujarTexto("Ganancia del turno", 800, 462, 15, TEXTO_SUAVE);
                 ventana.dibujarTexto(dinero(cafeteria.getGananciaCajaTurno()), 800, 484, 32, VERDE);
+                botonCerrarDia.dibujar(ventana);
 
                 // ultimas ventas
                 const vector<VentaCaja>& ventas = cafeteria.getHistorialCaja();
@@ -1250,6 +1328,61 @@ int main(int argc, char* argv[]) {
                 ventana.dibujarTexto(mensajeAccion, 260, yMensaje, 16, accionOk ? VERDE : ROJO_ERROR);
             } else if (!mensajePanel.empty()) {
                 ventana.dibujarTexto(mensajePanel, 260, yMensaje, 16, ROJO_ERROR);
+            }
+        }
+
+        // ---------- Ventana emergente: cierre de dia / corte de caja ----------
+        if (pantalla == Pantalla::PANEL && modalCierre != ModalCierre::NINGUNO) {
+            rectangulo(ventana, 0, 0, ANCHO, ALTO, sf::Color(0, 0, 0, 150)); // oscurece el fondo
+            rectangulo(ventana, MODAL_X - 3, MODAL_Y - 3, MODAL_ANCHO + 6, MODAL_ALTO + 6, BARRA_LATERAL);
+            rectangulo(ventana, MODAL_X, MODAL_Y, MODAL_ANCHO, MODAL_ALTO, CREMA);
+
+            const float izq = MODAL_X + 30;
+            const float der = MODAL_X + MODAL_ANCHO - 30;
+            const bool esFinal = (modalCierre == ModalCierre::RESUMEN);
+
+            // Vista previa (turno actual) o el corte ya hecho
+            ResumenCierre r = esFinal ? resumenFinal : cafeteria.getResumenTurno();
+
+            ventana.dibujarTexto(esFinal ? "Día cerrado" : "Cerrar día / Corte de caja",
+                                 izq, MODAL_Y + 20, 26, esFinal ? VERDE : TEXTO_OSCURO);
+            ventana.dibujarTexto(esFinal ? "Resumen final de lo recaudado" + string(r.fecha.empty() ? "" : "  (" + r.fecha + ")")
+                                         : "Resumen del turno antes de cerrar",
+                                 izq, MODAL_Y + 58, 15, TEXTO_SUAVE);
+            rectangulo(ventana, izq, MODAL_Y + 84, MODAL_ANCHO - 60, 2, sf::Color(200, 190, 178));
+
+            // Lineas del desglose (concepto a la izquierda, importe a la derecha)
+            auto linea = [&](const string& concepto, const string& importe, float y) {
+                ventana.dibujarTexto(concepto, izq, y, 18, TEXTO_OSCURO);
+                ventana.dibujarTexto(importe, der - 130, y, 18, TEXTO_OSCURO);
+            };
+
+            linea("Ventas en mostrador", dinero(r.ventasDirectas), MODAL_Y + 100);
+            linea("Pedidos entregados (" + to_string(r.pedidosEntregados) + ")", dinero(r.totalPedidos), MODAL_Y + 130);
+
+            rectangulo(ventana, izq, MODAL_Y + 165, MODAL_ANCHO - 60, 2, sf::Color(200, 190, 178));
+            ventana.dibujarTexto(esFinal ? "TOTAL RECAUDADO" : "TOTAL A RECAUDAR", izq, MODAL_Y + 182, 16, TEXTO_SUAVE);
+            ventana.dibujarTexto(dinero(r.totalCaja), izq, MODAL_Y + 204, 44, VERDE);
+
+            if (esFinal) {
+                string cerrados = "Pedidos cerrados: " + to_string(r.pedidosEntregados) + " entregados";
+                if (r.pedidosCancelados > 0) cerrados += ", " + to_string(r.pedidosCancelados) + " cancelados";
+                ventana.dibujarTexto(cerrados, izq, MODAL_Y + 272, 16, TEXTO_OSCURO);
+                ventana.dibujarTexto("La ganancia del turno se reinició a " + dinero(0.0f) + ".", izq, MODAL_Y + 298, 16, TEXTO_OSCURO);
+                ventana.dibujarTexto("Se inicia un nuevo turno con el historial de pedidos limpio.", izq, MODAL_Y + 322, 15, TEXTO_SUAVE);
+                botonAceptarCierre.dibujar(ventana);
+            } else {
+                ventana.dibujarTexto("Se archivarán como Cerrados los pedidos entregados y cancelados,", izq, MODAL_Y + 272, 15, TEXTO_OSCURO);
+                ventana.dibujarTexto("y la ganancia del turno volverá a $0.00.", izq, MODAL_Y + 292, 15, TEXTO_OSCURO);
+
+                int activos = cafeteria.getPedidosActivos();
+                if (activos > 0) {
+                    ventana.dibujarTexto("Hay " + to_string(activos) + " pedido(s) activo(s): pasan al siguiente turno.",
+                                         izq, MODAL_Y + 320, 15, AMBAR);
+                }
+
+                botonConfirmarCierre.dibujar(ventana);
+                botonCancelarCierre.dibujar(ventana);
             }
         }
 

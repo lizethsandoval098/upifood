@@ -804,6 +804,56 @@ string Servidor::procesarComando(const string& comando) {
     }
 
     // ---------------------------------------------------------------
+    // CIERRE_DIA|idCafeteria|ventasDirectas
+    // Corte de caja: marca como Cerrados los pedidos Entregados y Cancelados
+    // de la cafeteria (los activos pasan al siguiente turno) y guarda el corte.
+    // ventasDirectas = lo vendido en mostrador (no vive en la BD), solo se
+    // registra en el historial de cortes.
+    // -> OK|pedidosEntregados|totalPedidos|pedidosCancelados|fechaCierre
+    // ---------------------------------------------------------------
+    if (tipo == "CIERRE_DIA") {
+        if (campos.size() < 3) return "ERR|Formato invalido.";
+
+        string idCafeteria = campos[1];
+        float ventasDirectas = 0.0f;
+
+        if (idCafeteria.empty()) {
+            return "ERR|Cafeteria invalida.";
+        }
+
+        try {
+            ventasDirectas = stof(campos[2]);
+        } catch (...) {
+            return "ERR|Monto de ventas en caja invalido.";
+        }
+
+        if (ventasDirectas < 0.0f) {
+            ventasDirectas = 0.0f;
+        }
+
+        time_t ahora = time(nullptr);
+        char bufferFecha[32];
+        strftime(bufferFecha, sizeof(bufferFecha), "%Y-%m-%d %H:%M:%S", localtime(&ahora));
+
+        int entregados = 0;
+        int cancelados = 0;
+        float totalPedidos = 0.0f;
+
+        lock_guard<mutex> guard(dbMutex);
+
+        if (!db.cerrarDiaCafeteria(idCafeteria, ventasDirectas, bufferFecha,
+                                   entregados, cancelados, totalPedidos)) {
+            return "ERR|No se pudo realizar el cierre del dia.";
+        }
+
+        char bufferTotal[32];
+        snprintf(bufferTotal, sizeof(bufferTotal), "%.2f", totalPedidos);
+
+        return "OK|" + to_string(entregados) + "|" + bufferTotal + "|" +
+               to_string(cancelados) + "|" + bufferFecha;
+    }
+
+    // ---------------------------------------------------------------
     // VENTA_CAJA|idProducto|cantidad
     // Venta directa en caja: descuenta del inventario.
     // -> OK|idProducto|nuevoStock|precioUnitario

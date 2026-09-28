@@ -14,7 +14,7 @@
 
 using namespace std;
 
-Cafeteria::Cafeteria() : gananciaCajaTurno(0.0f) {
+Cafeteria::Cafeteria() : gananciaCajaTurno(0.0f), gananciaPedidosTurno(0.0f) {
 	socketCafeteria = -1;
 	ipServidor = "100.70.231.3"; // IP de Tailscale de la compu con la BD/servidor
 	puerto = 5000;
@@ -22,7 +22,7 @@ Cafeteria::Cafeteria() : gananciaCajaTurno(0.0f) {
 
 Cafeteria::Cafeteria(string nombre, string correo, string contrasena, string username, string idCafeteria)
 	: Usuario("Cafe", nombre, correo, contrasena, username),
-	  idCafeteria{idCafeteria}, gananciaCajaTurno(0.0f) {
+	  idCafeteria{idCafeteria}, gananciaCajaTurno(0.0f), gananciaPedidosTurno(0.0f) {
 	socketCafeteria = -1;
 	ipServidor = "100.70.231.3";
 	puerto = 5000;
@@ -37,6 +37,7 @@ Cafeteria::Cafeteria(const Cafeteria& otra)
 	  listaPedidos(otra.listaPedidos),
 	  productosPendientes(otra.productosPendientes),
 	  gananciaCajaTurno(otra.gananciaCajaTurno),
+	  gananciaPedidosTurno(otra.gananciaPedidosTurno),
 	  vendidosCajaTurno(otra.vendidosCajaTurno),
 	  historialCaja(otra.historialCaja),
 	  folioDetalle(otra.folioDetalle),
@@ -56,6 +57,7 @@ Cafeteria& Cafeteria::operator=(const Cafeteria& otra) {
 		listaPedidos = otra.listaPedidos;
 		productosPendientes = otra.productosPendientes;
 		gananciaCajaTurno = otra.gananciaCajaTurno;
+		gananciaPedidosTurno = otra.gananciaPedidosTurno;
 		vendidosCajaTurno = otra.vendidosCajaTurno;
 		historialCaja = otra.historialCaja;
 		folioDetalle = otra.folioDetalle;
@@ -147,6 +149,38 @@ vector<Pedido> Cafeteria::getListaPedidos() const {
 
 float Cafeteria::getGananciaCajaTurno() const {
 	return gananciaCajaTurno;
+}
+
+// Lo que llevaria el corte si se cerrara el dia en este momento.
+ResumenCierre Cafeteria::getResumenTurno() const {
+	ResumenCierre resumen;
+
+	resumen.pedidosEntregados = static_cast<int>(foliosPedidoContabilizados.size());
+	resumen.totalPedidos = gananciaPedidosTurno;
+	resumen.ventasDirectas = gananciaCajaTurno - gananciaPedidosTurno;
+
+	if (resumen.ventasDirectas < 0.0f) {
+		resumen.ventasDirectas = 0.0f;
+	}
+
+	resumen.totalCaja = gananciaCajaTurno;
+
+	return resumen;
+}
+
+// Pedidos que todavia no terminan (Pendiente / Preparando / Listo).
+int Cafeteria::getPedidosActivos() const {
+	int activos = 0;
+
+	for (const auto& pedido : listaPedidos) {
+		const string& estado = pedido.getEstado();
+
+		if (estado == "Pendiente" || estado == "Preparando" || estado == "Listo") {
+			activos++;
+		}
+	}
+
+	return activos;
 }
 
 vector<Producto> Cafeteria::getVendidosCajaTurno() const {
@@ -333,6 +367,7 @@ void Cafeteria::contabilizarPedidosCompletados() {
 
 		foliosPedidoContabilizados.push_back(pedido.getFolio());
 		gananciaCajaTurno += pedido.getTotal();
+		gananciaPedidosTurno += pedido.getTotal();
 		historialCaja.push_back({"Pedido " + pedido.getFolio() + " (" + pedido.getUsernameCliente() + ")",
 		                         1, pedido.getTotal()});
 	}
@@ -732,6 +767,69 @@ bool Cafeteria::venderEnCaja(const string& idProducto, int cantidad) {
 	historialCaja.push_back({nombre, cantidad, subtotal});
 
 	ultimoError.clear();
+	return true;
+}
+
+// ---------------------------------------------------------------------
+// Cierre de dia / corte de caja
+// ---------------------------------------------------------------------
+// 1) Le manda al servidor las ventas directas del turno (para el historial de
+//    cortes) y le pide cerrar los pedidos Entregados/Cancelados.
+// 2) Con la respuesta arma el resumen FINAL (pedidos + mostrador).
+// 3) Solo si el servidor confirmo, reinicia la ganancia del turno a 0 y vacia
+//    el historial de ventas del turno. Si algo falla no se pierde nada.
+bool Cafeteria::cerrarDia(ResumenCierre& resumen) {
+	float ventasDirectas = gananciaCajaTurno - gananciaPedidosTurno;
+
+	if (ventasDirectas < 0.0f) {
+		ventasDirectas = 0.0f;
+	}
+
+	char bufferVentas[32];
+	snprintf(bufferVentas, sizeof(bufferVentas), "%.2f", ventasDirectas);
+
+	string respuesta = enviarComando(socketCafeteria, "CIERRE_DIA|" + idCafeteria + "|" + bufferVentas);
+	vector<string> campos = separarCampos(respuesta);
+
+	if (campos.empty() || campos[0] != "OK") {
+		ultimoError = (campos.size() > 1) ? campos[1] : "No se pudo cerrar el dia.";
+		return false;
+	}
+
+	// Respuesta esperada: OK|pedidosEntregados|totalPedidos|pedidosCancelados|fechaCierre
+	if (campos.size() < 5) {
+		ultimoError = "Respuesta invalida del servidor.";
+		return false;
+	}
+
+	ResumenCierre cierre;
+
+	try {
+		cierre.pedidosEntregados = stoi(campos[1]);
+		cierre.totalPedidos = stof(campos[2]);
+		cierre.pedidosCancelados = stoi(campos[3]);
+	} catch (...) {
+		ultimoError = "Respuesta invalida del servidor.";
+		return false;
+	}
+
+	cierre.fecha = campos[4];
+	cierre.ventasDirectas = ventasDirectas;
+	cierre.totalCaja = cierre.totalPedidos + cierre.ventasDirectas;
+
+	// ---- Reinicio del turno ----
+	gananciaCajaTurno = 0.0f;
+	gananciaPedidosTurno = 0.0f;
+	vendidosCajaTurno.clear();
+	historialCaja.clear();
+	foliosPedidoContabilizados.clear();
+
+	resumen = cierre;
+	ultimoError.clear();
+
+	// La lista ya no trae los pedidos cerrados: se refresca para que quede limpia.
+	cargarListaPedidos();
+
 	return true;
 }
 
