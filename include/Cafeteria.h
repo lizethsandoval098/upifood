@@ -18,6 +18,17 @@ struct VentaCaja {
 	float subtotal;
 };
 
+// Resumen de un turno / corte de caja (lo que se muestra en pantalla al
+// "Cerrar Dia").
+struct ResumenCierre {
+	int pedidosEntregados = 0;   // pedidos completados que se cierran
+	int pedidosCancelados = 0;   // pedidos cancelados que tambien se archivan
+	float totalPedidos = 0.0f;   // suma de los pedidos entregados
+	float ventasDirectas = 0.0f; // ventas hechas en el mostrador (caja)
+	float totalCaja = 0.0f;      // totalPedidos + ventasDirectas
+	string fecha;                // fecha y hora del cierre (vacia en la vista previa)
+};
+
 // Un producto NUEVO que todavia no se sube a la base de datos.
 // No tiene ID: el servidor lo genera al subirlo (C1-01, C1-02, ...).
 struct ProductoNuevo {
@@ -42,6 +53,7 @@ class Cafeteria : public Usuario {
 
 		// para la barra de "Atendiendo cajas..." (ventas directas sin pedido/QR)
 		float gananciaCajaTurno;
+		float gananciaPedidosTurno; // la parte de gananciaCajaTurno que viene de pedidos entregados
 		vector<Producto> vendidosCajaTurno;
 		vector<VentaCaja> historialCaja;
 
@@ -87,6 +99,10 @@ class Cafeteria : public Usuario {
 		bool hayProductoAgotado() const; // true si algun producto tiene stock 0 (para el aviso en la barra lateral)
 		vector<Pedido> getListaPedidos() const;
 		float getGananciaCajaTurno() const;
+
+		// Vista previa del turno actual (lo que se cerraria si se pulsa "Cerrar Dia").
+		ResumenCierre getResumenTurno() const;
+		int getPedidosActivos() const;   // pedidos aun sin terminar (pasan al siguiente turno)
 		vector<Producto> getVendidosCajaTurno() const;
 		const vector<VentaCaja>& getHistorialCaja() const;
 		const vector<pair<Producto, int>>& getDetallePedido() const;
@@ -126,6 +142,11 @@ class Cafeteria : public Usuario {
 		// Venta directa en caja (sin pasar por el flujo de pedido con QR).
 		// Descuenta del inventario en el servidor y suma a la ganancia del turno.
 		bool venderEnCaja(const string& idProducto, int cantidad);
+
+		// Cierre de dia / corte de caja: le pide al servidor cerrar los pedidos
+		// completados del turno y, si sale bien, reinicia la ganancia del turno a 0.
+		// En "resumen" queda el total final (antes del reinicio). false = ver getUltimoError().
+		bool cerrarDia(ResumenCierre& resumen);
 
 		// ---- Versiones de consola (cargan y ademas imprimen) ----
 		void verInventario();

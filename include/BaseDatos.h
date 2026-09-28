@@ -57,6 +57,11 @@ class BaseDatos{
 		Pedido obtenerPedido_Folio(const string& folio);
 		Pedido obtenerPedido_Username(const string& username);            // pedido activo mas reciente
 		bool actualizarEstadoPedido(const string& folio, const string& nuevoEstado); // para cafeteria
+		// Corte de caja: cierra (cerrado = 1) los pedidos Entregados/Cancelados de la
+		// cafeteria y guarda el corte. Regresa cuantos se cerraron y cuanto sumaron.
+		bool cerrarDiaCafeteria(const string& idCafeteria, float ventasDirectas,
+		                        const string& fechaCierre, int& pedidosEntregados,
+		                        int& pedidosCancelados, float& totalPedidos);
 
 		// Productos
 		bool guardarProducto(const Producto& producto);
