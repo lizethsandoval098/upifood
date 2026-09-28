@@ -5,6 +5,8 @@
 #include "Usuario.h"
 #include "Producto.h"
 #include "Pedido.h"
+#include "Tarjeta.h"
+#include "Pago.h"
 
 #include <iostream>
 #include <thread>
@@ -22,6 +24,7 @@
 #include <cstdlib>
 #include <sys/wait.h>
 #include <fstream>
+#include <functional>
 
 using namespace std;
 
@@ -930,14 +933,7 @@ string Servidor::procesarComando(const string& comando) {
         // normalizar), asi que hay que guardar el pedido con el idCafeteria
         // EXACTO tal como esta en la tabla; si no, el pedido se crea pero
         // la cafeteria jamas lo encuentra al pedir su lista de pedidos.
-        string idCafeteriaCanonico;
-
-        for (const auto& cafeteriaExistente : db.obtenerCafeterias()) {
-            if (numeroCafeteria(cafeteriaExistente.getIdCafeteria()) == numeroSolicitado) {
-                idCafeteriaCanonico = cafeteriaExistente.getIdCafeteria();
-                break;
-            }
-        }
+        string idCafeteriaCanonico = resolverIdCafeteriaCanonico(numeroSolicitado);
 
         if (idCafeteriaCanonico.empty()) {
             return "ERR|Cafeteria invalida.";
@@ -999,7 +995,55 @@ string Servidor::procesarComando(const string& comando) {
             return "ERR|No se pudo guardar el pedido.";
         }
 
+        // Cobro automatico: si el cliente (bot o real) tiene una tarjeta
+        // registrada, se procesa el pago de una vez y se guarda el registro
+        // completo (monto, tarjeta, folio) para consulta/auditoria.
+        Tarjeta tarjetaCliente = db.obtenerTarjetaCliente(usernameCliente);
+
+        if (!tarjetaCliente.getNumeroTarjeta().empty()) {
+            Pago pago;
+            pago.asignarTarjeta(tarjetaCliente);
+            pago.setMonto(total);
+            pago.setAprobado(true);
+            pago.setFolioPedido(folio);
+            db.guardarPago(pago);
+        }
+
         return "OK|" + folio + "|" + to_string(total) + "|" + idCafeteriaCanonico;
+    }
+
+    // ---------------------------------------------------------------
+    // CORTE_CAJA|idCafeteria
+    // Cierre de turno: archiva ("cerrado") los pedidos ya Entregado de esa
+    // cafeteria (no vuelven a aparecer ni a contarse) y regresa cuantos se
+    // cerraron y la suma de sus totales, para el resumen final en pantalla.
+    // -> OK|pedidosCerrados|totalPedidosCerrados
+    // ---------------------------------------------------------------
+    if (tipo == "CORTE_CAJA") {
+        if (campos.size() < 2) return "ERR|Formato invalido.";
+
+        int numeroSolicitado = numeroCafeteria(campos[1]);
+
+        if (numeroSolicitado == 0) {
+            return "ERR|Cafeteria invalida.";
+        }
+
+        lock_guard<mutex> guardDb(dbMutex);
+
+        string idCafeteriaCanonico = resolverIdCafeteriaCanonico(numeroSolicitado);
+
+        if (idCafeteriaCanonico.empty()) {
+            return "ERR|Cafeteria invalida.";
+        }
+
+        int pedidosCerrados = 0;
+        float totalCerrado = 0.0f;
+
+        if (!db.corteDeCaja(idCafeteriaCanonico, pedidosCerrados, totalCerrado)) {
+            return "ERR|No se pudo realizar el corte de caja.";
+        }
+
+        return "OK|" + to_string(pedidosCerrados) + "|" + to_string(totalCerrado);
     }
 
     return "ERR|Comando desconocido: " + tipo;
@@ -1049,6 +1093,30 @@ void Servidor::alternarSimulador() {
          << (!activo ? "ACTIVO" : "PAUSADO") << "." << endl;
 }
 
+// Tarjeta bancaria "de mentiras" pero deterministica: el mismo username
+// siempre genera el mismo numero/CVV, asi no hace falta recalcularla ni
+// guardarla aparte del registro que ya queda en la tabla Tarjetas.
+static Tarjeta generarTarjetaBot(const string& username, const string& nombrePropietario) {
+    unsigned long long h = static_cast<unsigned long long>(hash<string>{}(username));
+
+    char numero[17];
+    snprintf(numero, sizeof(numero), "4%015llu", h % 1000000000000000ULL);
+
+    char cvv[4];
+    snprintf(cvv, sizeof(cvv), "%03llu", (h / 7) % 1000ULL);
+
+    return Tarjeta(numero, cvv, nombrePropietario, "12/30");
+}
+
+string Servidor::resolverIdCafeteriaCanonico(int numeroCafeteriaSolicitado) {
+    for (const auto& cafeteriaExistente : db.obtenerCafeterias()) {
+        if (numeroCafeteria(cafeteriaExistente.getIdCafeteria()) == numeroCafeteriaSolicitado) {
+            return cafeteriaExistente.getIdCafeteria();
+        }
+    }
+    return "";
+}
+
 void Servidor::asegurarUsuariosSimulados() {
     static const vector<string> usernamesBot = {"bot_sim_1", "bot_sim_2", "bot_sim_3"};
 
@@ -1058,9 +1126,17 @@ void Servidor::asegurarUsuariosSimulados() {
         Cliente existente = db.obtenerUsuarioCliente(username);
 
         if (existente.getUsername().empty()) {
-            Cliente bot("Cliente Simulado", username + "@alumno.ipn.mx", "simulado123",
+            // El nombre debe ser UNICO: guardarTarjeta() busca al dueno por
+            // Usuarios.nombre (no por username), asi que si dos bots
+            // compartieran nombre la tarjeta se le asignaria al que sea.
+            string nombreBot = "Bot Simulado (" + username + ")";
+
+            Cliente bot(nombreBot, username + "@alumno.ipn.mx", "simulado123",
                         username, "Bot", "Simulador", "INVITADO");
-            db.guardarUsuarioCliente(bot);
+
+            if (db.guardarUsuarioCliente(bot)) {
+                db.guardarTarjeta(generarTarjetaBot(username, nombreBot));
+            }
         }
     }
 }

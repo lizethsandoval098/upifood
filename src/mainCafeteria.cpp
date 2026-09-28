@@ -283,6 +283,12 @@ int main(int argc, char* argv[]) {
     // vista CAJA
     CampoTexto campoCaja("Cantidad vendida", 260, 488, 150, 38);
     Boton botonCobrar("Cobrar venta", 430, 488, 170, 38);
+    Boton botonCerrarDia("Cerrar día", 800, 528, 170, 38);
+
+    // modal de resumen del corte de caja
+    Boton botonAceptarCorte("Aceptar", ANCHO / 2.0f - 90, 430, 180, 44);
+
+    botonCerrarDia.setColor(AMBAR);
 
     // ---------------- Estado del programa ----------------
     Pantalla pantalla = Pantalla::LOGIN;
@@ -298,6 +304,11 @@ int main(int argc, char* argv[]) {
 
     string productoSel;          // idProducto seleccionado (inventario / caja)
     int pendienteSel = -1;       // posicion del producto NUEVO seleccionado (inventario)
+
+    // resumen que se muestra tras presionar "Cerrar día"
+    bool mostrandoResumenCorte = false;
+    float montoCorteMostrado = 0.0f;
+    int pedidosCorteMostrados = 0;
     string pedidoSel;            // folio seleccionado (pedidos)
     bool soloActivos = true;     // filtro de la vista PEDIDOS
     bool confirmandoEliminar = false;
@@ -493,6 +504,23 @@ int main(int argc, char* argv[]) {
             avisar("Venta: " + to_string(v.cantidad) + " x " + recortar(v.nombreProducto, 22) +
                    " = " + dinero(v.subtotal), true);
             campoCaja.limpiar();
+        } else {
+            avisar(cafeteria.getUltimoError(), false);
+        }
+    };
+
+    // Consolida el turno: le pide al servidor que archive los pedidos ya
+    // Entregado y muestra un resumen final antes de reiniciar el contador.
+    auto cerrarDia = [&]() {
+        float totalTurno = cafeteria.getGananciaCajaTurno();
+        int pedidosCerrados = 0;
+        float totalPedidos = 0.0f;
+
+        if (cafeteria.cerrarCaja(pedidosCerrados, totalPedidos)) {
+            montoCorteMostrado = totalTurno;
+            pedidosCorteMostrados = pedidosCerrados;
+            mostrandoResumenCorte = true;
+            cafeteria.cargarListaPedidos(); // refresca de una vez (ya sin los cerrados)
         } else {
             avisar(cafeteria.getUltimoError(), false);
         }
@@ -759,13 +787,22 @@ int main(int argc, char* argv[]) {
                     botonRestock.actualizarHover(mx, my);
 
                     botonCobrar.actualizarHover(mx, my);
+                    botonCerrarDia.actualizarHover(mx, my);
+                    botonAceptarCorte.actualizarHover(mx, my);
                 }
                 else if (e.type == sf::Event::MouseButtonPressed && e.mouseButton.button == sf::Mouse::Left) {
                     float mx = static_cast<float>(e.mouseButton.x);
                     float my = static_cast<float>(e.mouseButton.y);
 
+                    // El resumen del corte de caja es modal: mientras este
+                    // abierto, ningun otro clic del panel debe hacer nada.
+                    if (mostrandoResumenCorte) {
+                        if (botonAceptarCorte.contiene(mx, my)) {
+                            mostrandoResumenCorte = false;
+                        }
+                    }
                     // ---- barra lateral (igual en todas las vistas) ----
-                    if (botonPedidos.contiene(mx, my))         cambiarVista(Vista::PEDIDOS);
+                    else if (botonPedidos.contiene(mx, my))    cambiarVista(Vista::PEDIDOS);
                     else if (botonInventario.contiene(mx, my)) cambiarVista(Vista::INVENTARIO);
                     else if (botonCaja.contiene(mx, my))       cambiarVista(Vista::CAJA);
                     else if (botonSalir.contiene(mx, my))      ventana.cerrar();
@@ -795,6 +832,8 @@ int main(int argc, char* argv[]) {
 
                         if (botonCobrar.contiene(mx, my)) {
                             hacerCobro();
+                        } else if (botonCerrarDia.contiene(mx, my)) {
+                            cerrarDia();
                         } else {
                             int fila = filaClicada(mx, my, FILAS_CAJA);
                             vector<Producto> inv = cafeteria.getInventario();
@@ -1226,6 +1265,7 @@ int main(int argc, char* argv[]) {
                 // ganancia del turno (a la derecha)
                 ventana.dibujarTexto("Ganancia del turno", 800, 462, 15, TEXTO_SUAVE);
                 ventana.dibujarTexto(dinero(cafeteria.getGananciaCajaTurno()), 800, 484, 32, VERDE);
+                botonCerrarDia.dibujar(ventana);
 
                 // ultimas ventas
                 const vector<VentaCaja>& ventas = cafeteria.getHistorialCaja();
@@ -1251,6 +1291,26 @@ int main(int argc, char* argv[]) {
             } else if (!mensajePanel.empty()) {
                 ventana.dibujarTexto(mensajePanel, 260, yMensaje, 16, ROJO_ERROR);
             }
+        }
+
+        // --- resumen del corte de caja: se dibuja encima de todo lo demas ---
+        if (mostrandoResumenCorte) {
+            rectangulo(ventana, 0, 0, static_cast<float>(ANCHO), static_cast<float>(ALTO), sf::Color(0, 0, 0, 150));
+
+            float cajaX = ANCHO / 2.0f - 220.0f;
+            float cajaY = 220.0f;
+            rectangulo(ventana, cajaX, cajaY, 440, 260, CREMA);
+
+            ventana.dibujarTextoCentrado("Corte de caja realizado",
+                                         sf::FloatRect(cajaX, cajaY + 30, 440, 30), 24, TEXTO_OSCURO);
+            ventana.dibujarTextoCentrado("Pedidos cerrados: " + to_string(pedidosCorteMostrados),
+                                         sf::FloatRect(cajaX, cajaY + 90, 440, 26), 16, TEXTO_SUAVE);
+            ventana.dibujarTextoCentrado("Total recaudado en el turno:",
+                                         sf::FloatRect(cajaX, cajaY + 122, 440, 24), 16, TEXTO_SUAVE);
+            ventana.dibujarTextoCentrado(dinero(montoCorteMostrado),
+                                         sf::FloatRect(cajaX, cajaY + 150, 440, 40), 34, VERDE);
+
+            botonAceptarCorte.dibujar(ventana);
         }
 
         win.display();

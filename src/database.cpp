@@ -118,6 +118,7 @@ bool BaseDatos::inicializarTablas() {
 			    "total REAL NOT NULL CHECK (total > 0.0), "
 			    "usernameCliente TEXT NOT NULL, "
 			    "idCafeteria TEXT NOT NULL, "
+			    "cerrado INTEGER NOT NULL DEFAULT 0, " // 1 = archivado por un corte de caja
 			    "FOREIGN KEY (usernameCliente) REFERENCES Usuarios(username) "
 			    "ON DELETE RESTRICT, "
 			    "FOREIGN KEY (idCafeteria) REFERENCES Cafeterias(idCafeteria) ON DELETE "
@@ -163,6 +164,28 @@ bool BaseDatos::inicializarTablas() {
 
 	if(resultado) {
 		ejecutarQuery("COMMIT;");
+
+		// Migracion idempotente: las bases de datos creadas ANTES del corte
+		// de caja no tienen la columna "cerrado" (CREATE TABLE IF NOT EXISTS
+		// no la agrega sola). Se revisa con PRAGMA y solo se agrega si falta.
+		bool tieneColumnaCerrado = false;
+		sqlite3_stmt* stmtInfo;
+
+		if(sqlite3_prepare_v2(db, "PRAGMA table_info(Pedidos);", -1, &stmtInfo, nullptr) == SQLITE_OK) {
+			while(sqlite3_step(stmtInfo) == SQLITE_ROW) {
+				string nombreColumna = reinterpret_cast<const char*>(sqlite3_column_text(stmtInfo, 1));
+				if(nombreColumna == "cerrado") {
+					tieneColumnaCerrado = true;
+					break;
+				}
+			}
+			sqlite3_finalize(stmtInfo);
+		}
+
+		if(!tieneColumnaCerrado) {
+			ejecutarQuery("ALTER TABLE Pedidos ADD COLUMN cerrado INTEGER NOT NULL DEFAULT 0;");
+		}
+
 		return true;
 	} else {
 		ejecutarQuery("ROLLBACK;");
@@ -613,8 +636,8 @@ vector<Pedido> BaseDatos::obtenerPedidosCafeteria(const string& idCafeteria) {  
 
 	string sql = "SELECT folio, fecha, estado, total, usernameCliente "
 	       	     "FROM Pedidos "
-		     "WHERE idCafeteria = ? "
-		     "ORDER BY rowid DESC;"; // mas recientes primero
+		     "WHERE idCafeteria = ? AND cerrado = 0 "
+		     "ORDER BY rowid DESC;"; // mas recientes primero, sin los ya cerrados por un corte de caja
 
 	sqlite3_stmt* stmt;
 
@@ -643,6 +666,49 @@ vector<Pedido> BaseDatos::obtenerPedidosCafeteria(const string& idCafeteria) {  
 	sqlite3_finalize(stmt);
 
 	return listaP;
+}
+
+bool BaseDatos::corteDeCaja(const string& idCafeteria, int& pedidosCerrados, float& totalCerrado) {
+	pedidosCerrados = 0;
+	totalCerrado = 0.0f;
+
+	string sqlSelect = "SELECT total FROM Pedidos "
+	                   "WHERE idCafeteria = ? AND estado = 'Entregado' AND cerrado = 0;";
+
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sqlSelect.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al preparar el corte de caja: " << sqlite3_errmsg(db) << endl;
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, idCafeteria.c_str(), -1, SQLITE_TRANSIENT);
+
+	while(sqlite3_step(stmt) == SQLITE_ROW) {
+		totalCerrado += static_cast<float>(sqlite3_column_double(stmt, 0));
+		pedidosCerrados++;
+	}
+
+	sqlite3_finalize(stmt);
+
+	if(pedidosCerrados == 0) {
+		return true; // nada que cerrar todavia; no es un error
+	}
+
+	string sqlUpdate = "UPDATE Pedidos SET cerrado = 1 "
+	                   "WHERE idCafeteria = ? AND estado = 'Entregado' AND cerrado = 0;";
+
+	if(sqlite3_prepare_v2(db, sqlUpdate.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al aplicar el corte de caja: " << sqlite3_errmsg(db) << endl;
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, idCafeteria.c_str(), -1, SQLITE_TRANSIENT);
+
+	bool exito = (sqlite3_step(stmt) == SQLITE_DONE);
+	sqlite3_finalize(stmt);
+
+	return exito;
 }
 
 // Cambia el estado de un pedido (Pendiente/Preparando/Listo/Entregado/Cancelado).
@@ -1035,4 +1101,34 @@ bool BaseDatos::guardarTarjeta(const Tarjeta& tarjeta) {
 	sqlite3_finalize(stmt);
 
 	return exito;
+}
+
+Tarjeta BaseDatos::obtenerTarjetaCliente(const string& username) {
+	Tarjeta tarjeta;
+
+	string sql = "SELECT T.numeroTarjeta, T.CVV, T.fechaVencimiento, U.nombre "
+		     "FROM Tarjetas T "
+		     "JOIN Usuarios U ON T.usernameCliente = U.username "
+		     "WHERE T.usernameCliente = ? "
+		     "ORDER BY T.rowid DESC LIMIT 1;"; // la mas reciente, si tiene varias
+
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al buscar la tarjeta del cliente: " << sqlite3_errmsg(db) << endl;
+		return tarjeta;
+	}
+
+	sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+
+	if(sqlite3_step(stmt) == SQLITE_ROW) {
+		tarjeta.setNumeroTarjeta(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+		tarjeta.setCVV(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+		tarjeta.setFechaVencimiento(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+		tarjeta.setNombrePropietario(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+	}
+
+	sqlite3_finalize(stmt);
+
+	return tarjeta;
 }

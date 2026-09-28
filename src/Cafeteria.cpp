@@ -735,6 +735,35 @@ bool Cafeteria::venderEnCaja(const string& idProducto, int cantidad) {
 	return true;
 }
 
+bool Cafeteria::cerrarCaja(int& pedidosCerrados, float& totalPedidosCerrados) {
+	string respuesta = enviarComando(socketCafeteria, "CORTE_CAJA|" + idCafeteria);
+	vector<string> campos = separarCampos(respuesta);
+
+	pedidosCerrados = 0;
+	totalPedidosCerrados = 0.0f;
+
+	if (campos.empty() || campos[0] != "OK") {
+		ultimoError = (campos.size() > 1) ? campos[1] : "No se pudo cerrar la caja.";
+		return false;
+	}
+
+	try {
+		if (campos.size() > 1) pedidosCerrados = stoi(campos[1]);
+		if (campos.size() > 2) totalPedidosCerrados = stof(campos[2]);
+	} catch (...) {
+	}
+
+	// Empieza el turno siguiente: se reinicia todo lo acumulado en caja
+	// (los pedidos ya "Entregado" quedaron archivados del lado del servidor).
+	gananciaCajaTurno = 0.0f;
+	vendidosCajaTurno.clear();
+	historialCaja.clear();
+	foliosPedidoContabilizados.clear();
+
+	ultimoError.clear();
+	return true;
+}
+
 // ---------------------------------------------------------------------
 // Consola
 // ---------------------------------------------------------------------
