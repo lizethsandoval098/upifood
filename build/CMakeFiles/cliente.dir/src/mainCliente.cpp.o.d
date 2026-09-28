@@ -147,7 +147,6 @@ CMakeFiles/cliente.dir/src/mainCliente.cpp.o: \
  /home/berenicepf/upifood/include/Pedido.h /usr/include/c++/16/utility \
  /usr/include/c++/16/bits/stl_relops.h \
  /home/berenicepf/upifood/include/Producto.h \
- /home/berenicepf/upifood/include/Senales.h \
  /home/berenicepf/upifood/include/Ventana.h \
  /usr/include/SFML/Graphics.hpp /usr/include/SFML/Window.hpp \
  /usr/include/SFML/System.hpp /usr/include/SFML/Config.hpp \
@@ -231,9 +230,4 @@ CMakeFiles/cliente.dir/src/mainCliente.cpp.o: \
  /usr/include/SFML/Graphics/Glsl.hpp /usr/include/SFML/Graphics/Glsl.inl \
  /usr/include/SFML/Graphics/Sprite.hpp \
  /usr/include/SFML/Graphics/Text.hpp \
- /usr/include/SFML/Graphics/VertexBuffer.hpp /usr/include/c++/16/mutex \
- /usr/include/c++/16/bits/chrono.h /usr/include/c++/16/ratio \
- /usr/include/c++/16/cstdint /usr/include/c++/16/limits \
- /usr/include/c++/16/bits/parse_numbers.h \
- /usr/include/c++/16/bits/std_mutex.h \
- /usr/include/c++/16/bits/unique_lock.h
+ /usr/include/SFML/Graphics/VertexBuffer.hpp /usr/include/c++/16/limits

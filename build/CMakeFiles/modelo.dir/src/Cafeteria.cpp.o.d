@@ -141,27 +141,15 @@ CMakeFiles/modelo.dir/src/Cafeteria.cpp.o: \
  /usr/include/c++/16/bits/basic_ios.tcc \
  /usr/include/c++/16/bits/ostream_print.h \
  /usr/include/c++/16/bits/ostream.tcc /usr/include/c++/16/istream \
- /usr/include/c++/16/bits/istream.tcc /usr/include/c++/16/set \
- /usr/include/c++/16/bits/stl_tree.h \
- /usr/include/c++/16/ext/aligned_buffer.h \
- /usr/include/c++/16/bits/node_handle.h \
- /usr/include/c++/16/bits/stl_set.h \
- /usr/include/c++/16/bits/stl_multiset.h \
+ /usr/include/c++/16/bits/istream.tcc \
  /home/berenicepf/upifood/include/Usuario.h \
  /home/berenicepf/upifood/include/Producto.h \
  /home/berenicepf/upifood/include/Pedido.h /usr/include/c++/16/utility \
  /usr/include/c++/16/bits/stl_relops.h \
- /home/berenicepf/upifood/include/Protocolo.h \
- /home/berenicepf/upifood/include/Senales.h /usr/include/c++/16/iomanip \
- /usr/include/c++/16/locale \
- /usr/include/c++/16/bits/locale_facets_nonio.h /usr/include/c++/16/ctime \
- /usr/include/c++/16/x86_64-redhat-linux/bits/time_members.h \
- /usr/include/c++/16/x86_64-redhat-linux/bits/messages_members.h \
- /usr/include/libintl.h /usr/include/c++/16/bits/codecvt.h \
- /usr/include/c++/16/bits/locale_facets_nonio.tcc \
- /usr/include/c++/16/bits/locale_conv.h \
- /usr/include/c++/16/bits/quoted_string.h /usr/include/c++/16/sstream \
- /usr/include/c++/16/bits/sstream.tcc /usr/include/unistd.h \
+ /home/berenicepf/upifood/include/BaseDatos.h /usr/include/sqlite3.h \
+ /home/berenicepf/upifood/include/Pago.h \
+ /home/berenicepf/upifood/include/Tarjeta.h \
+ /home/berenicepf/upifood/include/Protocolo.h /usr/include/unistd.h \
  /usr/include/bits/posix_opt.h /usr/include/bits/environments.h \
  /usr/include/bits/confname.h /usr/include/bits/getopt_posix.h \
  /usr/include/bits/getopt_core.h /usr/include/bits/unistd_ext.h \

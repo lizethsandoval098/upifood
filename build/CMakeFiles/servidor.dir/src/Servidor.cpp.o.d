@@ -99,15 +99,7 @@ CMakeFiles/servidor.dir/src/Servidor.cpp.o: \
  /usr/include/c++/16/bits/stl_uninitialized.h \
  /usr/include/c++/16/bits/stl_vector.h \
  /usr/include/c++/16/bits/stl_bvector.h \
- /usr/include/c++/16/bits/vector.tcc /usr/include/c++/16/deque \
- /usr/include/c++/16/bits/stl_deque.h /usr/include/c++/16/bits/deque.tcc \
- /usr/include/c++/16/map /usr/include/c++/16/bits/stl_tree.h \
- /usr/include/c++/16/ext/aligned_buffer.h \
- /usr/include/c++/16/bits/node_handle.h \
- /usr/include/c++/16/bits/stl_map.h \
- /usr/include/c++/16/bits/stl_multimap.h /usr/include/c++/16/set \
- /usr/include/c++/16/bits/stl_set.h \
- /usr/include/c++/16/bits/stl_multiset.h /usr/include/c++/16/mutex \
+ /usr/include/c++/16/bits/vector.tcc /usr/include/c++/16/mutex \
  /usr/include/c++/16/bits/chrono.h /usr/include/c++/16/ratio \
  /usr/include/c++/16/cstdint \
  /usr/lib/gcc/x86_64-redhat-linux/16/include/stdint.h \
@@ -136,23 +128,16 @@ CMakeFiles/servidor.dir/src/Servidor.cpp.o: \
  /usr/include/c++/16/x86_64-redhat-linux/bits/error_constants.h \
  /usr/include/c++/16/ext/atomicity.h \
  /usr/include/c++/16/x86_64-redhat-linux/bits/atomic_word.h \
- /usr/include/sys/single_threaded.h /usr/include/c++/16/atomic \
- /usr/include/c++/16/bits/atomic_base.h \
- /usr/include/c++/16/bits/atomic_lockfree_defines.h \
- /usr/include/c++/16/condition_variable \
- /usr/include/c++/16/bits/shared_ptr.h \
- /usr/include/c++/16/bits/shared_ptr_base.h /usr/include/c++/16/typeinfo \
- /usr/include/c++/16/bits/allocated_ptr.h \
- /usr/include/c++/16/bits/refwrap.h /usr/include/c++/16/bits/unique_ptr.h \
- /usr/include/c++/16/ext/concurrence.h /usr/include/c++/16/exception \
- /usr/include/c++/16/bits/exception_ptr.h \
- /usr/include/c++/16/bits/cxxabi_init_exception.h \
- /usr/include/c++/16/bits/nested_exception.h \
+ /usr/include/sys/single_threaded.h \
  /home/berenicepf/upifood/include/BaseDatos.h /usr/include/sqlite3.h \
  /home/berenicepf/upifood/include/Protocolo.h \
  /home/berenicepf/upifood/include/Cliente.h /usr/include/c++/16/iostream \
  /usr/include/c++/16/ostream /usr/include/c++/16/bits/ostream.h \
- /usr/include/c++/16/ios /usr/include/c++/16/bits/ios_base.h \
+ /usr/include/c++/16/ios /usr/include/c++/16/exception \
+ /usr/include/c++/16/bits/exception_ptr.h \
+ /usr/include/c++/16/bits/cxxabi_init_exception.h \
+ /usr/include/c++/16/typeinfo /usr/include/c++/16/bits/nested_exception.h \
+ /usr/include/c++/16/bits/ios_base.h \
  /usr/include/c++/16/bits/locale_classes.h \
  /usr/include/c++/16/bits/locale_classes.tcc \
  /usr/include/c++/16/system_error /usr/include/c++/16/stdexcept \
@@ -176,59 +161,19 @@ CMakeFiles/servidor.dir/src/Servidor.cpp.o: \
  /home/berenicepf/upifood/include/Producto.h \
  /home/berenicepf/upifood/include/Cafeteria.h \
  /home/berenicepf/upifood/include/Usuario.h \
- /home/berenicepf/upifood/include/Producto.h \
- /home/berenicepf/upifood/include/Pedido.h \
- /home/berenicepf/upifood/include/Pago.h \
- /home/berenicepf/upifood/include/Tarjeta.h /usr/include/c++/16/iomanip \
- /usr/include/c++/16/locale \
- /usr/include/c++/16/bits/locale_facets_nonio.h \
- /usr/include/c++/16/x86_64-redhat-linux/bits/time_members.h \
- /usr/include/c++/16/x86_64-redhat-linux/bits/messages_members.h \
- /usr/include/libintl.h /usr/include/c++/16/bits/codecvt.h \
- /usr/include/c++/16/bits/locale_facets_nonio.tcc \
- /usr/include/c++/16/bits/locale_conv.h \
- /usr/include/c++/16/bits/quoted_string.h /usr/include/c++/16/sstream \
- /usr/include/c++/16/bits/sstream.tcc /usr/include/c++/16/thread \
- /usr/include/c++/16/bits/std_thread.h \
- /usr/include/c++/16/bits/this_thread_sleep.h /usr/include/c++/16/chrono \
- /usr/include/c++/16/algorithm /usr/include/c++/16/bits/stl_algo.h \
- /usr/include/c++/16/bits/algorithmfwd.h \
- /usr/include/c++/16/bits/stl_heap.h \
- /usr/include/c++/16/bits/uniform_int_dist.h \
- /usr/include/c++/16/bits/stl_tempbuf.h \
- /usr/include/c++/16/pstl/glue_algorithm_defs.h \
- /usr/include/c++/16/pstl/execution_defs.h /usr/include/c++/16/cstring \
- /usr/include/string.h /usr/include/strings.h /usr/include/c++/16/csignal \
- /usr/include/signal.h /usr/include/bits/signum-generic.h \
- /usr/include/bits/signum-arch.h /usr/include/bits/types/sig_atomic_t.h \
- /usr/include/bits/types/siginfo_t.h /usr/include/bits/types/__sigval_t.h \
- /usr/include/bits/siginfo-arch.h /usr/include/bits/siginfo-consts.h \
- /usr/include/bits/siginfo-consts-arch.h \
- /usr/include/bits/types/sigval_t.h /usr/include/bits/types/sigevent_t.h \
- /usr/include/bits/sigevent-consts.h /usr/include/bits/sigaction.h \
- /usr/include/bits/sigcontext.h /usr/include/bits/types/stack_t.h \
- /usr/include/sys/ucontext.h /usr/include/bits/sigstack.h \
- /usr/include/bits/sigstksz.h /usr/include/unistd.h \
+ /home/berenicepf/upifood/include/Producto.h /usr/include/c++/16/thread \
+ /usr/include/c++/16/bits/std_thread.h /usr/include/c++/16/bits/refwrap.h \
+ /usr/include/c++/16/bits/unique_ptr.h \
+ /usr/include/c++/16/bits/this_thread_sleep.h /usr/include/c++/16/cstring \
+ /usr/include/string.h /usr/include/strings.h /usr/include/unistd.h \
  /usr/include/bits/posix_opt.h /usr/include/bits/environments.h \
  /usr/include/bits/confname.h /usr/include/bits/getopt_posix.h \
  /usr/include/bits/getopt_core.h /usr/include/bits/unistd_ext.h \
- /usr/include/linux/close_range.h /usr/include/bits/ss_flags.h \
- /usr/include/bits/types/struct_sigstack.h /usr/include/bits/sigthread.h \
- /usr/include/bits/signal_ext.h /usr/include/fcntl.h \
- /usr/include/bits/fcntl.h /usr/include/bits/fcntl-linux.h \
- /usr/include/bits/types/struct_iovec.h /usr/include/bits/cloexec.h \
- /usr/include/linux/falloc.h /usr/include/linux/openat2.h \
- /usr/include/bits/openat2.h /usr/include/bits/stat.h \
- /usr/include/bits/struct_stat.h /usr/include/poll.h \
- /usr/include/sys/poll.h /usr/include/bits/poll.h /usr/include/sys/stat.h \
- /usr/include/bits/statx.h /usr/include/linux/stat.h \
- /usr/include/bits/statx-generic.h \
- /usr/include/bits/types/struct_statx_timestamp.h \
- /usr/include/bits/types/struct_statx.h /usr/include/sys/wait.h \
- /usr/include/bits/types/idtype_t.h /usr/include/sys/socket.h \
- /usr/include/bits/socket.h /usr/include/bits/socket_type.h \
- /usr/include/bits/sockaddr.h /usr/include/asm/socket.h \
- /usr/include/asm-generic/socket.h /usr/include/asm/sockios.h \
- /usr/include/asm-generic/sockios.h \
- /usr/include/bits/types/struct_osockaddr.h /usr/include/arpa/inet.h \
- /usr/include/netinet/in.h /usr/include/bits/in.h
+ /usr/include/linux/close_range.h /usr/include/arpa/inet.h \
+ /usr/include/netinet/in.h /usr/include/sys/socket.h \
+ /usr/include/bits/types/struct_iovec.h /usr/include/bits/socket.h \
+ /usr/include/bits/socket_type.h /usr/include/bits/sockaddr.h \
+ /usr/include/asm/socket.h /usr/include/asm-generic/socket.h \
+ /usr/include/asm/sockios.h /usr/include/asm-generic/sockios.h \
+ /usr/include/bits/types/struct_osockaddr.h /usr/include/bits/in.h \
+ /usr/include/c++/16/sstream /usr/include/c++/16/bits/sstream.tcc

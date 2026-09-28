@@ -97,7 +97,6 @@ cafeteria: CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o
 cafeteria: CMakeFiles/cafeteria.dir/build.make
 cafeteria: CMakeFiles/cafeteria.dir/compiler_depend.ts
 cafeteria: libmodelo.a
-cafeteria: /usr/lib64/libsqlite3.so
 cafeteria: /usr/lib64/libsfml-graphics.so.2.6.2
 cafeteria: /usr/lib64/libsfml-window.so.2.6.2
 cafeteria: /usr/lib64/libsfml-system.so.2.6.2

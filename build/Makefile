@@ -181,19 +181,6 @@ servidor/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/servidor.dir/build.make CMakeFiles/servidor.dir/build
 .PHONY : servidor/fast
 
-#=============================================================================
-# Target rules for targets named simulador
-
-# Build rule for target.
-simulador: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 simulador
-.PHONY : simulador
-
-# fast build rule for target.
-simulador/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/build
-.PHONY : simulador/fast
-
 src/Administrador.o: src/Administrador.cpp.o
 .PHONY : src/Administrador.o
 
@@ -265,30 +252,6 @@ src/Cliente.s: src/Cliente.cpp.s
 src/Cliente.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Cliente.cpp.s
 .PHONY : src/Cliente.cpp.s
-
-src/Monitor.o: src/Monitor.cpp.o
-.PHONY : src/Monitor.o
-
-# target to build an object file
-src/Monitor.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Monitor.cpp.o
-.PHONY : src/Monitor.cpp.o
-
-src/Monitor.i: src/Monitor.cpp.i
-.PHONY : src/Monitor.i
-
-# target to preprocess a source file
-src/Monitor.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Monitor.cpp.i
-.PHONY : src/Monitor.cpp.i
-
-src/Monitor.s: src/Monitor.cpp.s
-.PHONY : src/Monitor.s
-
-# target to generate assembly for a file
-src/Monitor.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Monitor.cpp.s
-.PHONY : src/Monitor.cpp.s
 
 src/Pago.o: src/Pago.cpp.o
 .PHONY : src/Pago.o
@@ -386,30 +349,6 @@ src/Protocolo.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Protocolo.cpp.s
 .PHONY : src/Protocolo.cpp.s
 
-src/Senales.o: src/Senales.cpp.o
-.PHONY : src/Senales.o
-
-# target to build an object file
-src/Senales.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Senales.cpp.o
-.PHONY : src/Senales.cpp.o
-
-src/Senales.i: src/Senales.cpp.i
-.PHONY : src/Senales.i
-
-# target to preprocess a source file
-src/Senales.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Senales.cpp.i
-.PHONY : src/Senales.cpp.i
-
-src/Senales.s: src/Senales.cpp.s
-.PHONY : src/Senales.s
-
-# target to generate assembly for a file
-src/Senales.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Senales.cpp.s
-.PHONY : src/Senales.cpp.s
-
 src/Servidor.o: src/Servidor.cpp.o
 .PHONY : src/Servidor.o
 
@@ -433,30 +372,6 @@ src/Servidor.s: src/Servidor.cpp.s
 src/Servidor.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/servidor.dir/build.make CMakeFiles/servidor.dir/src/Servidor.cpp.s
 .PHONY : src/Servidor.cpp.s
-
-src/Simulador.o: src/Simulador.cpp.o
-.PHONY : src/Simulador.o
-
-# target to build an object file
-src/Simulador.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/src/Simulador.cpp.o
-.PHONY : src/Simulador.cpp.o
-
-src/Simulador.i: src/Simulador.cpp.i
-.PHONY : src/Simulador.i
-
-# target to preprocess a source file
-src/Simulador.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/src/Simulador.cpp.i
-.PHONY : src/Simulador.cpp.i
-
-src/Simulador.s: src/Simulador.cpp.s
-.PHONY : src/Simulador.s
-
-# target to generate assembly for a file
-src/Simulador.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/src/Simulador.cpp.s
-.PHONY : src/Simulador.cpp.s
 
 src/Tarjeta.o: src/Tarjeta.cpp.o
 .PHONY : src/Tarjeta.o
@@ -650,30 +565,6 @@ src/mainServidor.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/servidor.dir/build.make CMakeFiles/servidor.dir/src/mainServidor.cpp.s
 .PHONY : src/mainServidor.cpp.s
 
-src/mainSimulador.o: src/mainSimulador.cpp.o
-.PHONY : src/mainSimulador.o
-
-# target to build an object file
-src/mainSimulador.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/src/mainSimulador.cpp.o
-.PHONY : src/mainSimulador.cpp.o
-
-src/mainSimulador.i: src/mainSimulador.cpp.i
-.PHONY : src/mainSimulador.i
-
-# target to preprocess a source file
-src/mainSimulador.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/src/mainSimulador.cpp.i
-.PHONY : src/mainSimulador.cpp.i
-
-src/mainSimulador.s: src/mainSimulador.cpp.s
-.PHONY : src/mainSimulador.s
-
-# target to generate assembly for a file
-src/mainSimulador.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/src/mainSimulador.cpp.s
-.PHONY : src/mainSimulador.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -687,7 +578,6 @@ help:
 	@echo "... cliente"
 	@echo "... modelo"
 	@echo "... servidor"
-	@echo "... simulador"
 	@echo "... src/Administrador.o"
 	@echo "... src/Administrador.i"
 	@echo "... src/Administrador.s"
@@ -697,9 +587,6 @@ help:
 	@echo "... src/Cliente.o"
 	@echo "... src/Cliente.i"
 	@echo "... src/Cliente.s"
-	@echo "... src/Monitor.o"
-	@echo "... src/Monitor.i"
-	@echo "... src/Monitor.s"
 	@echo "... src/Pago.o"
 	@echo "... src/Pago.i"
 	@echo "... src/Pago.s"
@@ -712,15 +599,9 @@ help:
 	@echo "... src/Protocolo.o"
 	@echo "... src/Protocolo.i"
 	@echo "... src/Protocolo.s"
-	@echo "... src/Senales.o"
-	@echo "... src/Senales.i"
-	@echo "... src/Senales.s"
 	@echo "... src/Servidor.o"
 	@echo "... src/Servidor.i"
 	@echo "... src/Servidor.s"
-	@echo "... src/Simulador.o"
-	@echo "... src/Simulador.i"
-	@echo "... src/Simulador.s"
 	@echo "... src/Tarjeta.o"
 	@echo "... src/Tarjeta.i"
 	@echo "... src/Tarjeta.s"
@@ -745,9 +626,6 @@ help:
 	@echo "... src/mainServidor.o"
 	@echo "... src/mainServidor.i"
 	@echo "... src/mainServidor.s"
-	@echo "... src/mainSimulador.o"
-	@echo "... src/mainSimulador.i"
-	@echo "... src/mainSimulador.s"
 .PHONY : help
 
 

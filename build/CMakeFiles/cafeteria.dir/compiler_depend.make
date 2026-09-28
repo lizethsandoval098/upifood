@@ -3,14 +3,10 @@
 
 CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o: /home/berenicepf/upifood/src/mainCafeteria.cpp \
   /home/berenicepf/upifood/include/Cafeteria.h \
-  /home/berenicepf/upifood/include/Monitor.h \
   /home/berenicepf/upifood/include/Pedido.h \
   /home/berenicepf/upifood/include/Producto.h \
-  /home/berenicepf/upifood/include/Protocolo.h \
-  /home/berenicepf/upifood/include/Senales.h \
   /home/berenicepf/upifood/include/Usuario.h \
   /home/berenicepf/upifood/include/Ventana.h \
-  /home/berenicepf/upifood/include/VistaEnVivo.h \
   /usr/include/SFML/Config.hpp \
   /usr/include/SFML/Graphics.hpp \
   /usr/include/SFML/Graphics/BlendMode.hpp \
@@ -161,29 +157,22 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o: /home/berenicepf/upifood/src/m
   /usr/include/bits/wctype-wchar.h \
   /usr/include/bits/wordsize.h \
   /usr/include/c++/16/algorithm \
-  /usr/include/c++/16/array \
-  /usr/include/c++/16/atomic \
   /usr/include/c++/16/backward/binders.h \
   /usr/include/c++/16/bit \
   /usr/include/c++/16/bits/algorithmfwd.h \
   /usr/include/c++/16/bits/alloc_traits.h \
   /usr/include/c++/16/bits/allocator.h \
-  /usr/include/c++/16/bits/atomic_base.h \
-  /usr/include/c++/16/bits/atomic_lockfree_defines.h \
   /usr/include/c++/16/bits/basic_ios.h \
   /usr/include/c++/16/bits/basic_ios.tcc \
   /usr/include/c++/16/bits/basic_string.h \
   /usr/include/c++/16/bits/basic_string.tcc \
   /usr/include/c++/16/bits/char_traits.h \
   /usr/include/c++/16/bits/charconv.h \
-  /usr/include/c++/16/bits/chrono.h \
   /usr/include/c++/16/bits/codecvt.h \
   /usr/include/c++/16/bits/concept_check.h \
   /usr/include/c++/16/bits/cpp_type_traits.h \
   /usr/include/c++/16/bits/cxxabi_forced.h \
   /usr/include/c++/16/bits/cxxabi_init_exception.h \
-  /usr/include/c++/16/bits/deque.tcc \
-  /usr/include/c++/16/bits/enable_special_members.h \
   /usr/include/c++/16/bits/erase_if.h \
   /usr/include/c++/16/bits/exception.h \
   /usr/include/c++/16/bits/exception_defines.h \
@@ -191,8 +180,6 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o: /home/berenicepf/upifood/src/m
   /usr/include/c++/16/bits/functexcept.h \
   /usr/include/c++/16/bits/functional_hash.h \
   /usr/include/c++/16/bits/hash_bytes.h \
-  /usr/include/c++/16/bits/hashtable.h \
-  /usr/include/c++/16/bits/hashtable_policy.h \
   /usr/include/c++/16/bits/invoke.h \
   /usr/include/c++/16/bits/ios_base.h \
   /usr/include/c++/16/bits/istream.tcc \
@@ -216,17 +203,12 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o: /home/berenicepf/upifood/src/m
   /usr/include/c++/16/bits/ostream.tcc \
   /usr/include/c++/16/bits/ostream_insert.h \
   /usr/include/c++/16/bits/ostream_print.h \
-  /usr/include/c++/16/bits/parse_numbers.h \
   /usr/include/c++/16/bits/postypes.h \
   /usr/include/c++/16/bits/predefined_ops.h \
   /usr/include/c++/16/bits/ptr_traits.h \
   /usr/include/c++/16/bits/range_access.h \
-  /usr/include/c++/16/bits/refwrap.h \
   /usr/include/c++/16/bits/requires_hosted.h \
   /usr/include/c++/16/bits/std_abs.h \
-  /usr/include/c++/16/bits/std_function.h \
-  /usr/include/c++/16/bits/std_mutex.h \
-  /usr/include/c++/16/bits/std_thread.h \
   /usr/include/c++/16/bits/stdexcept_except.h \
   /usr/include/c++/16/bits/stdexcept_throw.h \
   /usr/include/c++/16/bits/stdexcept_throwfwd.h \
@@ -234,7 +216,6 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o: /home/berenicepf/upifood/src/m
   /usr/include/c++/16/bits/stl_algobase.h \
   /usr/include/c++/16/bits/stl_bvector.h \
   /usr/include/c++/16/bits/stl_construct.h \
-  /usr/include/c++/16/bits/stl_deque.h \
   /usr/include/c++/16/bits/stl_function.h \
   /usr/include/c++/16/bits/stl_heap.h \
   /usr/include/c++/16/bits/stl_iterator.h \
@@ -242,10 +223,8 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o: /home/berenicepf/upifood/src/m
   /usr/include/c++/16/bits/stl_iterator_base_types.h \
   /usr/include/c++/16/bits/stl_map.h \
   /usr/include/c++/16/bits/stl_multimap.h \
-  /usr/include/c++/16/bits/stl_multiset.h \
   /usr/include/c++/16/bits/stl_pair.h \
   /usr/include/c++/16/bits/stl_relops.h \
-  /usr/include/c++/16/bits/stl_set.h \
   /usr/include/c++/16/bits/stl_tempbuf.h \
   /usr/include/c++/16/bits/stl_tree.h \
   /usr/include/c++/16/bits/stl_uninitialized.h \
@@ -255,11 +234,7 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o: /home/berenicepf/upifood/src/m
   /usr/include/c++/16/bits/streambuf_iterator.h \
   /usr/include/c++/16/bits/string_view.tcc \
   /usr/include/c++/16/bits/stringfwd.h \
-  /usr/include/c++/16/bits/this_thread_sleep.h \
   /usr/include/c++/16/bits/uniform_int_dist.h \
-  /usr/include/c++/16/bits/unique_lock.h \
-  /usr/include/c++/16/bits/unique_ptr.h \
-  /usr/include/c++/16/bits/unordered_map.h \
   /usr/include/c++/16/bits/uses_allocator.h \
   /usr/include/c++/16/bits/uses_allocator_args.h \
   /usr/include/c++/16/bits/utility.h \
@@ -268,10 +243,8 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o: /home/berenicepf/upifood/src/m
   /usr/include/c++/16/cctype \
   /usr/include/c++/16/cerrno \
   /usr/include/c++/16/clocale \
-  /usr/include/c++/16/compare \
   /usr/include/c++/16/concepts \
   /usr/include/c++/16/cstddef \
-  /usr/include/c++/16/cstdint \
   /usr/include/c++/16/cstdio \
   /usr/include/c++/16/cstdlib \
   /usr/include/c++/16/ctime \
@@ -279,7 +252,6 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o: /home/berenicepf/upifood/src/m
   /usr/include/c++/16/cwctype \
   /usr/include/c++/16/debug/assertions.h \
   /usr/include/c++/16/debug/debug.h \
-  /usr/include/c++/16/deque \
   /usr/include/c++/16/exception \
   /usr/include/c++/16/ext/aligned_buffer.h \
   /usr/include/c++/16/ext/alloc_traits.h \
@@ -287,34 +259,27 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o: /home/berenicepf/upifood/src/m
   /usr/include/c++/16/ext/numeric_traits.h \
   /usr/include/c++/16/ext/string_conversions.h \
   /usr/include/c++/16/ext/type_traits.h \
-  /usr/include/c++/16/functional \
   /usr/include/c++/16/initializer_list \
   /usr/include/c++/16/ios \
   /usr/include/c++/16/iosfwd \
   /usr/include/c++/16/iostream \
   /usr/include/c++/16/istream \
   /usr/include/c++/16/iterator \
-  /usr/include/c++/16/limits \
   /usr/include/c++/16/locale \
   /usr/include/c++/16/map \
-  /usr/include/c++/16/mutex \
   /usr/include/c++/16/new \
   /usr/include/c++/16/ostream \
   /usr/include/c++/16/pstl/execution_defs.h \
   /usr/include/c++/16/pstl/glue_algorithm_defs.h \
   /usr/include/c++/16/pstl/pstl_config.h \
-  /usr/include/c++/16/ratio \
-  /usr/include/c++/16/set \
   /usr/include/c++/16/stdexcept \
   /usr/include/c++/16/streambuf \
   /usr/include/c++/16/string \
   /usr/include/c++/16/string_view \
   /usr/include/c++/16/system_error \
-  /usr/include/c++/16/thread \
   /usr/include/c++/16/tuple \
   /usr/include/c++/16/type_traits \
   /usr/include/c++/16/typeinfo \
-  /usr/include/c++/16/unordered_map \
   /usr/include/c++/16/utility \
   /usr/include/c++/16/vector \
   /usr/include/c++/16/x86_64-redhat-linux/bits/atomic_word.h \
@@ -371,6 +336,7 @@ cafeteria: /lib64/ld-linux-x86-64.so.2 \
   /usr/lib64/crtn.o \
   /usr/lib64/libc.so \
   /usr/lib64/libm.so \
+  /usr/lib64/libsqlite3.so \
   /usr/lib/gcc/x86_64-redhat-linux/16/crtbegin.o \
   /usr/lib/gcc/x86_64-redhat-linux/16/crtend.o \
   /usr/lib/gcc/x86_64-redhat-linux/16/libatomic.so \
@@ -399,7 +365,6 @@ cafeteria: /lib64/ld-linux-x86-64.so.2 \
   /usr/lib64/libsfml-graphics.so.2.6.2 \
   /usr/lib64/libsfml-system.so.2.6.2 \
   /usr/lib64/libsfml-window.so.2.6.2 \
-  /usr/lib64/libsqlite3.so \
   /usr/lib64/libudev.so.1 \
   /usr/lib64/libxcb.so.1 \
   /usr/lib64/libz.so.1 \
@@ -412,8 +377,6 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 /usr/lib64/libz.so.1:
 
 /usr/lib64/libudev.so.1:
-
-/usr/lib64/libsqlite3.so:
 
 /usr/lib64/libsfml-window.so.2.6.2:
 
@@ -441,6 +404,8 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 
 /usr/lib/gcc/x86_64-redhat-linux/16/crtend.o:
 
+/usr/lib64/libsqlite3.so:
+
 /usr/lib64/libm.so:
 
 /usr/lib64/crtn.o:
@@ -448,6 +413,10 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 /usr/lib64/crt1.o:
 
 /lib64/libmvec.so.1:
+
+/lib64/libm.so.6:
+
+/lib64/libgcc_s.so.1:
 
 /lib64/libc.so.6:
 
@@ -463,6 +432,8 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 
 /usr/include/sys/types.h:
 
+/usr/include/sys/single_threaded.h:
+
 /usr/include/stdlib.h:
 
 /usr/include/stdc-predef.h:
@@ -471,6 +442,10 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 
 /usr/include/sched.h:
 
+/usr/lib64/libbrotlicommon.so.1:
+
+/usr/include/pthread.h:
+
 /usr/include/locale.h:
 
 /usr/include/linux/stddef.h:
@@ -478,6 +453,8 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 /usr/include/linux/errno.h:
 
 /usr/include/gnu/stubs-64.h:
+
+/usr/include/features-time64.h:
 
 /usr/include/errno.h:
 
@@ -492,6 +469,8 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 /usr/include/c++/16/x86_64-redhat-linux/bits/error_constants.h:
 
 /usr/include/c++/16/x86_64-redhat-linux/bits/ctype_base.h:
+
+/usr/include/c++/16/x86_64-redhat-linux/bits/cpu_defines.h:
 
 /usr/include/c++/16/x86_64-redhat-linux/bits/c++config.h:
 
@@ -513,65 +492,17 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 
 /usr/include/c++/16/streambuf:
 
-/usr/include/c++/16/set:
-
-/usr/include/c++/16/ratio:
-
-/usr/include/c++/16/mutex:
-
-/usr/include/c++/16/limits:
-
 /usr/include/c++/16/istream:
 
 /usr/include/c++/16/iostream:
 
 /usr/include/c++/16/ios:
 
-/usr/include/c++/16/functional:
+/usr/include/c++/16/string_view:
 
-/usr/include/sys/select.h:
-
-/usr/include/c++/16/ext/aligned_buffer.h:
-
-/usr/include/c++/16/exception:
-
-/lib64/libgcc_s.so.1:
-
-/usr/include/c++/16/deque:
-
-/usr/include/linux/sched/types.h:
-
-/usr/include/c++/16/cwchar:
-
-/usr/include/c++/16/cstdio:
-
-/usr/include/c++/16/cstddef:
-
-/usr/lib64/libbrotlicommon.so.1:
-
-/usr/include/pthread.h:
-
-/usr/include/c++/16/compare:
-
-/usr/include/c++/16/cctype:
-
-/usr/include/c++/16/bits/version.h:
-
-/usr/include/c++/16/bits/utility.h:
-
-/usr/include/c++/16/bits/uses_allocator_args.h:
-
-/usr/include/c++/16/ext/alloc_traits.h:
-
-/usr/include/c++/16/bits/unordered_map.h:
-
-/usr/include/c++/16/bits/unique_ptr.h:
+/usr/include/bits/types/__fpos64_t.h:
 
 /usr/include/bits/timex.h:
-
-/usr/include/c++/16/cstdlib:
-
-/usr/include/bits/errno.h:
 
 /usr/include/c++/16/ext/type_traits.h:
 
@@ -585,7 +516,15 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 
 /usr/include/bits/pthreadtypes-arch.h:
 
+/usr/include/stdint.h:
+
+/usr/include/endian.h:
+
+/usr/include/c++/16/bits/exception.h:
+
 /usr/include/bits/long-double.h:
+
+/usr/include/bits/libc-header-start.h:
 
 /usr/include/bits/byteswap.h:
 
@@ -615,16 +554,6 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 
 /usr/include/asm/bitsperlong.h:
 
-/usr/include/c++/16/clocale:
-
-/usr/include/asm-generic/errno-base.h:
-
-/usr/include/c++/16/bits/stl_multiset.h:
-
-/usr/include/c++/16/bits/uses_allocator.h:
-
-/usr/include/asm-generic/posix_types.h:
-
 /usr/include/c++/16/locale:
 
 /usr/include/SFML/System/Export.hpp:
@@ -632,10 +561,6 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 /usr/include/SFML/System/Thread.hpp:
 
 /usr/include/alloca.h:
-
-/usr/include/c++/16/x86_64-redhat-linux/bits/cpu_defines.h:
-
-/usr/include/c++/16/bits/hashtable.h:
 
 /usr/include/SFML/Window/WindowStyle.hpp:
 
@@ -649,13 +574,19 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 
 /usr/include/bits/stdint-uintn.h:
 
+/usr/include/asm-generic/errno-base.h:
+
+/usr/include/c++/16/clocale:
+
 /usr/include/c++/16/bits/memoryfwd.h:
 
 /usr/include/SFML/Window/Joystick.hpp:
 
 /usr/include/bits/cpu-set.h:
 
-/usr/include/c++/16/bits/atomic_lockfree_defines.h:
+/usr/include/bits/errno.h:
+
+/usr/include/c++/16/cstdlib:
 
 /usr/include/SFML/Window/Export.hpp:
 
@@ -673,12 +604,6 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 
 /usr/include/c++/16/bits/algorithmfwd.h:
 
-/usr/include/c++/16/pstl/glue_algorithm_defs.h:
-
-/usr/include/c++/16/debug/assertions.h:
-
-/usr/include/SFML/Window/Clipboard.hpp:
-
 /usr/include/c++/16/x86_64-redhat-linux/bits/atomic_word.h:
 
 /usr/include/c++/16/bits/vector.tcc:
@@ -693,153 +618,7 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 
 /usr/include/SFML/System/Vector2.hpp:
 
-/usr/include/SFML/Graphics/Rect.inl:
-
-/usr/include/SFML/Graphics/Rect.hpp:
-
-/usr/include/c++/16/iterator:
-
-/usr/include/bits/types/struct_tm.h:
-
-/usr/include/SFML/Graphics/CircleShape.hpp:
-
-/home/berenicepf/upifood/src/mainCafeteria.cpp:
-
-/usr/include/c++/16/bits/stl_construct.h:
-
-/home/berenicepf/upifood/include/Usuario.h:
-
-/usr/include/SFML/Graphics/Export.hpp:
-
-/usr/include/c++/16/cerrno:
-
-/usr/include/SFML/Graphics/Sprite.hpp:
-
-/usr/include/bits/pthread_stack_min-dynamic.h:
-
-/usr/include/SFML/Graphics/Glsl.hpp:
-
-/usr/include/SFML/Window/Vulkan.hpp:
-
-/usr/include/bits/pthreadtypes.h:
-
-/usr/include/c++/16/bits/requires_hosted.h:
-
-/usr/include/SFML/Graphics.hpp:
-
-/usr/include/SFML/Graphics/Glyph.hpp:
-
-/usr/include/SFML/Window/Touch.hpp:
-
-/usr/include/c++/16/array:
-
-/usr/include/SFML/Graphics/RectangleShape.hpp:
-
-/usr/include/bits/types/time_t.h:
-
-/usr/include/c++/16/unordered_map:
-
-/usr/include/c++/16/bits/localefwd.h:
-
-/usr/include/c++/16/bits/ostream.tcc:
-
-/usr/include/libintl.h:
-
-/usr/include/bits/endianness.h:
-
-/usr/include/SFML/System/String.hpp:
-
-/usr/include/c++/16/bits/stl_multimap.h:
-
-/usr/include/c++/16/cstdint:
-
-/usr/include/c++/16/bits/basic_ios.tcc:
-
-/usr/include/SFML/Window.hpp:
-
-/usr/include/SFML/System/FileInputStream.hpp:
-
-/usr/include/gnu/stubs.h:
-
-/usr/include/c++/16/x86_64-redhat-linux/bits/c++locale.h:
-
-/usr/include/c++/16/bits/std_abs.h:
-
-/usr/include/SFML/Graphics/Font.hpp:
-
-/usr/include/SFML/Window/VideoMode.hpp:
-
-/usr/include/c++/16/bits/parse_numbers.h:
-
-/usr/include/SFML/Window/Window.hpp:
-
-/usr/lib/gcc/x86_64-redhat-linux/16/libatomic.so:
-
-/usr/include/SFML/Graphics/Shader.hpp:
-
-/usr/include/bits/libc-header-start.h:
-
-/usr/lib64/libX11.so.6:
-
-/usr/include/bits/stdint-least.h:
-
-/usr/include/SFML/System/ThreadLocal.hpp:
-
-/usr/include/SFML/Graphics/RenderTarget.hpp:
-
-/home/berenicepf/upifood/include/Protocolo.h:
-
-/usr/include/c++/16/bits/ios_base.h:
-
-/usr/include/SFML/Window/Mouse.hpp:
-
-/home/berenicepf/upifood/include/Cafeteria.h:
-
-/usr/include/SFML/Window/Cursor.hpp:
-
-/usr/include/bits/types/struct_FILE.h:
-
-/usr/include/c++/16/bits/stdexcept_except.h:
-
-/usr/include/c++/16/bits/deque.tcc:
-
-/usr/include/SFML/System/Utf.hpp:
-
-/usr/include/c++/16/x86_64-redhat-linux/bits/gthr.h:
-
-/usr/include/c++/16/bits/codecvt.h:
-
-/usr/include/c++/16/bits/stl_heap.h:
-
-/usr/include/c++/16/initializer_list:
-
-/usr/include/SFML/Graphics/BlendMode.hpp:
-
-/usr/include/SFML/System/Utf.inl:
-
-/usr/include/bits/setjmp.h:
-
-/usr/lib64/libsfml-graphics.so.2.6.2:
-
-/usr/include/asm/types.h:
-
-/usr/include/SFML/System/Clock.hpp:
-
-/usr/include/SFML/Config.hpp:
-
-/usr/include/features-time64.h:
-
-/usr/include/c++/16/bits/stl_set.h:
-
-/usr/include/sys/cdefs.h:
-
-/usr/include/SFML/Graphics/RenderTexture.hpp:
-
 /usr/include/SFML/Graphics/Texture.hpp:
-
-/usr/include/sys/single_threaded.h:
-
-/usr/include/c++/16/atomic:
 
 /usr/lib64/libXrender.so.1:
 
@@ -851,17 +630,141 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 
 /usr/include/c++/16/bits/locale_facets.h:
 
+/usr/include/SFML/Graphics/RenderTarget.hpp:
+
+/usr/include/SFML/Window/Touch.hpp:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/SFML/Graphics/RenderTexture.hpp:
+
+/usr/include/SFML/Config.hpp:
+
+/usr/include/libintl.h:
+
+/usr/include/bits/endianness.h:
+
+/usr/include/SFML/System/String.hpp:
+
+/usr/include/c++/16/bits/stl_multimap.h:
+
+/usr/include/SFML/System/ThreadLocalPtr.hpp:
+
+/usr/include/c++/16/bits/basic_ios.tcc:
+
+/usr/include/linux/posix_types.h:
+
+/usr/include/SFML/Graphics/Text.hpp:
+
+/usr/include/bits/types/FILE.h:
+
+/usr/include/SFML/Graphics/Rect.inl:
+
+/usr/include/c++/16/bits/uses_allocator_args.h:
+
+/usr/include/SFML/Graphics/Glyph.hpp:
+
+/usr/include/c++/16/bits/requires_hosted.h:
+
+/usr/include/SFML/Graphics.hpp:
+
+/home/berenicepf/upifood/src/mainCafeteria.cpp:
+
+/usr/include/c++/16/bits/stl_construct.h:
+
+/home/berenicepf/upifood/include/Usuario.h:
+
+/usr/include/SFML/Graphics/Export.hpp:
+
+/usr/include/bits/pthread_stack_min-dynamic.h:
+
+/usr/include/SFML/Graphics/Glsl.hpp:
+
+/usr/include/SFML/Window/Vulkan.hpp:
+
+/usr/include/bits/pthreadtypes.h:
+
+/usr/include/SFML/Graphics/RectangleShape.hpp:
+
+/usr/include/bits/types/time_t.h:
+
+/usr/include/c++/16/bits/localefwd.h:
+
+/usr/include/c++/16/bits/ostream.tcc:
+
+/usr/include/SFML/Window/VideoMode.hpp:
+
+/usr/include/SFML/Graphics/Font.hpp:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/c++/16/x86_64-redhat-linux/bits/c++locale.h:
+
+/usr/include/c++/16/bits/std_abs.h:
+
+/usr/include/SFML/Window/Mouse.hpp:
+
+/home/berenicepf/upifood/include/Cafeteria.h:
+
+/usr/lib64/libsfml-graphics.so.2.6.2:
+
+/usr/include/asm/types.h:
+
+/usr/include/SFML/System/Clock.hpp:
+
+/usr/include/c++/16/bits/version.h:
+
+/usr/include/SFML/Window/Cursor.hpp:
+
+/usr/include/bits/types/struct_FILE.h:
+
+/usr/include/c++/16/bits/stdexcept_except.h:
+
+/usr/include/c++/16/initializer_list:
+
+/usr/include/SFML/Graphics/BlendMode.hpp:
+
+/usr/include/SFML/System/Utf.hpp:
+
+/usr/include/c++/16/x86_64-redhat-linux/bits/gthr.h:
+
+/usr/include/c++/16/bits/codecvt.h:
+
+/usr/include/c++/16/bits/stl_heap.h:
+
+/usr/include/bits/setjmp.h:
+
+/usr/include/SFML/System/Utf.inl:
+
 /home/berenicepf/upifood/include/Ventana.h:
 
 /usr/include/c++/16/bits/locale_facets_nonio.tcc:
 
-/usr/include/c++/16/bits/stdexcept_throw.h:
+/usr/include/SFML/Graphics/RenderWindow.hpp:
+
+/usr/include/bits/types/sigset_t.h:
+
+/usr/include/c++/16/bits/memory_resource.h:
 
 libmodelo.a:
 
 /usr/include/SFML/System/Err.hpp:
 
 /home/berenicepf/upifood/include/Producto.h:
+
+/usr/include/features.h:
+
+/usr/include/bits/sched.h:
+
+/usr/include/bits/types/__FILE.h:
+
+/usr/include/c++/16/bits/istream.tcc:
+
+/usr/include/c++/16/bits/stl_tree.h:
+
+/usr/include/SFML/Graphics/Sprite.hpp:
+
+/usr/include/c++/16/cerrno:
 
 /usr/lib/gcc/x86_64-redhat-linux/16/include/stddef.h:
 
@@ -875,12 +778,6 @@ libmodelo.a:
 
 /usr/include/SFML/Graphics/VertexBuffer.hpp:
 
-/usr/include/SFML/Graphics/RenderWindow.hpp:
-
-/usr/include/bits/types/sigset_t.h:
-
-/usr/include/c++/16/bits/memory_resource.h:
-
 /usr/include/SFML/Graphics/Drawable.hpp:
 
 /usr/include/SFML/Graphics/PrimitiveType.hpp:
@@ -893,7 +790,19 @@ libmodelo.a:
 
 /usr/include/c++/16/bits/invoke.h:
 
+/usr/include/c++/16/cctype:
+
 /usr/include/SFML/System/MemoryInputStream.hpp:
+
+/usr/include/SFML/Graphics/Rect.hpp:
+
+/usr/include/c++/16/iterator:
+
+/usr/include/bits/types/struct_tm.h:
+
+/usr/include/SFML/Graphics/CircleShape.hpp:
+
+/usr/include/bits/floatn-common.h:
 
 /usr/include/SFML/Graphics/VertexArray.hpp:
 
@@ -927,41 +836,43 @@ libmodelo.a:
 
 /usr/include/SFML/Graphics/Image.hpp:
 
+/usr/include/SFML/Window.hpp:
+
+/usr/include/SFML/System/FileInputStream.hpp:
+
+/usr/include/c++/16/bits/ostream_print.h:
+
 /usr/include/asm-generic/int-ll64.h:
 
 /usr/include/SFML/Window/WindowBase.hpp:
 
 /usr/include/c++/16/bits/new_except.h:
 
-/usr/include/c++/16/ext/string_conversions.h:
+/usr/include/SFML/System/Mutex.hpp:
+
+/usr/include/SFML/System/NonCopyable.hpp:
 
 /usr/include/c++/16/bits/charconv.h:
 
 /usr/include/bits/atomic_wide_counter.h:
 
-/usr/include/SFML/System/Mutex.hpp:
+/usr/include/c++/16/ext/string_conversions.h:
+
+/usr/lib64/libX11.so.6:
+
+/usr/include/bits/stdint-least.h:
+
+/usr/include/SFML/System/ThreadLocal.hpp:
+
+/usr/include/c++/16/bits/ios_base.h:
 
 /usr/include/bits/types.h:
 
-/usr/include/linux/posix_types.h:
+/usr/include/SFML/Window/Window.hpp:
 
-/usr/include/SFML/Graphics/Text.hpp:
+/usr/lib/gcc/x86_64-redhat-linux/16/libatomic.so:
 
-/usr/include/bits/types/FILE.h:
-
-/usr/include/features.h:
-
-/usr/include/bits/sched.h:
-
-/usr/include/bits/types/__FILE.h:
-
-/usr/include/c++/16/bits/istream.tcc:
-
-/usr/include/c++/16/bits/stl_tree.h:
-
-/usr/include/c++/16/string_view:
-
-/usr/include/bits/types/__fpos64_t.h:
+/usr/include/SFML/Graphics/Shader.hpp:
 
 /usr/include/bits/types/clock_t.h:
 
@@ -978,6 +889,10 @@ libmodelo.a:
 /usr/include/bits/types/clockid_t.h:
 
 /usr/include/bits/types/cookie_io_functions_t.h:
+
+/usr/include/sys/select.h:
+
+/usr/include/c++/16/ext/aligned_buffer.h:
 
 /usr/include/bits/types/error_t.h:
 
@@ -1033,9 +948,11 @@ libmodelo.a:
 
 /usr/include/bits/uintn-identity.h:
 
-/usr/include/bits/wctype-wchar.h:
+/usr/include/SFML/Window/ContextSettings.hpp:
 
-/usr/include/c++/16/bits/unique_lock.h:
+/usr/include/bits/waitflags.h:
+
+/usr/include/bits/wctype-wchar.h:
 
 /usr/include/c++/16/algorithm:
 
@@ -1055,63 +972,23 @@ libmodelo.a:
 
 /usr/include/c++/16/bits/char_traits.h:
 
-/usr/include/SFML/System/ThreadLocalPtr.hpp:
-
-/home/berenicepf/upifood/include/Monitor.h:
-
-/usr/include/c++/16/bits/chrono.h:
-
 /usr/include/c++/16/bits/concept_check.h:
 
-/usr/include/stdint.h:
-
-/usr/include/endian.h:
-
-/usr/include/c++/16/bits/exception.h:
-
-/usr/include/c++/16/bits/std_function.h:
-
-/home/berenicepf/upifood/include/VistaEnVivo.h:
-
 /usr/include/c++/16/bits/cpp_type_traits.h:
-
-/usr/include/bits/floatn-common.h:
-
-/usr/include/c++/16/bits/enable_special_members.h:
-
-/usr/include/SFML/System/Vector3.hpp:
-
-/usr/include/c++/16/bits/ptr_traits.h:
 
 /usr/include/c++/16/bits/erase_if.h:
 
 /usr/include/c++/16/bits/hash_bytes.h:
 
+/usr/include/c++/16/bits/utility.h:
+
 /usr/include/c++/16/bits/exception_defines.h:
 
 /usr/lib64/libglib-2.0.so.0:
 
-/usr/include/c++/16/thread:
-
 /usr/include/c++/16/bits/functexcept.h:
 
 /usr/include/c++/16/bits/functional_hash.h:
-
-/usr/include/c++/16/bits/ostream_print.h:
-
-/usr/include/c++/16/bits/hashtable_policy.h:
-
-/usr/include/SFML/System/NonCopyable.hpp:
-
-/usr/include/c++/16/bits/refwrap.h:
-
-/usr/include/c++/16/bits/stringfwd.h:
-
-/usr/include/c++/16/utility:
-
-/usr/include/c++/16/concepts:
-
-/usr/include/c++/16/bits/locale_classes.h:
 
 /usr/include/c++/16/ext/atomicity.h:
 
@@ -1135,10 +1012,6 @@ libmodelo.a:
 
 /usr/include/c++/16/bits/nested_exception.h:
 
-/home/berenicepf/upifood/include/Senales.h:
-
-/usr/include/c++/16/bits/this_thread_sleep.h:
-
 /usr/include/c++/16/map:
 
 /usr/include/c++/16/bits/new_allocator.h:
@@ -1153,21 +1026,15 @@ libmodelo.a:
 
 /usr/include/c++/16/bits/postypes.h:
 
+/usr/include/SFML/System/Vector3.hpp:
+
+/usr/include/c++/16/bits/ptr_traits.h:
+
 /usr/include/SFML/System/Vector3.inl:
 
 /usr/include/c++/16/bits/range_access.h:
 
-/lib64/libm.so.6:
-
-/usr/include/c++/16/bits/atomic_base.h:
-
-/usr/include/c++/16/bits/std_mutex.h:
-
-/usr/lib64/libc_nonshared.a:
-
-/usr/include/c++/16/ctime:
-
-/usr/include/c++/16/bits/std_thread.h:
+/usr/include/c++/16/bits/stdexcept_throw.h:
 
 /usr/include/c++/16/bits/stl_algo.h:
 
@@ -1175,19 +1042,9 @@ libmodelo.a:
 
 /usr/include/c++/16/bits/stl_algobase.h:
 
-/usr/include/c++/16/debug/debug.h:
+/usr/include/asm-generic/posix_types.h:
 
-/usr/include/asm-generic/types.h:
-
-/usr/include/asm-generic/bitsperlong.h:
-
-/usr/include/c++/16/bits/stl_bvector.h:
-
-/usr/include/SFML/Window/ContextSettings.hpp:
-
-/usr/include/bits/waitflags.h:
-
-/usr/include/c++/16/bits/stl_deque.h:
+/usr/include/c++/16/bits/uses_allocator.h:
 
 /usr/include/c++/16/bits/stl_function.h:
 
@@ -1211,4 +1068,42 @@ libmodelo.a:
 
 /usr/include/c++/16/bits/stream_iterator.h:
 
+/usr/include/c++/16/bits/stringfwd.h:
+
 /usr/include/c++/16/bits/uniform_int_dist.h:
+
+/usr/include/c++/16/utility:
+
+/usr/include/c++/16/bits/locale_classes.h:
+
+/usr/include/c++/16/concepts:
+
+/usr/include/c++/16/cstddef:
+
+/usr/include/c++/16/cstdio:
+
+/usr/lib64/libc_nonshared.a:
+
+/usr/include/c++/16/ctime:
+
+/usr/include/linux/sched/types.h:
+
+/usr/include/c++/16/cwchar:
+
+/usr/include/c++/16/pstl/glue_algorithm_defs.h:
+
+/usr/include/SFML/Window/Clipboard.hpp:
+
+/usr/include/c++/16/debug/assertions.h:
+
+/usr/include/c++/16/ext/alloc_traits.h:
+
+/usr/include/asm-generic/types.h:
+
+/usr/include/asm-generic/bitsperlong.h:
+
+/usr/include/c++/16/bits/stl_bvector.h:
+
+/usr/include/c++/16/debug/debug.h:
+
+/usr/include/c++/16/exception:

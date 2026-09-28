@@ -99,15 +99,7 @@ CMakeFiles/servidor.dir/src/mainServidor.cpp.o: \
  /usr/include/c++/16/bits/stl_uninitialized.h \
  /usr/include/c++/16/bits/stl_vector.h \
  /usr/include/c++/16/bits/stl_bvector.h \
- /usr/include/c++/16/bits/vector.tcc /usr/include/c++/16/deque \
- /usr/include/c++/16/bits/stl_deque.h /usr/include/c++/16/bits/deque.tcc \
- /usr/include/c++/16/map /usr/include/c++/16/bits/stl_tree.h \
- /usr/include/c++/16/ext/aligned_buffer.h \
- /usr/include/c++/16/bits/node_handle.h \
- /usr/include/c++/16/bits/stl_map.h \
- /usr/include/c++/16/bits/stl_multimap.h /usr/include/c++/16/set \
- /usr/include/c++/16/bits/stl_set.h \
- /usr/include/c++/16/bits/stl_multiset.h /usr/include/c++/16/mutex \
+ /usr/include/c++/16/bits/vector.tcc /usr/include/c++/16/mutex \
  /usr/include/c++/16/bits/chrono.h /usr/include/c++/16/ratio \
  /usr/include/c++/16/cstdint \
  /usr/lib/gcc/x86_64-redhat-linux/16/include/stdint.h \
@@ -136,36 +128,6 @@ CMakeFiles/servidor.dir/src/mainServidor.cpp.o: \
  /usr/include/c++/16/x86_64-redhat-linux/bits/error_constants.h \
  /usr/include/c++/16/ext/atomicity.h \
  /usr/include/c++/16/x86_64-redhat-linux/bits/atomic_word.h \
- /usr/include/sys/single_threaded.h /usr/include/c++/16/atomic \
- /usr/include/c++/16/bits/atomic_base.h \
- /usr/include/c++/16/bits/atomic_lockfree_defines.h \
- /usr/include/c++/16/condition_variable \
- /usr/include/c++/16/bits/shared_ptr.h \
- /usr/include/c++/16/bits/shared_ptr_base.h /usr/include/c++/16/typeinfo \
- /usr/include/c++/16/bits/allocated_ptr.h \
- /usr/include/c++/16/bits/refwrap.h /usr/include/c++/16/bits/unique_ptr.h \
- /usr/include/c++/16/ext/concurrence.h /usr/include/c++/16/exception \
- /usr/include/c++/16/bits/exception_ptr.h \
- /usr/include/c++/16/bits/cxxabi_init_exception.h \
- /usr/include/c++/16/bits/nested_exception.h \
+ /usr/include/sys/single_threaded.h \
  /home/berenicepf/upifood/src/../include/BaseDatos.h \
- /usr/include/sqlite3.h /usr/include/c++/16/cstring /usr/include/string.h \
- /usr/include/strings.h /usr/include/c++/16/iostream \
- /usr/include/c++/16/ostream /usr/include/c++/16/bits/ostream.h \
- /usr/include/c++/16/ios /usr/include/c++/16/bits/ios_base.h \
- /usr/include/c++/16/bits/locale_classes.h \
- /usr/include/c++/16/bits/locale_classes.tcc \
- /usr/include/c++/16/system_error /usr/include/c++/16/stdexcept \
- /usr/include/c++/16/bits/stdexcept_except.h \
- /usr/include/c++/16/streambuf /usr/include/c++/16/bits/streambuf.tcc \
- /usr/include/c++/16/bits/basic_ios.h \
- /usr/include/c++/16/bits/locale_facets.h /usr/include/c++/16/cwctype \
- /usr/include/wctype.h /usr/include/bits/wctype-wchar.h \
- /usr/include/c++/16/x86_64-redhat-linux/bits/ctype_base.h \
- /usr/include/c++/16/bits/streambuf_iterator.h \
- /usr/include/c++/16/x86_64-redhat-linux/bits/ctype_inline.h \
- /usr/include/c++/16/bits/locale_facets.tcc \
- /usr/include/c++/16/bits/basic_ios.tcc \
- /usr/include/c++/16/bits/ostream_print.h \
- /usr/include/c++/16/bits/ostream.tcc /usr/include/c++/16/istream \
- /usr/include/c++/16/bits/istream.tcc
+ /usr/include/sqlite3.h

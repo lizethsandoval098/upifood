@@ -1,7 +1,0 @@
-=== Logger iniciado (pid 4307, padre 4304) 2026-09-28 08:20:24 ===
-[08:20:24] #1 SERVIDOR_INICIO puerto=5000 pid=4304 logger_pid=4307
-[08:23:22] #2 SENAL recibida SIGINT -> apagado ordenado
-[08:23:22] #3 SERVIDOR_FIN comandos_atendidos=0
-=== Logger termina (3 lineas) 2026-09-28 08:23:22 ===
-=== Logger iniciado (pid 4702, padre 4698) 2026-09-28 08:30:37 ===
-[08:30:37] #1 SERVIDOR_INICIO puerto=5000 pid=4698 logger_pid=4702

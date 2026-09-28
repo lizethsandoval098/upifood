@@ -113,7 +113,6 @@ servidor: CMakeFiles/servidor.dir/src/Servidor.cpp.o
 servidor: CMakeFiles/servidor.dir/build.make
 servidor: CMakeFiles/servidor.dir/compiler_depend.ts
 servidor: libmodelo.a
-servidor: /usr/lib64/libsqlite3.so
 servidor: /usr/lib64/libsfml-graphics.so.2.6.2
 servidor: /usr/lib64/libsfml-window.so.2.6.2
 servidor: /usr/lib64/libsfml-system.so.2.6.2

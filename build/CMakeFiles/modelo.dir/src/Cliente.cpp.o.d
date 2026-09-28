@@ -147,22 +147,8 @@ CMakeFiles/modelo.dir/src/Cliente.cpp.o: \
  /home/berenicepf/upifood/include/Pedido.h /usr/include/c++/16/utility \
  /usr/include/c++/16/bits/stl_relops.h \
  /home/berenicepf/upifood/include/Producto.h \
- /home/berenicepf/upifood/include/Protocolo.h \
- /home/berenicepf/upifood/include/Senales.h /usr/include/c++/16/iomanip \
- /usr/include/c++/16/locale \
- /usr/include/c++/16/bits/locale_facets_nonio.h /usr/include/c++/16/ctime \
- /usr/include/c++/16/x86_64-redhat-linux/bits/time_members.h \
- /usr/include/c++/16/x86_64-redhat-linux/bits/messages_members.h \
- /usr/include/libintl.h /usr/include/c++/16/bits/codecvt.h \
- /usr/include/c++/16/bits/locale_facets_nonio.tcc \
- /usr/include/c++/16/bits/locale_conv.h \
- /usr/include/c++/16/bits/quoted_string.h /usr/include/c++/16/sstream \
- /usr/include/c++/16/bits/sstream.tcc /usr/include/c++/16/map \
- /usr/include/c++/16/bits/stl_tree.h \
- /usr/include/c++/16/ext/aligned_buffer.h \
- /usr/include/c++/16/bits/node_handle.h \
- /usr/include/c++/16/bits/stl_map.h \
- /usr/include/c++/16/bits/stl_multimap.h /usr/include/unistd.h \
+ /home/berenicepf/upifood/include/BaseDatos.h /usr/include/sqlite3.h \
+ /home/berenicepf/upifood/include/Protocolo.h /usr/include/unistd.h \
  /usr/include/bits/posix_opt.h /usr/include/bits/environments.h \
  /usr/include/bits/confname.h /usr/include/bits/getopt_posix.h \
  /usr/include/bits/getopt_core.h /usr/include/bits/unistd_ext.h \

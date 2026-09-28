@@ -223,10 +223,5 @@ CMakeFiles/modelo.dir/src/Ventana.cpp.o: \
  /usr/include/SFML/Graphics/Glsl.hpp /usr/include/SFML/Graphics/Glsl.inl \
  /usr/include/SFML/Graphics/Sprite.hpp \
  /usr/include/SFML/Graphics/Text.hpp \
- /usr/include/SFML/Graphics/VertexBuffer.hpp /usr/include/c++/16/mutex \
- /usr/include/c++/16/bits/chrono.h /usr/include/c++/16/ratio \
- /usr/include/c++/16/cstdint /usr/include/c++/16/limits \
- /usr/include/c++/16/bits/parse_numbers.h \
- /usr/include/c++/16/bits/std_mutex.h \
- /usr/include/c++/16/bits/unique_lock.h /usr/include/c++/16/iostream \
+ /usr/include/SFML/Graphics/VertexBuffer.hpp /usr/include/c++/16/iostream \
  /usr/include/c++/16/istream /usr/include/c++/16/bits/istream.tcc

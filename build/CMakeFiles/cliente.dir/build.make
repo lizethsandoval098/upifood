@@ -97,7 +97,6 @@ cliente: CMakeFiles/cliente.dir/src/mainCliente.cpp.o
 cliente: CMakeFiles/cliente.dir/build.make
 cliente: CMakeFiles/cliente.dir/compiler_depend.ts
 cliente: libmodelo.a
-cliente: /usr/lib64/libsqlite3.so
 cliente: /usr/lib64/libsfml-graphics.so.2.6.2
 cliente: /usr/lib64/libsfml-window.so.2.6.2
 cliente: /usr/lib64/libsfml-system.so.2.6.2

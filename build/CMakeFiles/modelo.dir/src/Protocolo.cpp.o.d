@@ -108,17 +108,9 @@ CMakeFiles/modelo.dir/src/Protocolo.cpp.o: \
  /usr/include/asm-generic/posix_types.h /usr/include/asm/bitsperlong.h \
  /usr/include/asm-generic/bitsperlong.h /usr/include/asm/sockios.h \
  /usr/include/asm-generic/sockios.h \
- /usr/include/bits/types/struct_osockaddr.h /usr/include/sys/time.h \
- /usr/include/arpa/inet.h /usr/include/netinet/in.h \
- /usr/include/bits/stdint-uintn.h /usr/include/bits/in.h \
- /usr/include/unistd.h /usr/include/bits/posix_opt.h \
- /usr/include/bits/environments.h /usr/include/bits/confname.h \
- /usr/include/bits/getopt_posix.h /usr/include/bits/getopt_core.h \
- /usr/include/bits/unistd_ext.h /usr/include/linux/close_range.h \
- /usr/include/c++/16/cstring /usr/include/string.h /usr/include/strings.h \
- /usr/include/c++/16/sstream /usr/include/c++/16/istream \
- /usr/include/c++/16/ios /usr/include/c++/16/exception \
- /usr/include/c++/16/bits/exception_ptr.h \
+ /usr/include/bits/types/struct_osockaddr.h /usr/include/c++/16/sstream \
+ /usr/include/c++/16/istream /usr/include/c++/16/ios \
+ /usr/include/c++/16/exception /usr/include/c++/16/bits/exception_ptr.h \
  /usr/include/c++/16/bits/cxxabi_init_exception.h \
  /usr/include/c++/16/typeinfo /usr/include/c++/16/bits/nested_exception.h \
  /usr/include/c++/16/bits/ios_base.h /usr/include/c++/16/ext/atomicity.h \

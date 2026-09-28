@@ -198,52 +198,10 @@ CMakeFiles/modelo.dir/src/database.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/modelo.dir/src/database.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/berenicepf/upifood/src/database.cpp -o CMakeFiles/modelo.dir/src/database.cpp.s
 
-CMakeFiles/modelo.dir/src/Protocolo.cpp.o: CMakeFiles/modelo.dir/flags.make
-CMakeFiles/modelo.dir/src/Protocolo.cpp.o: /home/berenicepf/upifood/src/Protocolo.cpp
-CMakeFiles/modelo.dir/src/Protocolo.cpp.o: CMakeFiles/modelo.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/modelo.dir/src/Protocolo.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/modelo.dir/src/Protocolo.cpp.o -MF CMakeFiles/modelo.dir/src/Protocolo.cpp.o.d -o CMakeFiles/modelo.dir/src/Protocolo.cpp.o -c /home/berenicepf/upifood/src/Protocolo.cpp
-
-CMakeFiles/modelo.dir/src/Protocolo.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/modelo.dir/src/Protocolo.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/berenicepf/upifood/src/Protocolo.cpp > CMakeFiles/modelo.dir/src/Protocolo.cpp.i
-
-CMakeFiles/modelo.dir/src/Protocolo.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/modelo.dir/src/Protocolo.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/berenicepf/upifood/src/Protocolo.cpp -o CMakeFiles/modelo.dir/src/Protocolo.cpp.s
-
-CMakeFiles/modelo.dir/src/Senales.cpp.o: CMakeFiles/modelo.dir/flags.make
-CMakeFiles/modelo.dir/src/Senales.cpp.o: /home/berenicepf/upifood/src/Senales.cpp
-CMakeFiles/modelo.dir/src/Senales.cpp.o: CMakeFiles/modelo.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/modelo.dir/src/Senales.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/modelo.dir/src/Senales.cpp.o -MF CMakeFiles/modelo.dir/src/Senales.cpp.o.d -o CMakeFiles/modelo.dir/src/Senales.cpp.o -c /home/berenicepf/upifood/src/Senales.cpp
-
-CMakeFiles/modelo.dir/src/Senales.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/modelo.dir/src/Senales.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/berenicepf/upifood/src/Senales.cpp > CMakeFiles/modelo.dir/src/Senales.cpp.i
-
-CMakeFiles/modelo.dir/src/Senales.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/modelo.dir/src/Senales.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/berenicepf/upifood/src/Senales.cpp -o CMakeFiles/modelo.dir/src/Senales.cpp.s
-
-CMakeFiles/modelo.dir/src/Monitor.cpp.o: CMakeFiles/modelo.dir/flags.make
-CMakeFiles/modelo.dir/src/Monitor.cpp.o: /home/berenicepf/upifood/src/Monitor.cpp
-CMakeFiles/modelo.dir/src/Monitor.cpp.o: CMakeFiles/modelo.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/modelo.dir/src/Monitor.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/modelo.dir/src/Monitor.cpp.o -MF CMakeFiles/modelo.dir/src/Monitor.cpp.o.d -o CMakeFiles/modelo.dir/src/Monitor.cpp.o -c /home/berenicepf/upifood/src/Monitor.cpp
-
-CMakeFiles/modelo.dir/src/Monitor.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/modelo.dir/src/Monitor.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/berenicepf/upifood/src/Monitor.cpp > CMakeFiles/modelo.dir/src/Monitor.cpp.i
-
-CMakeFiles/modelo.dir/src/Monitor.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/modelo.dir/src/Monitor.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/berenicepf/upifood/src/Monitor.cpp -o CMakeFiles/modelo.dir/src/Monitor.cpp.s
-
 CMakeFiles/modelo.dir/src/Ventana.cpp.o: CMakeFiles/modelo.dir/flags.make
 CMakeFiles/modelo.dir/src/Ventana.cpp.o: /home/berenicepf/upifood/src/Ventana.cpp
 CMakeFiles/modelo.dir/src/Ventana.cpp.o: CMakeFiles/modelo.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/modelo.dir/src/Ventana.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/modelo.dir/src/Ventana.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/modelo.dir/src/Ventana.cpp.o -MF CMakeFiles/modelo.dir/src/Ventana.cpp.o.d -o CMakeFiles/modelo.dir/src/Ventana.cpp.o -c /home/berenicepf/upifood/src/Ventana.cpp
 
 CMakeFiles/modelo.dir/src/Ventana.cpp.i: cmake_force
@@ -253,6 +211,20 @@ CMakeFiles/modelo.dir/src/Ventana.cpp.i: cmake_force
 CMakeFiles/modelo.dir/src/Ventana.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/modelo.dir/src/Ventana.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/berenicepf/upifood/src/Ventana.cpp -o CMakeFiles/modelo.dir/src/Ventana.cpp.s
+
+CMakeFiles/modelo.dir/src/Protocolo.cpp.o: CMakeFiles/modelo.dir/flags.make
+CMakeFiles/modelo.dir/src/Protocolo.cpp.o: /home/berenicepf/upifood/src/Protocolo.cpp
+CMakeFiles/modelo.dir/src/Protocolo.cpp.o: CMakeFiles/modelo.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/modelo.dir/src/Protocolo.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/modelo.dir/src/Protocolo.cpp.o -MF CMakeFiles/modelo.dir/src/Protocolo.cpp.o.d -o CMakeFiles/modelo.dir/src/Protocolo.cpp.o -c /home/berenicepf/upifood/src/Protocolo.cpp
+
+CMakeFiles/modelo.dir/src/Protocolo.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/modelo.dir/src/Protocolo.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/berenicepf/upifood/src/Protocolo.cpp > CMakeFiles/modelo.dir/src/Protocolo.cpp.i
+
+CMakeFiles/modelo.dir/src/Protocolo.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/modelo.dir/src/Protocolo.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/berenicepf/upifood/src/Protocolo.cpp -o CMakeFiles/modelo.dir/src/Protocolo.cpp.s
 
 # Object files for target modelo
 modelo_OBJECTS = \
@@ -265,10 +237,8 @@ modelo_OBJECTS = \
 "CMakeFiles/modelo.dir/src/Tarjeta.cpp.o" \
 "CMakeFiles/modelo.dir/src/Pago.cpp.o" \
 "CMakeFiles/modelo.dir/src/database.cpp.o" \
-"CMakeFiles/modelo.dir/src/Protocolo.cpp.o" \
-"CMakeFiles/modelo.dir/src/Senales.cpp.o" \
-"CMakeFiles/modelo.dir/src/Monitor.cpp.o" \
-"CMakeFiles/modelo.dir/src/Ventana.cpp.o"
+"CMakeFiles/modelo.dir/src/Ventana.cpp.o" \
+"CMakeFiles/modelo.dir/src/Protocolo.cpp.o"
 
 # External object files for target modelo
 modelo_EXTERNAL_OBJECTS =
@@ -282,13 +252,11 @@ libmodelo.a: CMakeFiles/modelo.dir/src/Pedido.cpp.o
 libmodelo.a: CMakeFiles/modelo.dir/src/Tarjeta.cpp.o
 libmodelo.a: CMakeFiles/modelo.dir/src/Pago.cpp.o
 libmodelo.a: CMakeFiles/modelo.dir/src/database.cpp.o
-libmodelo.a: CMakeFiles/modelo.dir/src/Protocolo.cpp.o
-libmodelo.a: CMakeFiles/modelo.dir/src/Senales.cpp.o
-libmodelo.a: CMakeFiles/modelo.dir/src/Monitor.cpp.o
 libmodelo.a: CMakeFiles/modelo.dir/src/Ventana.cpp.o
+libmodelo.a: CMakeFiles/modelo.dir/src/Protocolo.cpp.o
 libmodelo.a: CMakeFiles/modelo.dir/build.make
 libmodelo.a: CMakeFiles/modelo.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Linking CXX static library libmodelo.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Linking CXX static library libmodelo.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/modelo.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/modelo.dir/link.txt --verbose=$(VERBOSE)
 

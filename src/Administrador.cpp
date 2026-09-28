@@ -10,14 +10,14 @@ using namespace std;
 
 Administrador::Administrador() {
     socketAdmin = -1;
-    ipServidor = "100.91.99.27";
+    ipServidor = "100.70.231.3";
     puerto = 5000;
 }
 
 Administrador::Administrador(string nombre, string correo, string contrasena, string username)
     : Usuario("Admin", nombre, correo, contrasena, username) {
     socketAdmin = -1;
-    ipServidor = "100.91.99.27";
+    ipServidor = "100.70.231.3";
     puerto = 5000;
 }
 

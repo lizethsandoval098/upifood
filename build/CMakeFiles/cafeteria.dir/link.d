@@ -4,7 +4,7 @@ cafeteria: \
   /usr/lib/gcc/x86_64-redhat-linux/16/crtbegin.o \
   CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o \
   libmodelo.a \
-  /usr/lib64/libsqlite3.so \
+  /usr/lib/gcc/x86_64-redhat-linux/16/../../../../lib64/libsqlite3.so \
   /usr/lib64/libsfml-graphics.so.2.6.2 \
   /usr/lib64/libsfml-window.so.2.6.2 \
   /usr/lib64/libsfml-system.so.2.6.2 \
@@ -72,7 +72,7 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o:
 
 libmodelo.a:
 
-/usr/lib64/libsqlite3.so:
+/usr/lib/gcc/x86_64-redhat-linux/16/../../../../lib64/libsqlite3.so:
 
 /usr/lib64/libsfml-graphics.so.2.6.2:
 

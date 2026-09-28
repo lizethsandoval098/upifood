@@ -149,12 +149,7 @@ CMakeFiles/modelo.dir/src/database.cpp.o: \
  /home/berenicepf/upifood/include/Pedido.h /usr/include/c++/16/utility \
  /usr/include/c++/16/bits/stl_relops.h \
  /home/berenicepf/upifood/include/Producto.h \
- /home/berenicepf/upifood/include/Cafeteria.h /usr/include/c++/16/set \
- /usr/include/c++/16/bits/stl_tree.h \
- /usr/include/c++/16/ext/aligned_buffer.h \
- /usr/include/c++/16/bits/node_handle.h \
- /usr/include/c++/16/bits/stl_set.h \
- /usr/include/c++/16/bits/stl_multiset.h \
+ /home/berenicepf/upifood/include/Cafeteria.h \
  /home/berenicepf/upifood/include/Producto.h \
  /home/berenicepf/upifood/include/Pedido.h \
  /home/berenicepf/upifood/include/Pago.h \

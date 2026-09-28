@@ -68,7 +68,6 @@ all: CMakeFiles/cliente.dir/all
 all: CMakeFiles/cafeteria.dir/all
 all: CMakeFiles/administrador.dir/all
 all: CMakeFiles/servidor.dir/all
-all: CMakeFiles/simulador.dir/all
 .PHONY : all
 
 # The main recursive "codegen" target.
@@ -77,7 +76,6 @@ codegen: CMakeFiles/cliente.dir/codegen
 codegen: CMakeFiles/cafeteria.dir/codegen
 codegen: CMakeFiles/administrador.dir/codegen
 codegen: CMakeFiles/servidor.dir/codegen
-codegen: CMakeFiles/simulador.dir/codegen
 .PHONY : codegen
 
 # The main recursive "preinstall" target.
@@ -90,7 +88,6 @@ clean: CMakeFiles/cliente.dir/clean
 clean: CMakeFiles/cafeteria.dir/clean
 clean: CMakeFiles/administrador.dir/clean
 clean: CMakeFiles/servidor.dir/clean
-clean: CMakeFiles/simulador.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -100,12 +97,12 @@ clean: CMakeFiles/simulador.dir/clean
 CMakeFiles/modelo.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=7,8,9,10,11,12,13,14,15,16,17,18,19,20 "Built target modelo"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=7,8,9,10,11,12,13,14,15,16,17,18 "Built target modelo"
 .PHONY : CMakeFiles/modelo.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/modelo.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 14
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 12
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/modelo.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 0
 .PHONY : CMakeFiles/modelo.dir/rule
@@ -117,7 +114,7 @@ modelo: CMakeFiles/modelo.dir/rule
 # codegen rule for target.
 CMakeFiles/modelo.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=7,8,9,10,11,12,13,14,15,16,17,18,19,20 "Finished codegen for target modelo"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=7,8,9,10,11,12,13,14,15,16,17,18 "Finished codegen for target modelo"
 .PHONY : CMakeFiles/modelo.dir/codegen
 
 # clean rule for target.
@@ -137,7 +134,7 @@ CMakeFiles/cliente.dir/all: CMakeFiles/modelo.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/cliente.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 16
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 14
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/cliente.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 0
 .PHONY : CMakeFiles/cliente.dir/rule
@@ -169,7 +166,7 @@ CMakeFiles/cafeteria.dir/all: CMakeFiles/modelo.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/cafeteria.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 16
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 14
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/cafeteria.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 0
 .PHONY : CMakeFiles/cafeteria.dir/rule
@@ -201,7 +198,7 @@ CMakeFiles/administrador.dir/all: CMakeFiles/modelo.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/administrador.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 16
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 14
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/administrador.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 0
 .PHONY : CMakeFiles/administrador.dir/rule
@@ -228,12 +225,12 @@ CMakeFiles/administrador.dir/clean:
 CMakeFiles/servidor.dir/all: CMakeFiles/modelo.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/servidor.dir/build.make CMakeFiles/servidor.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/servidor.dir/build.make CMakeFiles/servidor.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=21,22,23 "Built target servidor"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=19,20,21 "Built target servidor"
 .PHONY : CMakeFiles/servidor.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/servidor.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 17
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 15
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/servidor.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 0
 .PHONY : CMakeFiles/servidor.dir/rule
@@ -245,45 +242,13 @@ servidor: CMakeFiles/servidor.dir/rule
 # codegen rule for target.
 CMakeFiles/servidor.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/servidor.dir/build.make CMakeFiles/servidor.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=21,22,23 "Finished codegen for target servidor"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=19,20,21 "Finished codegen for target servidor"
 .PHONY : CMakeFiles/servidor.dir/codegen
 
 # clean rule for target.
 CMakeFiles/servidor.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/servidor.dir/build.make CMakeFiles/servidor.dir/clean
 .PHONY : CMakeFiles/servidor.dir/clean
-
-#=============================================================================
-# Target rules for target CMakeFiles/simulador.dir
-
-# All Build rule for target.
-CMakeFiles/simulador.dir/all: CMakeFiles/modelo.dir/all
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=24,25,26 "Built target simulador"
-.PHONY : CMakeFiles/simulador.dir/all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/simulador.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 17
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/simulador.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/berenicepf/upifood/build/CMakeFiles 0
-.PHONY : CMakeFiles/simulador.dir/rule
-
-# Convenience name for target.
-simulador: CMakeFiles/simulador.dir/rule
-.PHONY : simulador
-
-# codegen rule for target.
-CMakeFiles/simulador.dir/codegen:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=24,25,26 "Finished codegen for target simulador"
-.PHONY : CMakeFiles/simulador.dir/codegen
-
-# clean rule for target.
-CMakeFiles/simulador.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/clean
-.PHONY : CMakeFiles/simulador.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

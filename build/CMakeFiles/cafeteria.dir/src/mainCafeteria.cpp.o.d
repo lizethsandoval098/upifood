@@ -141,40 +141,11 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o: \
  /usr/include/c++/16/bits/basic_ios.tcc \
  /usr/include/c++/16/bits/ostream_print.h \
  /usr/include/c++/16/bits/ostream.tcc /usr/include/c++/16/istream \
- /usr/include/c++/16/bits/istream.tcc /usr/include/c++/16/set \
- /usr/include/c++/16/bits/stl_tree.h \
- /usr/include/c++/16/ext/aligned_buffer.h \
- /usr/include/c++/16/bits/node_handle.h \
- /usr/include/c++/16/bits/stl_set.h \
- /usr/include/c++/16/bits/stl_multiset.h \
+ /usr/include/c++/16/bits/istream.tcc \
  /home/berenicepf/upifood/include/Usuario.h \
  /home/berenicepf/upifood/include/Producto.h \
  /home/berenicepf/upifood/include/Pedido.h /usr/include/c++/16/utility \
  /usr/include/c++/16/bits/stl_relops.h \
- /home/berenicepf/upifood/include/Senales.h \
- /home/berenicepf/upifood/include/Monitor.h /usr/include/c++/16/thread \
- /usr/include/c++/16/bits/std_thread.h /usr/include/c++/16/bits/refwrap.h \
- /usr/include/c++/16/bits/unique_ptr.h \
- /usr/include/c++/16/bits/this_thread_sleep.h \
- /usr/include/c++/16/bits/chrono.h /usr/include/c++/16/ratio \
- /usr/include/c++/16/cstdint \
- /usr/lib/gcc/x86_64-redhat-linux/16/include/stdint.h \
- /usr/include/stdint.h /usr/include/bits/stdint-uintn.h \
- /usr/include/bits/stdint-least.h /usr/include/c++/16/limits \
- /usr/include/c++/16/ctime /usr/include/c++/16/bits/parse_numbers.h \
- /usr/include/c++/16/atomic /usr/include/c++/16/bits/atomic_base.h \
- /usr/include/c++/16/bits/atomic_lockfree_defines.h \
- /usr/include/c++/16/functional /usr/include/c++/16/bits/std_function.h \
- /usr/include/c++/16/unordered_map \
- /usr/include/c++/16/bits/unordered_map.h \
- /usr/include/c++/16/bits/hashtable.h \
- /usr/include/c++/16/bits/hashtable_policy.h \
- /usr/include/c++/16/bits/enable_special_members.h \
- /usr/include/c++/16/array /usr/include/c++/16/compare \
- /home/berenicepf/upifood/include/VistaEnVivo.h /usr/include/c++/16/deque \
- /usr/include/c++/16/bits/stl_deque.h /usr/include/c++/16/bits/deque.tcc \
- /usr/include/c++/16/mutex /usr/include/c++/16/bits/std_mutex.h \
- /usr/include/c++/16/bits/unique_lock.h \
  /home/berenicepf/upifood/include/Ventana.h \
  /usr/include/SFML/Graphics.hpp /usr/include/SFML/Window.hpp \
  /usr/include/SFML/System.hpp /usr/include/SFML/Config.hpp \
@@ -194,7 +165,7 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o: \
  /usr/include/c++/16/bits/stl_tempbuf.h \
  /usr/include/c++/16/pstl/glue_algorithm_defs.h \
  /usr/include/c++/16/pstl/execution_defs.h /usr/include/c++/16/locale \
- /usr/include/c++/16/bits/locale_facets_nonio.h \
+ /usr/include/c++/16/bits/locale_facets_nonio.h /usr/include/c++/16/ctime \
  /usr/include/c++/16/x86_64-redhat-linux/bits/time_members.h \
  /usr/include/c++/16/x86_64-redhat-linux/bits/messages_members.h \
  /usr/include/libintl.h /usr/include/c++/16/bits/codecvt.h \
@@ -223,6 +194,9 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o: \
  /usr/include/SFML/Window/WindowBase.hpp \
  /usr/include/SFML/Window/Vulkan.hpp \
  /usr/include/SFML/Window/WindowHandle.hpp \
+ /usr/lib/gcc/x86_64-redhat-linux/16/include/stdint.h \
+ /usr/include/stdint.h /usr/include/bits/stdint-uintn.h \
+ /usr/include/bits/stdint-least.h \
  /usr/include/SFML/Window/WindowStyle.hpp \
  /usr/include/SFML/Graphics/BlendMode.hpp \
  /usr/include/SFML/Graphics/Export.hpp \
@@ -241,6 +215,9 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o: \
  /usr/include/SFML/Graphics/Font.hpp /usr/include/SFML/Graphics/Glyph.hpp \
  /usr/include/SFML/Graphics/Texture.hpp \
  /usr/include/SFML/Graphics/Image.hpp /usr/include/c++/16/map \
+ /usr/include/c++/16/bits/stl_tree.h \
+ /usr/include/c++/16/ext/aligned_buffer.h \
+ /usr/include/c++/16/bits/node_handle.h \
  /usr/include/c++/16/bits/stl_map.h \
  /usr/include/c++/16/bits/stl_multimap.h \
  /usr/include/SFML/Graphics/RectangleShape.hpp \
@@ -252,6 +229,4 @@ CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o: \
  /usr/include/SFML/Graphics/Glsl.hpp /usr/include/SFML/Graphics/Glsl.inl \
  /usr/include/SFML/Graphics/Sprite.hpp \
  /usr/include/SFML/Graphics/Text.hpp \
- /usr/include/SFML/Graphics/VertexBuffer.hpp \
- /home/berenicepf/upifood/include/Monitor.h \
- /home/berenicepf/upifood/include/Protocolo.h
+ /usr/include/SFML/Graphics/VertexBuffer.hpp

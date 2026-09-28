@@ -12,7 +12,7 @@ using namespace std;
 
 Cafeteria::Cafeteria() : gananciaCajaTurno(0.0f) {
 	socketCafeteria = -1;
-	ipServidor = "100.91.99.27"; // IP de Tailscale de la compu con la BD/servidor
+	ipServidor = "100.70.231.3"; // IP de Tailscale de la compu con la BD/servidor
 	puerto = 5000;
 }
 
@@ -20,7 +20,7 @@ Cafeteria::Cafeteria(string nombre, string correo, string contrasena, string use
 	: Usuario("Cafe", nombre, correo, contrasena, username),
 	  idCafeteria{idCafeteria}, gananciaCajaTurno(0.0f) {
 	socketCafeteria = -1;
-	ipServidor = "100.91.99.27";
+	ipServidor = "100.70.231.3";
 	puerto = 5000;
 }
 

@@ -97,7 +97,6 @@ administrador: CMakeFiles/administrador.dir/src/mainAdministrador.cpp.o
 administrador: CMakeFiles/administrador.dir/build.make
 administrador: CMakeFiles/administrador.dir/compiler_depend.ts
 administrador: libmodelo.a
-administrador: /usr/lib64/libsqlite3.so
 administrador: /usr/lib64/libsfml-graphics.so.2.6.2
 administrador: /usr/lib64/libsfml-window.so.2.6.2
 administrador: /usr/lib64/libsfml-system.so.2.6.2

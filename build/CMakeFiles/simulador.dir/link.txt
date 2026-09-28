@@ -1,1 +1,0 @@
-/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/simulador.dir/link.d CMakeFiles/simulador.dir/src/mainSimulador.cpp.o CMakeFiles/simulador.dir/src/Simulador.cpp.o -o simulador  libmodelo.a /usr/lib64/libsqlite3.so /usr/lib64/libsfml-graphics.so.2.6.2 /usr/lib64/libsfml-window.so.2.6.2 /usr/lib64/libsfml-system.so.2.6.2

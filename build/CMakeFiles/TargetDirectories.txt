@@ -3,6 +3,5 @@
 /home/berenicepf/upifood/build/CMakeFiles/cafeteria.dir
 /home/berenicepf/upifood/build/CMakeFiles/administrador.dir
 /home/berenicepf/upifood/build/CMakeFiles/servidor.dir
-/home/berenicepf/upifood/build/CMakeFiles/simulador.dir
 /home/berenicepf/upifood/build/CMakeFiles/edit_cache.dir
 /home/berenicepf/upifood/build/CMakeFiles/rebuild_cache.dir

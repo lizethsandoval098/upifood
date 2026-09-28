@@ -33,8 +33,6 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/usr/share/cmake/Modules/Compiler/GNU.cmake"
   "/usr/share/cmake/Modules/FindPackageHandleStandardArgs.cmake"
   "/usr/share/cmake/Modules/FindPackageMessage.cmake"
-  "/usr/share/cmake/Modules/FindPkgConfig.cmake"
-  "/usr/share/cmake/Modules/FindSQLite3.cmake"
   "/usr/share/cmake/Modules/FindThreads.cmake"
   "/usr/share/cmake/Modules/Internal/CMakeCLinkerInformation.cmake"
   "/usr/share/cmake/Modules/Internal/CMakeCXXLinkerInformation.cmake"
@@ -73,5 +71,4 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/cafeteria.dir/DependInfo.cmake"
   "CMakeFiles/administrador.dir/DependInfo.cmake"
   "CMakeFiles/servidor.dir/DependInfo.cmake"
-  "CMakeFiles/simulador.dir/DependInfo.cmake"
   )
