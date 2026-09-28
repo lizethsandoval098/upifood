@@ -12,7 +12,7 @@
 using namespace std;
 
 BaseDatos::BaseDatos() {
-	nombreBD = "upiifood.db";
+	nombreBD = "upifood.db";
 	db = nullptr;
 }
 
