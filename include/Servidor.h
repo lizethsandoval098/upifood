@@ -9,6 +9,7 @@
 #include <random>
 
 #include "BaseDatos.h"
+#include "Tarjeta.h"
 
 using namespace std;
 
@@ -60,6 +61,9 @@ private:
 
     // ---- Simulador de clientes ----
     void asegurarUsuariosSimulados();
+    // Regresa la tarjeta simulada del bot; si todavia no tiene, la genera y la
+    // guarda en la BD. El que llama YA debe tener tomado dbMutex.
+    Tarjeta tarjetaBotSinBloqueo(const string& username);
     void iniciarSimuladorClientes();
     void hiloSimuladorClientes(int idHilo);
     bool crearPedidoSimulado(int idHilo, mt19937& generador);

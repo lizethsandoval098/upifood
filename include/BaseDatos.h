@@ -52,7 +52,9 @@ class BaseDatos{
 		// Pedidos
 		bool guardarPedido(const Pedido& pedido);
 		vector<pair<Producto, int>> listaProductosPedido(const string& folio);
-		vector<Pedido> obtenerPedidosCafeteria(const string& idCafeteria); // para cafeteria
+		// Por defecto NO trae los pedidos ya cerrados en un corte de caja; los reportes
+		// que necesitan todo el historial pasan incluirCerrados = true.
+		vector<Pedido> obtenerPedidosCafeteria(const string& idCafeteria, bool incluirCerrados = false); // para cafeteria
 		vector<Pedido> obtenerHistorialPedidos(const string& username);   // para cliente
 		Pedido obtenerPedido_Folio(const string& folio);
 		Pedido obtenerPedido_Username(const string& username);            // pedido activo mas reciente
@@ -75,9 +77,15 @@ class BaseDatos{
 		// Pagos
 		bool guardarPago(const Pago& pago);
 		Pago obtenerPago(const string& folio);
+		bool pedidoTienePagoAprobado(const string& folio);
 
 		// Tarjetas
 		bool guardarTarjeta(const Tarjeta& tarjeta);
+		// Tarjetas SIMULADAS de los bots (se ligan por username, no por nombre).
+		bool guardarTarjetaSimulada(const string& username, const Tarjeta& tarjeta);
+		bool obtenerTarjetaSimulada(const string& username, Tarjeta& tarjeta);
+		bool obtenerTarjetaPorNumero(const string& numero, Tarjeta& tarjeta, string& usernameDueno);
+		bool existeNumeroTarjeta(const string& numero);
 };
 
 #endif
