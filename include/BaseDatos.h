@@ -48,10 +48,12 @@ class BaseDatos{
 		bool guardarPedido(const Pedido& pedido);
 		vector<pair<Producto, int>> listaProductosPedido(const string& folio);
 		vector<Pedido> obtenerPedidosCafeteria(const string& idCafeteria); // para cafeteria
+		vector<Pedido> obtenerTodosPedidos();                            // para administrador
 		vector<Pedido> obtenerHistorialPedidos(const string& username);   // para cliente
 		Pedido obtenerPedido_Folio(const string& folio);
 		Pedido obtenerPedido_Username(const string& username);            // pedido activo mas reciente
-		bool actualizarEstadoPedido(const string& folio, const string& nuevoEstado); // para cafeteria
+		bool actualizarEstadoPedido(const string& folio, const string& idCafeteria,
+		                            const string& estado);
 
 		// Productos
 		bool guardarProducto(const Producto& producto);
