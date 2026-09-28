@@ -186,7 +186,6 @@ bool Cafeteria::pedirLista(const string& comando, vector<string>& lineas) {
 	}
 
 	int cantidad = 0;
-
 	try {
 		cantidad = stoi(encabezado[1]);
 	} catch (...) {
@@ -194,13 +193,16 @@ bool Cafeteria::pedirLista(const string& comando, vector<string>& lineas) {
 		return false;
 	}
 
-			cambiosInventarioPendientes.push_back({'E', idProducto, producto->getNombreProducto(),
-			                                      producto->getStock(), producto->getPrecio()});
+	for (int i = 0; i < cantidad; ++i) {
 		string linea;
-
+		if (!recibirMensaje(socketCafeteria, linea)) {
+			ultimoError = "Se perdio la conexion con el servidor.";
+			return false;
 		}
-
+		lineas.push_back(linea);
 	}
+
+	ultimoError.clear();
 
 	return true;
 }
