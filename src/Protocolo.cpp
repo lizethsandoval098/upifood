@@ -116,7 +116,7 @@ vector<string> separarCampos(const string& mensaje, char separador) {
 
 string obtenerIpServidor() {
 	const char* ip = getenv("UPIIFOOD_IP");
-	return (ip != nullptr && ip[0] != '\0') ? string(ip) : string("100.91.99.27");
+	return (ip != nullptr && ip[0] != '\0') ? string(ip) : string("100.70.231.3");
 }
 
 int obtenerPuertoServidor() {

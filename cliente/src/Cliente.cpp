@@ -12,7 +12,7 @@
 Cliente::Cliente(){
 
 	socketCliente = -1; 
-	ipServidor ="100.91.99.27"; 
+	ipServidor ="100.70.231.3"; 
 	puerto =5000; 
 }
 

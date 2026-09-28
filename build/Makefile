@@ -117,6 +117,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named modelo
+
+# Build rule for target.
+modelo: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 modelo
+.PHONY : modelo
+
+# fast build rule for target.
+modelo/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/build
+.PHONY : modelo/fast
+
+#=============================================================================
 # Target rules for targets named cliente
 
 # Build rule for target.
@@ -128,6 +141,32 @@ cliente: cmake_check_build_system
 cliente/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/cliente.dir/build.make CMakeFiles/cliente.dir/build
 .PHONY : cliente/fast
+
+#=============================================================================
+# Target rules for targets named cafeteria
+
+# Build rule for target.
+cafeteria: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cafeteria
+.PHONY : cafeteria
+
+# fast build rule for target.
+cafeteria/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cafeteria.dir/build.make CMakeFiles/cafeteria.dir/build
+.PHONY : cafeteria/fast
+
+#=============================================================================
+# Target rules for targets named administrador
+
+# Build rule for target.
+administrador: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 administrador
+.PHONY : administrador
+
+# fast build rule for target.
+administrador/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/administrador.dir/build.make CMakeFiles/administrador.dir/build
+.PHONY : administrador/fast
 
 #=============================================================================
 # Target rules for targets named servidor
@@ -142,12 +181,73 @@ servidor/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/servidor.dir/build.make CMakeFiles/servidor.dir/build
 .PHONY : servidor/fast
 
+#=============================================================================
+# Target rules for targets named simulador
+
+# Build rule for target.
+simulador: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 simulador
+.PHONY : simulador
+
+# fast build rule for target.
+simulador/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/build
+.PHONY : simulador/fast
+
+src/Administrador.o: src/Administrador.cpp.o
+.PHONY : src/Administrador.o
+
+# target to build an object file
+src/Administrador.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Administrador.cpp.o
+.PHONY : src/Administrador.cpp.o
+
+src/Administrador.i: src/Administrador.cpp.i
+.PHONY : src/Administrador.i
+
+# target to preprocess a source file
+src/Administrador.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Administrador.cpp.i
+.PHONY : src/Administrador.cpp.i
+
+src/Administrador.s: src/Administrador.cpp.s
+.PHONY : src/Administrador.s
+
+# target to generate assembly for a file
+src/Administrador.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Administrador.cpp.s
+.PHONY : src/Administrador.cpp.s
+
+src/Cafeteria.o: src/Cafeteria.cpp.o
+.PHONY : src/Cafeteria.o
+
+# target to build an object file
+src/Cafeteria.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Cafeteria.cpp.o
+.PHONY : src/Cafeteria.cpp.o
+
+src/Cafeteria.i: src/Cafeteria.cpp.i
+.PHONY : src/Cafeteria.i
+
+# target to preprocess a source file
+src/Cafeteria.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Cafeteria.cpp.i
+.PHONY : src/Cafeteria.cpp.i
+
+src/Cafeteria.s: src/Cafeteria.cpp.s
+.PHONY : src/Cafeteria.s
+
+# target to generate assembly for a file
+src/Cafeteria.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Cafeteria.cpp.s
+.PHONY : src/Cafeteria.cpp.s
+
 src/Cliente.o: src/Cliente.cpp.o
 .PHONY : src/Cliente.o
 
 # target to build an object file
 src/Cliente.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cliente.dir/build.make CMakeFiles/cliente.dir/src/Cliente.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Cliente.cpp.o
 .PHONY : src/Cliente.cpp.o
 
 src/Cliente.i: src/Cliente.cpp.i
@@ -155,7 +255,7 @@ src/Cliente.i: src/Cliente.cpp.i
 
 # target to preprocess a source file
 src/Cliente.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cliente.dir/build.make CMakeFiles/cliente.dir/src/Cliente.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Cliente.cpp.i
 .PHONY : src/Cliente.cpp.i
 
 src/Cliente.s: src/Cliente.cpp.s
@@ -163,8 +263,152 @@ src/Cliente.s: src/Cliente.cpp.s
 
 # target to generate assembly for a file
 src/Cliente.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cliente.dir/build.make CMakeFiles/cliente.dir/src/Cliente.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Cliente.cpp.s
 .PHONY : src/Cliente.cpp.s
+
+src/Monitor.o: src/Monitor.cpp.o
+.PHONY : src/Monitor.o
+
+# target to build an object file
+src/Monitor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Monitor.cpp.o
+.PHONY : src/Monitor.cpp.o
+
+src/Monitor.i: src/Monitor.cpp.i
+.PHONY : src/Monitor.i
+
+# target to preprocess a source file
+src/Monitor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Monitor.cpp.i
+.PHONY : src/Monitor.cpp.i
+
+src/Monitor.s: src/Monitor.cpp.s
+.PHONY : src/Monitor.s
+
+# target to generate assembly for a file
+src/Monitor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Monitor.cpp.s
+.PHONY : src/Monitor.cpp.s
+
+src/Pago.o: src/Pago.cpp.o
+.PHONY : src/Pago.o
+
+# target to build an object file
+src/Pago.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Pago.cpp.o
+.PHONY : src/Pago.cpp.o
+
+src/Pago.i: src/Pago.cpp.i
+.PHONY : src/Pago.i
+
+# target to preprocess a source file
+src/Pago.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Pago.cpp.i
+.PHONY : src/Pago.cpp.i
+
+src/Pago.s: src/Pago.cpp.s
+.PHONY : src/Pago.s
+
+# target to generate assembly for a file
+src/Pago.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Pago.cpp.s
+.PHONY : src/Pago.cpp.s
+
+src/Pedido.o: src/Pedido.cpp.o
+.PHONY : src/Pedido.o
+
+# target to build an object file
+src/Pedido.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Pedido.cpp.o
+.PHONY : src/Pedido.cpp.o
+
+src/Pedido.i: src/Pedido.cpp.i
+.PHONY : src/Pedido.i
+
+# target to preprocess a source file
+src/Pedido.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Pedido.cpp.i
+.PHONY : src/Pedido.cpp.i
+
+src/Pedido.s: src/Pedido.cpp.s
+.PHONY : src/Pedido.s
+
+# target to generate assembly for a file
+src/Pedido.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Pedido.cpp.s
+.PHONY : src/Pedido.cpp.s
+
+src/Producto.o: src/Producto.cpp.o
+.PHONY : src/Producto.o
+
+# target to build an object file
+src/Producto.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Producto.cpp.o
+.PHONY : src/Producto.cpp.o
+
+src/Producto.i: src/Producto.cpp.i
+.PHONY : src/Producto.i
+
+# target to preprocess a source file
+src/Producto.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Producto.cpp.i
+.PHONY : src/Producto.cpp.i
+
+src/Producto.s: src/Producto.cpp.s
+.PHONY : src/Producto.s
+
+# target to generate assembly for a file
+src/Producto.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Producto.cpp.s
+.PHONY : src/Producto.cpp.s
+
+src/Protocolo.o: src/Protocolo.cpp.o
+.PHONY : src/Protocolo.o
+
+# target to build an object file
+src/Protocolo.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Protocolo.cpp.o
+.PHONY : src/Protocolo.cpp.o
+
+src/Protocolo.i: src/Protocolo.cpp.i
+.PHONY : src/Protocolo.i
+
+# target to preprocess a source file
+src/Protocolo.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Protocolo.cpp.i
+.PHONY : src/Protocolo.cpp.i
+
+src/Protocolo.s: src/Protocolo.cpp.s
+.PHONY : src/Protocolo.s
+
+# target to generate assembly for a file
+src/Protocolo.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Protocolo.cpp.s
+.PHONY : src/Protocolo.cpp.s
+
+src/Senales.o: src/Senales.cpp.o
+.PHONY : src/Senales.o
+
+# target to build an object file
+src/Senales.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Senales.cpp.o
+.PHONY : src/Senales.cpp.o
+
+src/Senales.i: src/Senales.cpp.i
+.PHONY : src/Senales.i
+
+# target to preprocess a source file
+src/Senales.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Senales.cpp.i
+.PHONY : src/Senales.cpp.i
+
+src/Senales.s: src/Senales.cpp.s
+.PHONY : src/Senales.s
+
+# target to generate assembly for a file
+src/Senales.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Senales.cpp.s
+.PHONY : src/Senales.cpp.s
 
 src/Servidor.o: src/Servidor.cpp.o
 .PHONY : src/Servidor.o
@@ -189,6 +433,174 @@ src/Servidor.s: src/Servidor.cpp.s
 src/Servidor.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/servidor.dir/build.make CMakeFiles/servidor.dir/src/Servidor.cpp.s
 .PHONY : src/Servidor.cpp.s
+
+src/Simulador.o: src/Simulador.cpp.o
+.PHONY : src/Simulador.o
+
+# target to build an object file
+src/Simulador.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/src/Simulador.cpp.o
+.PHONY : src/Simulador.cpp.o
+
+src/Simulador.i: src/Simulador.cpp.i
+.PHONY : src/Simulador.i
+
+# target to preprocess a source file
+src/Simulador.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/src/Simulador.cpp.i
+.PHONY : src/Simulador.cpp.i
+
+src/Simulador.s: src/Simulador.cpp.s
+.PHONY : src/Simulador.s
+
+# target to generate assembly for a file
+src/Simulador.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/src/Simulador.cpp.s
+.PHONY : src/Simulador.cpp.s
+
+src/Tarjeta.o: src/Tarjeta.cpp.o
+.PHONY : src/Tarjeta.o
+
+# target to build an object file
+src/Tarjeta.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Tarjeta.cpp.o
+.PHONY : src/Tarjeta.cpp.o
+
+src/Tarjeta.i: src/Tarjeta.cpp.i
+.PHONY : src/Tarjeta.i
+
+# target to preprocess a source file
+src/Tarjeta.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Tarjeta.cpp.i
+.PHONY : src/Tarjeta.cpp.i
+
+src/Tarjeta.s: src/Tarjeta.cpp.s
+.PHONY : src/Tarjeta.s
+
+# target to generate assembly for a file
+src/Tarjeta.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Tarjeta.cpp.s
+.PHONY : src/Tarjeta.cpp.s
+
+src/Usuario.o: src/Usuario.cpp.o
+.PHONY : src/Usuario.o
+
+# target to build an object file
+src/Usuario.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Usuario.cpp.o
+.PHONY : src/Usuario.cpp.o
+
+src/Usuario.i: src/Usuario.cpp.i
+.PHONY : src/Usuario.i
+
+# target to preprocess a source file
+src/Usuario.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Usuario.cpp.i
+.PHONY : src/Usuario.cpp.i
+
+src/Usuario.s: src/Usuario.cpp.s
+.PHONY : src/Usuario.s
+
+# target to generate assembly for a file
+src/Usuario.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Usuario.cpp.s
+.PHONY : src/Usuario.cpp.s
+
+src/Ventana.o: src/Ventana.cpp.o
+.PHONY : src/Ventana.o
+
+# target to build an object file
+src/Ventana.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Ventana.cpp.o
+.PHONY : src/Ventana.cpp.o
+
+src/Ventana.i: src/Ventana.cpp.i
+.PHONY : src/Ventana.i
+
+# target to preprocess a source file
+src/Ventana.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Ventana.cpp.i
+.PHONY : src/Ventana.cpp.i
+
+src/Ventana.s: src/Ventana.cpp.s
+.PHONY : src/Ventana.s
+
+# target to generate assembly for a file
+src/Ventana.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/Ventana.cpp.s
+.PHONY : src/Ventana.cpp.s
+
+src/database.o: src/database.cpp.o
+.PHONY : src/database.o
+
+# target to build an object file
+src/database.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/database.cpp.o
+.PHONY : src/database.cpp.o
+
+src/database.i: src/database.cpp.i
+.PHONY : src/database.i
+
+# target to preprocess a source file
+src/database.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/database.cpp.i
+.PHONY : src/database.cpp.i
+
+src/database.s: src/database.cpp.s
+.PHONY : src/database.s
+
+# target to generate assembly for a file
+src/database.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelo.dir/build.make CMakeFiles/modelo.dir/src/database.cpp.s
+.PHONY : src/database.cpp.s
+
+src/mainAdministrador.o: src/mainAdministrador.cpp.o
+.PHONY : src/mainAdministrador.o
+
+# target to build an object file
+src/mainAdministrador.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/administrador.dir/build.make CMakeFiles/administrador.dir/src/mainAdministrador.cpp.o
+.PHONY : src/mainAdministrador.cpp.o
+
+src/mainAdministrador.i: src/mainAdministrador.cpp.i
+.PHONY : src/mainAdministrador.i
+
+# target to preprocess a source file
+src/mainAdministrador.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/administrador.dir/build.make CMakeFiles/administrador.dir/src/mainAdministrador.cpp.i
+.PHONY : src/mainAdministrador.cpp.i
+
+src/mainAdministrador.s: src/mainAdministrador.cpp.s
+.PHONY : src/mainAdministrador.s
+
+# target to generate assembly for a file
+src/mainAdministrador.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/administrador.dir/build.make CMakeFiles/administrador.dir/src/mainAdministrador.cpp.s
+.PHONY : src/mainAdministrador.cpp.s
+
+src/mainCafeteria.o: src/mainCafeteria.cpp.o
+.PHONY : src/mainCafeteria.o
+
+# target to build an object file
+src/mainCafeteria.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cafeteria.dir/build.make CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o
+.PHONY : src/mainCafeteria.cpp.o
+
+src/mainCafeteria.i: src/mainCafeteria.cpp.i
+.PHONY : src/mainCafeteria.i
+
+# target to preprocess a source file
+src/mainCafeteria.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cafeteria.dir/build.make CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.i
+.PHONY : src/mainCafeteria.cpp.i
+
+src/mainCafeteria.s: src/mainCafeteria.cpp.s
+.PHONY : src/mainCafeteria.s
+
+# target to generate assembly for a file
+src/mainCafeteria.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cafeteria.dir/build.make CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.s
+.PHONY : src/mainCafeteria.cpp.s
 
 src/mainCliente.o: src/mainCliente.cpp.o
 .PHONY : src/mainCliente.o
@@ -238,6 +650,30 @@ src/mainServidor.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/servidor.dir/build.make CMakeFiles/servidor.dir/src/mainServidor.cpp.s
 .PHONY : src/mainServidor.cpp.s
 
+src/mainSimulador.o: src/mainSimulador.cpp.o
+.PHONY : src/mainSimulador.o
+
+# target to build an object file
+src/mainSimulador.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/src/mainSimulador.cpp.o
+.PHONY : src/mainSimulador.cpp.o
+
+src/mainSimulador.i: src/mainSimulador.cpp.i
+.PHONY : src/mainSimulador.i
+
+# target to preprocess a source file
+src/mainSimulador.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/src/mainSimulador.cpp.i
+.PHONY : src/mainSimulador.cpp.i
+
+src/mainSimulador.s: src/mainSimulador.cpp.s
+.PHONY : src/mainSimulador.s
+
+# target to generate assembly for a file
+src/mainSimulador.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/simulador.dir/build.make CMakeFiles/simulador.dir/src/mainSimulador.cpp.s
+.PHONY : src/mainSimulador.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -246,20 +682,72 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... administrador"
+	@echo "... cafeteria"
 	@echo "... cliente"
+	@echo "... modelo"
 	@echo "... servidor"
+	@echo "... simulador"
+	@echo "... src/Administrador.o"
+	@echo "... src/Administrador.i"
+	@echo "... src/Administrador.s"
+	@echo "... src/Cafeteria.o"
+	@echo "... src/Cafeteria.i"
+	@echo "... src/Cafeteria.s"
 	@echo "... src/Cliente.o"
 	@echo "... src/Cliente.i"
 	@echo "... src/Cliente.s"
+	@echo "... src/Monitor.o"
+	@echo "... src/Monitor.i"
+	@echo "... src/Monitor.s"
+	@echo "... src/Pago.o"
+	@echo "... src/Pago.i"
+	@echo "... src/Pago.s"
+	@echo "... src/Pedido.o"
+	@echo "... src/Pedido.i"
+	@echo "... src/Pedido.s"
+	@echo "... src/Producto.o"
+	@echo "... src/Producto.i"
+	@echo "... src/Producto.s"
+	@echo "... src/Protocolo.o"
+	@echo "... src/Protocolo.i"
+	@echo "... src/Protocolo.s"
+	@echo "... src/Senales.o"
+	@echo "... src/Senales.i"
+	@echo "... src/Senales.s"
 	@echo "... src/Servidor.o"
 	@echo "... src/Servidor.i"
 	@echo "... src/Servidor.s"
+	@echo "... src/Simulador.o"
+	@echo "... src/Simulador.i"
+	@echo "... src/Simulador.s"
+	@echo "... src/Tarjeta.o"
+	@echo "... src/Tarjeta.i"
+	@echo "... src/Tarjeta.s"
+	@echo "... src/Usuario.o"
+	@echo "... src/Usuario.i"
+	@echo "... src/Usuario.s"
+	@echo "... src/Ventana.o"
+	@echo "... src/Ventana.i"
+	@echo "... src/Ventana.s"
+	@echo "... src/database.o"
+	@echo "... src/database.i"
+	@echo "... src/database.s"
+	@echo "... src/mainAdministrador.o"
+	@echo "... src/mainAdministrador.i"
+	@echo "... src/mainAdministrador.s"
+	@echo "... src/mainCafeteria.o"
+	@echo "... src/mainCafeteria.i"
+	@echo "... src/mainCafeteria.s"
 	@echo "... src/mainCliente.o"
 	@echo "... src/mainCliente.i"
 	@echo "... src/mainCliente.s"
 	@echo "... src/mainServidor.o"
 	@echo "... src/mainServidor.i"
 	@echo "... src/mainServidor.s"
+	@echo "... src/mainSimulador.o"
+	@echo "... src/mainSimulador.i"
+	@echo "... src/mainSimulador.s"
 .PHONY : help
 
 

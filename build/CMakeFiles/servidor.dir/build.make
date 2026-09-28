@@ -112,6 +112,11 @@ servidor: CMakeFiles/servidor.dir/src/mainServidor.cpp.o
 servidor: CMakeFiles/servidor.dir/src/Servidor.cpp.o
 servidor: CMakeFiles/servidor.dir/build.make
 servidor: CMakeFiles/servidor.dir/compiler_depend.ts
+servidor: libmodelo.a
+servidor: /usr/lib64/libsqlite3.so
+servidor: /usr/lib64/libsfml-graphics.so.2.6.2
+servidor: /usr/lib64/libsfml-window.so.2.6.2
+servidor: /usr/lib64/libsfml-system.so.2.6.2
 servidor: CMakeFiles/servidor.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/berenicepf/upifood/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable servidor"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/servidor.dir/link.txt --verbose=$(VERBOSE)

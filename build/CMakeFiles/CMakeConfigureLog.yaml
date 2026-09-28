@@ -1290,3 +1290,630 @@ events:
       Running the CXX compiler's linker: "/usr/bin/ld" "-v"
       GNU ld version 2.46-1.fc44
 ...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:104 (try_compile)"
+      - "/usr/share/cmake/Modules/CheckCSourceCompiles.cmake:103 (cmake_check_source_compiles)"
+      - "/usr/share/cmake/Modules/FindThreads.cmake:160 (check_c_source_compiles)"
+      - "/usr/share/cmake/Modules/FindThreads.cmake:226 (_threads_check_libc)"
+      - "CMakeLists.txt:10 (find_package)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "/home/berenicepf/upifood/build/CMakeFiles/CMakeScratch/TryCompile-y8mPpc"
+      binary: "/home/berenicepf/upifood/build/CMakeFiles/CMakeScratch/TryCompile-y8mPpc"
+    cmakeVariables:
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: '/home/berenicepf/upifood/build/CMakeFiles/CMakeScratch/TryCompile-y8mPpc'
+        
+        Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_b89c6/fast
+        /usr/bin/gmake  -f CMakeFiles/cmTC_b89c6.dir/build.make CMakeFiles/cmTC_b89c6.dir/build
+        gmake[1]: se entra en el directorio '/home/berenicepf/upifood/build/CMakeFiles/CMakeScratch/TryCompile-y8mPpc'
+        Building C object CMakeFiles/cmTC_b89c6.dir/src.c.o
+        /usr/bin/cc -DCMAKE_HAVE_LIBC_PTHREAD   -o CMakeFiles/cmTC_b89c6.dir/src.c.o -c /home/berenicepf/upifood/build/CMakeFiles/CMakeScratch/TryCompile-y8mPpc/src.c
+        Linking C executable cmTC_b89c6
+        /usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b89c6.dir/link.txt --verbose=1
+        /usr/bin/cc CMakeFiles/cmTC_b89c6.dir/src.c.o -o cmTC_b89c6
+        gmake[1]: se sale del directorio '/home/berenicepf/upifood/build/CMakeFiles/CMakeScratch/TryCompile-y8mPpc'
+        
+      exitCode: 0
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/FindPkgConfig.cmake:517 (find_program)"
+      - "/usr/share/cmake/Modules/FindSQLite3.cmake:78 (find_package)"
+      - "CMakeLists.txt:11 (find_package)"
+    mode: "program"
+    variable: "PKG_CONFIG_EXECUTABLE"
+    description: "pkg-config executable"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "pkg-config"
+      - "pkgconf"
+    candidate_directories:
+      - "/home/berenicepf/.local/bin/"
+      - "/home/berenicepf/bin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/usr/local/bin/"
+      - "/usr/local/sbin/"
+      - "/usr/local/"
+      - "/usr/bin/"
+      - "/usr/sbin/"
+      - "/usr/"
+      - "/bin/"
+      - "/sbin/"
+      - "/usr/X11R6/bin/"
+      - "/usr/X11R6/sbin/"
+      - "/usr/X11R6/"
+      - "/usr/pkg/bin/"
+      - "/usr/pkg/sbin/"
+      - "/usr/pkg/"
+      - "/opt/bin/"
+      - "/opt/sbin/"
+      - "/opt/"
+    searched_directories:
+      - "/home/berenicepf/.local/bin/pkg-config"
+      - "/home/berenicepf/.local/bin/pkgconf"
+      - "/home/berenicepf/bin/pkg-config"
+      - "/home/berenicepf/bin/pkgconf"
+      - "/usr/local/bin/pkg-config"
+      - "/usr/local/bin/pkgconf"
+    found: "/usr/bin/pkg-config"
+    search_context:
+      ENV{PATH}:
+        - "/home/berenicepf/.local/bin"
+        - "/home/berenicepf/bin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/local"
+        - "/usr"
+        - "/"
+        - "/usr"
+        - "/usr/local"
+        - "/usr/X11R6"
+        - "/usr/pkg"
+        - "/opt"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/FindPkgConfig.cmake:761 (find_library)"
+      - "/usr/share/cmake/Modules/FindPkgConfig.cmake:811 (_pkg_find_libs)"
+      - "/usr/share/cmake/Modules/FindPkgConfig.cmake:1149 (_pkg_recalculate)"
+      - "/usr/share/cmake/Modules/FindPkgConfig.cmake:1166 (_pkg_check_modules_internal)"
+      - "/usr/share/cmake/Modules/FindSQLite3.cmake:80 (pkg_check_modules)"
+      - "CMakeLists.txt:11 (find_package)"
+    mode: "library"
+    variable: "pkgcfg_lib_PC_SQLite3_sqlite3"
+    description: "Path to a library."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "sqlite3"
+    candidate_directories:
+      - "/usr/lib64/"
+    found: "/usr/lib64/libsqlite3.so"
+    search_context:
+      ENV{PATH}:
+        - "/home/berenicepf/.local/bin"
+        - "/home/berenicepf/bin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/local"
+        - "/usr"
+        - "/"
+        - "/usr"
+        - "/usr/local"
+        - "/usr/X11R6"
+        - "/usr/pkg"
+        - "/opt"
+      CMAKE_SYSTEM_LIBRARY_PATH:
+        - "/usr/lib/X11"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/FindSQLite3.cmake:84 (find_path)"
+      - "CMakeLists.txt:11 (find_package)"
+    mode: "path"
+    variable: "SQLite3_INCLUDE_DIR"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "sqlite3.h"
+    candidate_directories:
+      - "/usr/include/"
+      - "/home/berenicepf/.local/bin/"
+      - "/home/berenicepf/bin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/usr/local/include/"
+      - "/usr/local/"
+      - "/usr/include/"
+      - "/usr/"
+      - "/include/"
+      - "/usr/X11R6/include/"
+      - "/usr/X11R6/"
+      - "/usr/pkg/include/"
+      - "/usr/pkg/"
+      - "/opt/include/"
+      - "/opt/"
+      - "/usr/include/X11/"
+    found: "/usr/include/"
+    search_context:
+      ENV{PATH}:
+        - "/home/berenicepf/.local/bin"
+        - "/home/berenicepf/bin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/local"
+        - "/usr"
+        - "/"
+        - "/usr"
+        - "/usr/local"
+        - "/usr/X11R6"
+        - "/usr/pkg"
+        - "/opt"
+      CMAKE_SYSTEM_INCLUDE_PATH:
+        - "/usr/include/X11"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/FindSQLite3.cmake:91 (find_library)"
+      - "CMakeLists.txt:11 (find_package)"
+    mode: "library"
+    variable: "SQLite3_LIBRARY"
+    description: "Path to a library."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "sqlite3"
+      - "sqlite"
+    candidate_directories:
+      - "/usr/lib64/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/usr/local/lib64/"
+      - "/usr/local/lib/"
+      - "/usr/local/"
+      - "/usr/lib64/"
+      - "/usr/lib/"
+      - "/usr/"
+      - "/lib64/"
+      - "/lib/"
+      - "/opt/"
+      - "/usr/lib64/X11/"
+    found: "/usr/lib64/libsqlite3.so"
+    search_context:
+      ENV{PATH}:
+        - "/home/berenicepf/.local/bin"
+        - "/home/berenicepf/bin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/local"
+        - "/usr"
+        - "/"
+        - "/usr"
+        - "/usr/local"
+        - "/usr/X11R6"
+        - "/usr/pkg"
+        - "/opt"
+      CMAKE_SYSTEM_LIBRARY_PATH:
+        - "/usr/lib/X11"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/lib64/cmake/SFML/SFMLConfig.cmake:79 (find_path)"
+      - "CMakeLists.txt:15 (find_package)"
+    mode: "path"
+    variable: "SFML_DOC_DIR"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "SFML.tag"
+    candidate_directories:
+      - "/home/berenicepf/.local/bin/SFML/doc/"
+      - "/home/berenicepf/.local/bin/share/doc/SFML/"
+      - "/home/berenicepf/.local/bin/"
+      - "/home/berenicepf/bin/SFML/doc/"
+      - "/home/berenicepf/bin/share/doc/SFML/"
+      - "/home/berenicepf/bin/"
+      - "/usr/local/bin/SFML/doc/"
+      - "/usr/local/bin/share/doc/SFML/"
+      - "/usr/local/bin/"
+      - "/usr/bin/SFML/doc/"
+      - "/usr/bin/share/doc/SFML/"
+      - "/usr/bin/"
+      - "/usr/local/include/SFML/doc/"
+      - "/usr/local/include/share/doc/SFML/"
+      - "/usr/local/include/"
+      - "/usr/local/SFML/doc/"
+      - "/usr/local/share/doc/SFML/"
+      - "/usr/local/"
+      - "/usr/include/SFML/doc/"
+      - "/usr/include/share/doc/SFML/"
+      - "/usr/include/"
+      - "/usr/SFML/doc/"
+      - "/usr/share/doc/SFML/"
+      - "/usr/"
+      - "/include/SFML/doc/"
+      - "/include/share/doc/SFML/"
+      - "/include/"
+      - "/usr/X11R6/include/SFML/doc/"
+      - "/usr/X11R6/include/share/doc/SFML/"
+      - "/usr/X11R6/include/"
+      - "/usr/X11R6/SFML/doc/"
+      - "/usr/X11R6/share/doc/SFML/"
+      - "/usr/X11R6/"
+      - "/usr/pkg/include/SFML/doc/"
+      - "/usr/pkg/include/share/doc/SFML/"
+      - "/usr/pkg/include/"
+      - "/usr/pkg/SFML/doc/"
+      - "/usr/pkg/share/doc/SFML/"
+      - "/usr/pkg/"
+      - "/opt/include/SFML/doc/"
+      - "/opt/include/share/doc/SFML/"
+      - "/opt/include/"
+      - "/opt/SFML/doc/"
+      - "/opt/share/doc/SFML/"
+      - "/opt/"
+      - "/usr/include/X11/SFML/doc/"
+      - "/usr/include/X11/share/doc/SFML/"
+      - "/usr/include/X11/"
+      - "/usr/lib64/SFML/doc/"
+      - "/usr/lib64/share/doc/SFML/"
+      - "/usr/lib64/"
+      - "/home/berenicepf/Library/Frameworks/SFML/doc/"
+      - "/home/berenicepf/Library/Frameworks/share/doc/SFML/"
+      - "/home/berenicepf/Library/Frameworks/"
+      - "/Library/Frameworks/SFML/doc/"
+      - "/Library/Frameworks/share/doc/SFML/"
+      - "/Library/Frameworks/"
+      - "/usr/local/SFML/doc/"
+      - "/usr/local/share/doc/SFML/"
+      - "/usr/local/"
+      - "/usr/SFML/doc/"
+      - "/usr/share/doc/SFML/"
+      - "/usr/"
+      - "/sw/SFML/doc/"
+      - "/sw/share/doc/SFML/"
+      - "/sw/"
+      - "/opt/local/SFML/doc/"
+      - "/opt/local/share/doc/SFML/"
+      - "/opt/local/"
+      - "/opt/csw/SFML/doc/"
+      - "/opt/csw/share/doc/SFML/"
+      - "/opt/csw/"
+      - "/opt/SFML/doc/"
+      - "/opt/share/doc/SFML/"
+      - "/opt/"
+    searched_directories:
+      - "/home/berenicepf/.local/bin/SFML/doc/SFML.tag"
+      - "/home/berenicepf/.local/bin/share/doc/SFML/SFML.tag"
+      - "/home/berenicepf/.local/bin/SFML.tag"
+      - "/home/berenicepf/bin/SFML/doc/SFML.tag"
+      - "/home/berenicepf/bin/share/doc/SFML/SFML.tag"
+      - "/home/berenicepf/bin/SFML.tag"
+      - "/usr/local/bin/SFML/doc/SFML.tag"
+      - "/usr/local/bin/share/doc/SFML/SFML.tag"
+      - "/usr/local/bin/SFML.tag"
+      - "/usr/bin/SFML/doc/SFML.tag"
+      - "/usr/bin/share/doc/SFML/SFML.tag"
+      - "/usr/bin/SFML.tag"
+      - "/usr/local/include/SFML/doc/SFML.tag"
+      - "/usr/local/include/share/doc/SFML/SFML.tag"
+      - "/usr/local/include/SFML.tag"
+      - "/usr/local/SFML/doc/SFML.tag"
+      - "/usr/local/share/doc/SFML/SFML.tag"
+      - "/usr/local/SFML.tag"
+      - "/usr/include/SFML/doc/SFML.tag"
+      - "/usr/include/share/doc/SFML/SFML.tag"
+      - "/usr/include/SFML.tag"
+      - "/usr/SFML/doc/SFML.tag"
+    found: "/usr/share/doc/SFML/"
+    search_context:
+      ENV{PATH}:
+        - "/home/berenicepf/.local/bin"
+        - "/home/berenicepf/bin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/local"
+        - "/usr"
+        - "/"
+        - "/usr"
+        - "/usr/local"
+        - "/usr/X11R6"
+        - "/usr/pkg"
+        - "/opt"
+      CMAKE_SYSTEM_INCLUDE_PATH:
+        - "/usr/include/X11"
+  -
+    kind: "find_package-v1"
+    backtrace:
+      - "CMakeLists.txt:15 (find_package)"
+    name: "SFML"
+    components:
+      -
+        name: "graphics"
+        required: true
+        found: false
+      -
+        name: "window"
+        required: true
+        found: false
+      -
+        name: "system"
+        required: true
+        found: false
+    configs:
+      -
+        filename: "SFML.cps"
+        kind: "cps"
+      -
+        filename: "sfml.cps"
+        kind: "cps"
+      -
+        filename: "SFMLConfig.cmake"
+        kind: "cmake"
+      -
+        filename: "sfml-config.cmake"
+        kind: "cmake"
+    version_request:
+      version: "2.5"
+      version_complete: "2.5"
+      exact: false
+    settings:
+      required: "optional"
+      quiet: true
+      global: false
+      policy_scope: true
+      bypass_provider: false
+      names:
+        - "SFML"
+      path_suffixes:
+        - ""
+      paths:
+        CMAKE_FIND_USE_CMAKE_PATH: true
+        CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+        CMAKE_FIND_USE_INSTALL_PREFIX: true
+        CMAKE_FIND_USE_PACKAGE_ROOT_PATH: true
+        CMAKE_FIND_USE_CMAKE_PACKAGE_REGISTRY: true
+        CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY: true
+        CMAKE_FIND_ROOT_PATH_MODE: "BOTH"
+    candidates:
+      -
+        path: "/home/berenicepf/upifood/build/CMakeFiles/pkgRedirects/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/upifood/build/CMakeFiles/pkgRedirects/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/upifood/build/CMakeFiles/pkgRedirects/lib64/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/upifood/build/CMakeFiles/pkgRedirects/lib64/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/upifood/build/CMakeFiles/pkgRedirects/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/upifood/build/CMakeFiles/pkgRedirects/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/upifood/build/CMakeFiles/pkgRedirects/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/upifood/build/CMakeFiles/pkgRedirects/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/.local/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/.local/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/.local/lib64/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/.local/lib64/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/.local/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/.local/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/.local/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/.local/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/lib64/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/lib64/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/berenicepf/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/usr/local/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/usr/local/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/usr/local/lib64/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/usr/local/lib64/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/usr/local/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/usr/local/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/usr/local/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/usr/local/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/usr/SFMLConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/usr/sfml-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/usr/lib64/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/usr/lib64/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/usr/lib/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/usr/lib/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/usr/share/cps/SFML.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/usr/share/cps/sfml.cps"
+        mode: "cps"
+        reason: "no_exist"
+    found:
+      path: "/usr/lib64/cmake/SFML/SFMLConfig.cmake"
+      mode: "config"
+      version: "2.6.2"
+    search_context:
+      ENV{PATH}:
+        - "/home/berenicepf/.local/bin"
+        - "/home/berenicepf/bin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/local"
+        - "/usr"
+        - "/"
+        - "/usr"
+        - "/usr/local"
+        - "/usr/X11R6"
+        - "/usr/pkg"
+        - "/opt"
+...

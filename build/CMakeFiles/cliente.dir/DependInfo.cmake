@@ -8,7 +8,6 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/berenicepf/upifood/src/Cliente.cpp" "CMakeFiles/cliente.dir/src/Cliente.cpp.o" "gcc" "CMakeFiles/cliente.dir/src/Cliente.cpp.o.d"
   "/home/berenicepf/upifood/src/mainCliente.cpp" "CMakeFiles/cliente.dir/src/mainCliente.cpp.o" "gcc" "CMakeFiles/cliente.dir/src/mainCliente.cpp.o.d"
   "" "cliente" "gcc" "CMakeFiles/cliente.dir/link.d"
   )

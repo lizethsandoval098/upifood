@@ -25,7 +25,7 @@ if(SFML_FOUND)
 endif()
 
 add_library(modelo STATIC ${FUENTES_MODELO})
-target_link_libraries(modelo PUBLIC SQLite::SQLite3 Threads::Threads)
+target_link_libraries(modelo PUBLIC SQLite3::SQLite3 Threads::Threads)
 
 if(SFML_FOUND)
 	target_compile_definitions(modelo PUBLIC UPIIFOOD_CON_SFML)
