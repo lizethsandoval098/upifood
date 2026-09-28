@@ -51,6 +51,7 @@ class BaseDatos{
 		vector<Pedido> obtenerHistorialPedidos(const string& username);   // para cliente
 		Pedido obtenerPedido_Folio(const string& folio);
 		Pedido obtenerPedido_Username(const string& username);            // pedido activo mas reciente
+		bool actualizarEstadoPedido(const string& folio, const string& nuevoEstado); // para cafeteria
 
 		// Productos
 		bool guardarProducto(const Producto& producto);
