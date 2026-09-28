@@ -499,9 +499,41 @@ int BaseDatos::contarPedidosCafeteria(const string& idCafeteria) {
 // =====================================================================
 
 bool BaseDatos::guardarPedido(const Pedido& pedido) {
-	ejecutarQuery("BEGIN TRANSACTION;");
+	if (pedido.getListaProductos().empty() || pedido.getTotal() <= 0.0f ||
+	    !ejecutarQuery("BEGIN IMMEDIATE TRANSACTION;")) {
+		return false;
+	}
 
-	sqlite3_stmt* stmt;
+	// Descontar stock dentro de la misma transacción que guarda el pedido.
+	// El predicado stock >= cantidad evita que dos solicitudes concurrentes
+	// dejen existencias negativas.
+	for (const auto& item : pedido.getListaProductos()) {
+		if (item.second <= 0) {
+			ejecutarQuery("ROLLBACK;");
+			return false;
+		}
+
+		sqlite3_stmt* stockStmt = nullptr;
+		const string sqlStock = "UPDATE Productos SET stock = stock - ? "
+		                        "WHERE idProducto = ? AND stock >= ?;";
+		if (sqlite3_prepare_v2(db, sqlStock.c_str(), -1, &stockStmt, nullptr) != SQLITE_OK) {
+			ejecutarQuery("ROLLBACK;");
+			return false;
+		}
+
+		sqlite3_bind_int(stockStmt, 1, item.second);
+		sqlite3_bind_text(stockStmt, 2, item.first.getIdProducto().c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_int(stockStmt, 3, item.second);
+		const bool stockActualizado = sqlite3_step(stockStmt) == SQLITE_DONE && sqlite3_changes(db) == 1;
+		sqlite3_finalize(stockStmt);
+
+		if (!stockActualizado) {
+			ejecutarQuery("ROLLBACK;");
+			return false;
+		}
+	}
+
+	sqlite3_stmt* stmt = nullptr;
 	string sqlP = "INSERT INTO Pedidos (folio, fecha, estado, total, usernameCliente, "
 		      "idCafeteria) VALUES (?, ?, ?, ?, ?, ?);";
 
@@ -552,7 +584,10 @@ bool BaseDatos::guardarPedido(const Pedido& pedido) {
 		}
 	}
 
-	ejecutarQuery("COMMIT;");
+	if (!ejecutarQuery("COMMIT;")) {
+		ejecutarQuery("ROLLBACK;");
+		return false;
+	}
 
 	return true;
 }
@@ -591,8 +626,7 @@ vector<Pedido> BaseDatos::obtenerPedidosCafeteria(const string& idCafeteria) {  
 
 	string sql = "SELECT folio, fecha, estado, total, usernameCliente "
 	       	     "FROM Pedidos "
-		     "WHERE idCafeteria = ? "
-		     "ORDER BY rowid DESC;"; // mas recientes primero
+		     "WHERE idCafeteria = ? ORDER BY rowid DESC;";
 
 	sqlite3_stmt* stmt;
 
@@ -623,25 +657,59 @@ vector<Pedido> BaseDatos::obtenerPedidosCafeteria(const string& idCafeteria) {  
 	return listaP;
 }
 
-// Cambia el estado de un pedido (Pendiente/Preparando/Listo/Entregado/Cancelado).
-// Regresa true solo si de verdad se modifico una fila (el folio existe).
-bool BaseDatos::actualizarEstadoPedido(const string& folio, const string& nuevoEstado) {
-	string sql = "UPDATE Pedidos SET estado = ? WHERE folio = ?;";
-	sqlite3_stmt* stmt;
+vector<Pedido> BaseDatos::obtenerTodosPedidos() {
+	vector<Pedido> pedidos;
+	const string sql = "SELECT folio, fecha, estado, total, usernameCliente, idCafeteria "
+	                   "FROM Pedidos ORDER BY rowid DESC;";
+	sqlite3_stmt* stmt = nullptr;
 
-	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
-		cerr << "Error al actualizar el estado del pedido: " << sqlite3_errmsg(db) << endl;
+	if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al cargar todos los pedidos: " << sqlite3_errmsg(db) << endl;
+		return pedidos;
+	}
+
+	while (sqlite3_step(stmt) == SQLITE_ROW) {
+		Pedido pedido;
+		pedido.setFolio(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+		pedido.setFecha(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+		pedido.setEstado(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+		pedido.setTotal(static_cast<float>(sqlite3_column_double(stmt, 3)));
+		pedido.setUsernameCliente(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
+		pedido.setIdCafeteria(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5)));
+		pedidos.push_back(pedido);
+	}
+
+	sqlite3_finalize(stmt);
+	return pedidos;
+}
+
+bool BaseDatos::actualizarEstadoPedido(const string& folio, const string& idCafeteria,
+                                       const string& estado) {
+	if (estado != "Pendiente" && estado != "Preparando" && estado != "Listo" &&
+	    estado != "Entregado" && estado != "Cancelado") {
 		return false;
 	}
 
-	sqlite3_bind_text(stmt, 1, nuevoEstado.c_str(), -1, SQLITE_TRANSIENT);
+	const string sql = "UPDATE Pedidos SET estado = ? "
+	                   "WHERE folio = ? AND idCafeteria = ? AND ("
+	                   "(estado = 'Pendiente' AND ? IN ('Preparando', 'Cancelado')) OR "
+	                   "(estado = 'Preparando' AND ? IN ('Listo', 'Cancelado')) OR "
+	                   "(estado = 'Listo' AND ? = 'Entregado'));";
+	sqlite3_stmt* stmt = nullptr;
+	if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al preparar cambio de estado: " << sqlite3_errmsg(db) << endl;
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, estado.c_str(), -1, SQLITE_TRANSIENT);
 	sqlite3_bind_text(stmt, 2, folio.c_str(), -1, SQLITE_TRANSIENT);
-
-	bool exito = (sqlite3_step(stmt) == SQLITE_DONE) && (sqlite3_changes(db) > 0);
-
+	sqlite3_bind_text(stmt, 3, idCafeteria.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 4, estado.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 5, estado.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 6, estado.c_str(), -1, SQLITE_TRANSIENT);
+	const bool actualizado = sqlite3_step(stmt) == SQLITE_DONE && sqlite3_changes(db) == 1;
 	sqlite3_finalize(stmt);
-
-	return exito;
+	return actualizado;
 }
 
 vector<Pedido> BaseDatos::obtenerHistorialPedidos(const string& username) {        // para cliente
