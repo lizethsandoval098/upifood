@@ -18,8 +18,12 @@
 //  Pantallas: LOGIN (usuario/contrasena) -> PANEL (botones + tablas)
 //  Vistas del PANEL:
 //     PEDIDOS    - pedidos que hicieron los clientes; se avanzan de estado
-//                  (Pendiente -> Preparando -> Listo -> Entregado) o se cancelan.
-//     INVENTARIO - existencias; se puede reabastecer un producto.
+//                  (Pendiente -> Preparando -> Listo -> Entregado), se llevan
+//                  de golpe hasta Entregado, o se cancelan.
+//     INVENTARIO - agregar / modificar / eliminar productos y reabastecer.
+//                  Todo se guarda en la base de datos (via servidor). Los
+//                  productos NUEVOS se juntan en una lista y un boton los
+//                  sube todos; el ID se genera solo y no se puede editar.
 //     CAJA       - venta directa en mostrador (descuenta del inventario).
 //
 //  La cafeteria NUNCA abre la base de datos: todo pasa por el servidor.
@@ -35,8 +39,7 @@
 #include <vector>
 #include <algorithm>
 #include <cstdio>
-#include <cmath>
-#include <cstdlib>
+#include <cctype>
 
 using namespace std;
 
@@ -58,15 +61,19 @@ static const sf::Color FILA_OSCURA(246, 240, 230);
 static const sf::Color FILA_SELECCION(232, 208, 176);
 
 // ---- Medidas de la ventana y de la zona de tablas ----
-static const int ANCHO = 1000;
+static const int ANCHO = 1100;
 static const int ALTO = 720;
+static const float TABLA_X = 250.0f;          // donde empiezan las tablas
+static const float TABLA_ANCHO = 830.0f;      // ancho de las tablas (llega hasta x = 1080)
 static const float TABLA_Y_FILAS = 140.0f;
 static const float ALTO_FILA = 30.0f;
-static const int FILAS_INVENTARIO = 7;
-static const int FILAS_CAJA = 8;
-static const int FILAS_PEDIDOS = 6;
+static const int FILAS_INVENTARIO = 8;
+static const int FILAS_CAJA = 9;
+static const int FILAS_PEDIDOS = 8;
 static const float SEGUNDOS_REFRESCO = 3.0f;
-static const float SEGUNDOS_MENSAJE = 4.0f;
+static const float SEGUNDOS_MENSAJE = 5.0f;
+static const float SEGUNDOS_CONFIRMAR = 4.0f;
+static const sf::Color FILA_NUEVA(255, 243, 210);
 
 // Acorta un texto largo para que no se salga de su columna
 // (cuidando no partir a la mitad una letra con acento).
@@ -102,28 +109,61 @@ static int leerCantidad(const string& texto) {
     return (valor >= 1) ? valor : -1;
 }
 
-static int leerStock(const string& texto) {
+// Cantidad de existencias: 0 a 99999. Regresa -1 si no sirve.
+static int leerExistencias(const string& texto) {
     if (texto.empty() || texto.size() > 5) return -1;
+
     int valor = 0;
     for (char c : texto) {
         if (c < '0' || c > '9') return -1;
         valor = valor * 10 + (c - '0');
     }
+
     return valor;
 }
 
+// Precio: "12", "12.5" o "12.50". Regresa -1 si no sirve (o si es 0).
 static float leerPrecio(const string& texto) {
-    if (texto.empty()) return -1.0f;
-    char* fin = nullptr;
-    float precio = strtof(texto.c_str(), &fin);
-    if (fin == texto.c_str() || *fin != '\0' || !isfinite(precio) || precio <= 0.0f) return -1.0f;
-    return precio;
+    if (texto.empty() || texto.size() > 8) return -1.0f;
+
+    bool hayPunto = false;
+    bool hayDigito = false;
+
+    for (char c : texto) {
+        if (c == '.') {
+            if (hayPunto) return -1.0f;
+            hayPunto = true;
+        } else if (c >= '0' && c <= '9') {
+            hayDigito = true;
+        } else {
+            return -1.0f;
+        }
+    }
+
+    if (!hayDigito) return -1.0f;
+
+    float valor = 0.0f;
+    try {
+        valor = stof(texto);
+    } catch (...) {
+        return -1.0f;
+    }
+
+    return (valor > 0.0f) ? valor : -1.0f;
 }
 
+// 12.5 -> "12.50" (sin el signo $, para llenar el campo de precio)
 static string precioTexto(float precio) {
     char buffer[32];
     snprintf(buffer, sizeof(buffer), "%.2f", precio);
     return buffer;
+}
+
+static string minusculas(string texto) {
+    for (char& c : texto) {
+        c = static_cast<char>(tolower(static_cast<unsigned char>(c)));
+    }
+    return texto;
 }
 
 // Dibuja un rectangulo de color (fondos, franjas, lineas).
@@ -144,16 +184,17 @@ static void encabezadoTabla(Ventana& v, const string& titulo, const string& subt
         v.dibujarTexto(c.first, c.second, 104, 16, TEXTO_SUAVE);
     }
 
-    rectangulo(v, 250, 130, static_cast<float>(ANCHO - 270), 2, sf::Color(200, 190, 178));
+    rectangulo(v, TABLA_X, 130, TABLA_ANCHO, 2, sf::Color(200, 190, 178));
 }
 
 // Franja de fondo de la fila i (alternando color para que se lea mejor;
 // la fila seleccionada se pinta de otro color).
-static void franja(Ventana& v, int i, bool seleccionada = false) {
+static void franja(Ventana& v, int i, bool seleccionada = false, bool nueva = false) {
     float y = TABLA_Y_FILAS + i * ALTO_FILA;
     sf::Color color = seleccionada ? FILA_SELECCION
+                    : nueva        ? FILA_NUEVA
                                    : ((i % 2 == 0) ? FILA_CLARA : FILA_OSCURA);
-    rectangulo(v, 250, y - 3, static_cast<float>(ANCHO - 270), ALTO_FILA - 2, color);
+    rectangulo(v, TABLA_X, y - 3, TABLA_ANCHO, ALTO_FILA - 2, color);
 }
 
 static sf::Color colorEstado(const string& estado) {
@@ -197,9 +238,10 @@ int main(int argc, char* argv[]) {
     sf::RenderWindow& win = ventana.getWindow();
 
     // ---------------- Componentes de la pantalla LOGIN ----------------
-    CampoTexto campoUsuario("Usuario", 300, 215, 300, 42);
-    CampoTexto campoClave("Contraseña", 300, 295, 300, 42, true);
-    Boton botonEntrar("Entrar", 300, 365, 300, 46);
+    const float loginX = (ANCHO - 300) / 2.0f;
+    CampoTexto campoUsuario("Usuario", loginX, 215, 300, 42);
+    CampoTexto campoClave("Contraseña", loginX, 295, 300, 42, true);
+    Boton botonEntrar("Entrar", loginX, 365, 300, 46);
     campoUsuario.setEnfocado(true); // el cursor empieza en "Usuario"
     string mensajeLogin;
 
@@ -209,30 +251,39 @@ int main(int argc, char* argv[]) {
     Boton botonInventario("Inventario", 20, 165, 180, 44);
     Boton botonCaja("Caja", 20, 220, 180, 44);
     Boton botonActualizar("Actualizar ahora", 20, 300, 180, 44);
-    Boton botonSalir("Salir", 20, 645, 180, 44);
+    Boton botonSalir("Salir", 20, ALTO - 65, 180, 44);
 
     // vista PEDIDOS
-    Boton botonFiltro("Ver: Activos", 730, 22, 140, 32);
-    Boton botonAvanzar("Avanzar", 260, 522, 210, 40);
-    Boton botonCancelar("Cancelar pedido", 490, 522, 190, 40);
-    Boton botonCompletarPedido("Completar pedido", 700, 522, 250, 40);
+    Boton botonFiltro("Ver: Activos", TABLA_X + TABLA_ANCHO - 140, 22, 140, 32);
+    Boton botonAvanzar("Avanzar", 260, 615, 250, 42);
+    Boton botonCompletar("Llevar a Entregado", 525, 615, 250, 42);
+    Boton botonCancelar("Cancelar pedido", 790, 615, 200, 42);
 
     // vista INVENTARIO
-    CampoTexto campoNombreProducto("Nombre", 260, 410, 270, 38);
-    CampoTexto campoStockProducto("Stock", 550, 410, 110, 38);
-    CampoTexto campoPrecioProducto("Precio", 680, 410, 140, 38);
-    CampoTexto campoBuscarProducto("Buscar ID existente", 260, 485, 190, 38);
-    Boton botonBuscarProducto("Buscar", 460, 485, 90, 38);
-    Boton botonAgregarProducto("Agregar", 560, 485, 115, 38);
-    Boton botonModificarProducto("Modificar", 685, 485, 135, 38);
-    Boton botonEliminarProducto("Eliminar", 830, 485, 120, 38);
-    CampoTexto campoRestock("Cantidad a agregar", 260, 545, 200, 38);
-    Boton botonRestock("Reabastecer", 470, 545, 180, 38);
-    Boton botonSincronizar("Sincronizar cambios", 670, 545, 280, 38);
+    CampoTexto campoBuscar("Buscar por ID o nombre", 810, 40, 270, 34);
+    CampoTexto campoNombre("Nombre del producto", 260, 460, 340, 38);
+    CampoTexto campoPrecio("Precio ($)", 620, 460, 130, 38);
+    CampoTexto campoStock("Existencias", 770, 460, 130, 38);
+    Boton botonAgregar("Agregar a la lista", 260, 512, 220, 40);
+    Boton botonGuardar("Guardar cambios", 490, 512, 190, 40);
+    Boton botonEliminar("Eliminar", 690, 512, 240, 40);
+    Boton botonLimpiar("Limpiar", 940, 512, 130, 40);
+    Boton botonSubir("Subir a la base de datos", 260, 562, 350, 42);
+    CampoTexto campoRestock("Cantidad a agregar al stock (reabastecer)", 260, 632, 150, 38);
+    Boton botonRestock("Reabastecer", 430, 632, 170, 38);
+
+    campoNombre.setMaxLongitud(40);
+    campoPrecio.setMaxLongitud(8);
+    campoStock.setMaxLongitud(5);
+    campoBuscar.setMaxLongitud(20);
+    campoRestock.setMaxLongitud(4);
+    botonEliminar.setColor(ROJO_ERROR);
+    botonSubir.setColor(VERDE);
+    botonCancelar.setColor(ROJO_ERROR);
 
     // vista CAJA
-    CampoTexto campoCaja("Cantidad vendida", 260, 452, 150, 38);
-    Boton botonCobrar("Cobrar venta", 430, 452, 170, 38);
+    CampoTexto campoCaja("Cantidad vendida", 260, 488, 150, 38);
+    Boton botonCobrar("Cobrar venta", 430, 488, 170, 38);
 
     // ---------------- Estado del programa ----------------
     Pantalla pantalla = Pantalla::LOGIN;
@@ -244,10 +295,13 @@ int main(int argc, char* argv[]) {
     bool accionOk = true;
     sf::Clock relojRefresco;     // para actualizar solo cada X segundos
     sf::Clock relojMensaje;      // para borrar el mensaje de accion despues de un rato
+    sf::Clock relojConfirmar;    // para cancelar el "¿Seguro?" de Eliminar si no se confirma
 
     string productoSel;          // idProducto seleccionado (inventario / caja)
+    int pendienteSel = -1;       // posicion del producto NUEVO seleccionado (inventario)
     string pedidoSel;            // folio seleccionado (pedidos)
     bool soloActivos = true;     // filtro de la vista PEDIDOS
+    bool confirmandoEliminar = false;
 
     auto avisar = [&](const string& texto, bool ok) {
         mensajeAccion = texto;
@@ -282,6 +336,66 @@ int main(int argc, char* argv[]) {
         return visibles;
     };
 
+    // ---- Inventario: filas de la tabla = productos de la BD + productos NUEVOS sin subir ----
+    struct FilaInv {
+        bool pendiente;
+        int indice; // posicion en el inventario (o en la lista de nuevos si pendiente)
+    };
+
+    auto filasInventario = [&]() {
+        vector<FilaInv> filas;
+        const vector<Producto> inv = cafeteria.getInventario();
+        const vector<ProductoNuevo>& nuevos = cafeteria.getProductosPendientes();
+        string busqueda = minusculas(campoBuscar.getContenido());
+
+        for (size_t i = 0; i < inv.size(); i++) {
+            if (busqueda.empty() ||
+                minusculas(inv[i].getIdProducto()).find(busqueda) != string::npos ||
+                minusculas(inv[i].getNombreProducto()).find(busqueda) != string::npos) {
+                filas.push_back({false, static_cast<int>(i)});
+            }
+        }
+
+        for (size_t i = 0; i < nuevos.size(); i++) {
+            if (busqueda.empty() || minusculas(nuevos[i].nombre).find(busqueda) != string::npos) {
+                filas.push_back({true, static_cast<int>(i)});
+            }
+        }
+
+        return filas;
+    };
+
+    auto limpiarFormulario = [&]() {
+        productoSel.clear();
+        pendienteSel = -1;
+        confirmandoEliminar = false;
+        campoNombre.limpiar();
+        campoPrecio.limpiar();
+        campoStock.limpiar();
+    };
+
+    // Selecciona una fila de la tabla y pasa sus datos al formulario para editarlos.
+    auto seleccionarFila = [&](const FilaInv& fila) {
+        confirmandoEliminar = false;
+
+        if (fila.pendiente) {
+            const ProductoNuevo& n = cafeteria.getProductosPendientes()[fila.indice];
+            productoSel.clear();
+            pendienteSel = fila.indice;
+            campoNombre.setContenido(n.nombre);
+            campoPrecio.setContenido(precioTexto(n.precio));
+            campoStock.setContenido(to_string(n.stock));
+        } else {
+            const vector<Producto> inv = cafeteria.getInventario();
+            const Producto& p = inv[fila.indice];
+            productoSel = p.getIdProducto();
+            pendienteSel = -1;
+            campoNombre.setContenido(p.getNombreProducto());
+            campoPrecio.setContenido(precioTexto(p.getPrecio()));
+            campoStock.setContenido(to_string(p.getStock()));
+        }
+    };
+
     // Pide al servidor los datos de la vista actual.
     auto cargarVista = [&]() {
         bool ok = false;
@@ -296,10 +410,6 @@ int main(int argc, char* argv[]) {
                     cafeteria.cargarDetallePedido(pedidoSel); // refresca sus productos
                 }
             }
-        } else if (cafeteria.cantidadCambiosInventarioPendientes() > 0) {
-            mensajePanel = "Hay cambios pendientes. Pulsa Sincronizar cambios para guardarlos.";
-            relojRefresco.restart();
-            return;
         } else {
             ok = cafeteria.cargarInventario();
         }
@@ -312,12 +422,13 @@ int main(int argc, char* argv[]) {
         vista = nueva;
         scroll = 0;
         mensajeAccion.clear();
+        confirmandoEliminar = false;
         campoRestock.setEnfocado(false);
         campoCaja.setEnfocado(false);
-        campoNombreProducto.setEnfocado(false);
-        campoStockProducto.setEnfocado(false);
-        campoPrecioProducto.setEnfocado(false);
-        campoBuscarProducto.setEnfocado(false);
+        campoBuscar.setEnfocado(false);
+        campoNombre.setEnfocado(false);
+        campoPrecio.setEnfocado(false);
+        campoStock.setEnfocado(false);
         cargarVista();
     };
 
@@ -346,109 +457,20 @@ int main(int argc, char* argv[]) {
         }
 
         if (cafeteria.restockProducto(productoSel, cantidad)) {
-            avisar("Reabastecimiento pendiente de sincronizar para " +
-                   recortar(nombreProducto(productoSel), 20) + ".", true);
+            avisar("Se agregaron " + to_string(cantidad) + " a " +
+                   recortar(nombreProducto(productoSel), 24) + ".", true);
             campoRestock.limpiar();
+
+            // Si el producto esta en el formulario, refresca su stock ahi tambien.
+            for (const Producto& p : cafeteria.getInventario()) {
+                if (p.getIdProducto() == productoSel) {
+                    campoStock.setContenido(to_string(p.getStock()));
+                    break;
+                }
+            }
         } else {
             avisar(cafeteria.getUltimoError(), false);
         }
-    };
-
-    auto cargarFormularioProducto = [&](const string& idProducto) {
-        vector<Producto> inventario = cafeteria.getInventario();
-        auto producto = find_if(inventario.begin(), inventario.end(), [&](const Producto& actual) {
-            return actual.getIdProducto() == idProducto;
-        });
-        if (producto == inventario.end()) return false;
-
-        productoSel = producto->getIdProducto();
-        campoBuscarProducto.setContenido(productoSel);
-        campoNombreProducto.setContenido(producto->getNombreProducto());
-        campoStockProducto.setContenido(to_string(producto->getStock()));
-        campoPrecioProducto.setContenido(precioTexto(producto->getPrecio()));
-        return true;
-    };
-
-    auto buscarProducto = [&]() {
-        string id = campoBuscarProducto.getContenido();
-        if (id.empty() || !cargarFormularioProducto(id)) {
-            avisar("No se encontro un producto con ese ID.", false);
-            return;
-        }
-        avisar("Producto seleccionado: " + productoSel + ".", true);
-    };
-
-    auto agregarProducto = [&]() {
-        int stock = leerStock(campoStockProducto.getContenido());
-        float precio = leerPrecio(campoPrecioProducto.getContenido());
-        if (campoNombreProducto.getContenido().empty() || stock < 0 || precio <= 0.0f) {
-            avisar("Completa nombre, stock (0 o mas) y precio valido.", false);
-            return;
-        }
-        if (!cafeteria.agregarProducto(campoNombreProducto.getContenido(), stock, precio)) {
-            avisar(cafeteria.getUltimoError(), false);
-            return;
-        }
-        productoSel = cafeteria.getInventario().back().getIdProducto();
-        campoNombreProducto.limpiar();
-        campoStockProducto.limpiar();
-        campoPrecioProducto.limpiar();
-        avisar("Alta preparada con ID automatico " + productoSel + ". Sincroniza para guardarla.", true);
-    };
-
-    auto modificarProducto = [&]() {
-        string id = campoBuscarProducto.getContenido().empty() ? productoSel : campoBuscarProducto.getContenido();
-        int stock = leerStock(campoStockProducto.getContenido());
-        float precio = leerPrecio(campoPrecioProducto.getContenido());
-        if (id.empty() || campoNombreProducto.getContenido().empty() || stock < 0 || precio <= 0.0f) {
-            avisar("Selecciona un producto y completa nombre, stock y precio.", false);
-            return;
-        }
-        if (!cafeteria.modificarProducto(id, campoNombreProducto.getContenido(), stock, precio)) {
-            avisar(cafeteria.getUltimoError(), false);
-            return;
-        }
-        productoSel = id;
-        avisar("Cambios de " + id + " pendientes de sincronizar.", true);
-    };
-
-    auto eliminarProducto = [&]() {
-        string id = campoBuscarProducto.getContenido().empty() ? productoSel : campoBuscarProducto.getContenido();
-        if (id.empty()) {
-            avisar("Selecciona una fila o busca el producto por ID.", false);
-            return;
-        }
-        const size_t cambiosAntes = cafeteria.cantidadCambiosInventarioPendientes();
-        if (!cafeteria.eliminarProducto(id)) {
-            avisar(cafeteria.getUltimoError(), false);
-            return;
-        }
-        if (cafeteria.cantidadCambiosInventarioPendientes() < cambiosAntes) {
-            productoSel.clear();
-            campoBuscarProducto.limpiar();
-            campoNombreProducto.limpiar();
-            campoStockProducto.limpiar();
-            campoPrecioProducto.limpiar();
-            avisar("Producto temporal eliminado; no se envio a la base de datos.", true);
-            return;
-        }
-        productoSel = id;
-        campoBuscarProducto.setContenido(id);
-        avisar("Baja de " + id + " pendiente de sincronizar.", true);
-    };
-
-    auto sincronizarInventario = [&]() {
-        if (cafeteria.cantidadCambiosInventarioPendientes() == 0) {
-            avisar("No hay cambios pendientes.", true);
-            return;
-        }
-        if (!cafeteria.sincronizarCambiosInventario()) {
-            avisar(cafeteria.getUltimoError(), false);
-            return;
-        }
-        productoSel.clear();
-        campoBuscarProducto.limpiar();
-        avisar("Inventario sincronizado con la base de datos.", true);
     };
 
     auto hacerCobro = [&]() {
@@ -473,6 +495,136 @@ int main(int argc, char* argv[]) {
         }
     };
 
+    // ---- Acciones del editor de inventario ----
+    // Lee el formulario; regresa false (y avisa) si algo no sirve.
+    auto leerFormulario = [&](string& nombre, float& precio, int& stock) -> bool {
+        nombre = campoNombre.getContenido();
+        precio = leerPrecio(campoPrecio.getContenido());
+        stock = leerExistencias(campoStock.getContenido());
+
+        if (nombre.empty()) { avisar("Escribe el nombre del producto.", false); return false; }
+        if (precio < 0)     { avisar("Escribe un precio valido (mayor a 0, ej. 25.50).", false); return false; }
+        if (stock < 0)      { avisar("Escribe las existencias (un numero entero).", false); return false; }
+
+        // Un producto NUEVO (aun sin subir) no puede empezar con 0 existencias.
+        if (stock < 1 && productoSel.empty()) {
+            avisar("Un producto nuevo debe tener al menos 1 existencia inicial (no puede ser 0).", false);
+            return false;
+        }
+        return true;
+    };
+
+    auto agregarALista = [&]() {
+        string nombre; float precio; int stock;
+        if (!leerFormulario(nombre, precio, stock)) return;
+
+        if (cafeteria.agregarProductoPendiente(nombre, precio, stock)) {
+            limpiarFormulario();
+            campoBuscar.limpiar();
+            avisar("Agregado a la lista. Pulsa \"Subir a la base de datos\" para guardarlo.", true);
+            scroll = 1000000; // baja hasta el final para ver el producto nuevo (se limita solo)
+        } else {
+            avisar(cafeteria.getUltimoError(), false);
+        }
+    };
+
+    auto guardarCambios = [&]() {
+        if (productoSel.empty() && pendienteSel < 0) {
+            avisar("Primero haz clic en el producto de la tabla que quieres modificar.", false);
+            return;
+        }
+
+        string nombre; float precio; int stock;
+        if (!leerFormulario(nombre, precio, stock)) return;
+
+        if (pendienteSel >= 0) {
+            if (cafeteria.modificarProductoPendiente(static_cast<size_t>(pendienteSel), nombre, precio, stock)) {
+                avisar("Cambios guardados en la lista de nuevos (aun falta subirlos).", true);
+            } else {
+                avisar(cafeteria.getUltimoError(), false);
+            }
+            return;
+        }
+
+        string id = productoSel;
+        if (cafeteria.modificarProducto(id, nombre, precio, stock)) {
+            avisar("Producto " + id + " modificado en la base de datos.", true);
+        } else {
+            avisar(cafeteria.getUltimoError(), false);
+        }
+    };
+
+    auto eliminarSeleccion = [&]() {
+        if (productoSel.empty() && pendienteSel < 0) {
+            avisar("Primero haz clic en el producto de la tabla que quieres eliminar.", false);
+            return;
+        }
+
+        // Un producto NUEVO todavia no esta en la base de datos: se quita sin preguntar.
+        if (pendienteSel >= 0) {
+            cafeteria.quitarProductoPendiente(static_cast<size_t>(pendienteSel));
+            limpiarFormulario();
+            avisar("Producto nuevo quitado de la lista.", true);
+            return;
+        }
+
+        // Un producto de la base de datos: pide confirmacion (segundo clic).
+        if (!confirmandoEliminar) {
+            confirmandoEliminar = true;
+            relojConfirmar.restart();
+            avisar("Vuelve a pulsar Eliminar para confirmar (se borra de la base de datos).", false);
+            return;
+        }
+
+        confirmandoEliminar = false;
+        string id = productoSel;
+        string nombre = nombreProducto(id);
+
+        if (cafeteria.eliminarProducto(id)) {
+            limpiarFormulario();
+            avisar("Producto " + id + " (" + recortar(nombre, 20) + ") eliminado.", true);
+        } else {
+            avisar(cafeteria.getUltimoError(), false);
+        }
+    };
+
+    auto subirNuevos = [&]() {
+        int total = static_cast<int>(cafeteria.getProductosPendientes().size());
+
+        if (total == 0) {
+            avisar("No hay productos nuevos por subir.", false);
+            return;
+        }
+
+        int subidos = cafeteria.subirProductosPendientes();
+        pendienteSel = -1;
+        confirmandoEliminar = false;
+
+        if (subidos == total) {
+            limpiarFormulario();
+            avisar("Se subieron " + to_string(subidos) + " producto(s) a la base de datos.", true);
+        } else if (subidos > 0) {
+            avisar("Se subieron " + to_string(subidos) + " de " + to_string(total) +
+                   ". " + cafeteria.getUltimoError(), false);
+        } else {
+            avisar(cafeteria.getUltimoError(), false);
+        }
+    };
+
+    // Enter en la barra de busqueda: si solo queda UN producto, lo selecciona.
+    auto seleccionarBusqueda = [&]() {
+        vector<FilaInv> filas = filasInventario();
+
+        if (filas.size() == 1) {
+            seleccionarFila(filas[0]);
+            avisar("Producto seleccionado.", true);
+        } else if (filas.empty()) {
+            avisar("No se encontro ningun producto con ese ID o nombre.", false);
+        } else {
+            avisar("Hay " + to_string(filas.size()) + " coincidencias: haz clic en la que quieras.", true);
+        }
+    };
+
     auto avanzarPedido = [&]() {
         string texto, nuevo;
         if (pedidoSel.empty() || !siguienteEstado(estadoDePedido(pedidoSel), texto, nuevo)) {
@@ -486,33 +638,16 @@ int main(int argc, char* argv[]) {
         }
     };
 
-    auto completarPedido = [&]() {
-        string estado = estadoDePedido(pedidoSel);
-        if (estado.empty() || estado == "Entregado" || estado == "Cancelado") {
-            avisar("Selecciona un pedido activo.", false);
+    auto completarPedidoSel = [&]() {
+        if (pedidoSel.empty() || !estaActivo(estadoDePedido(pedidoSel))) {
             return;
         }
 
-        if (estado == "Pendiente") {
-            if (!cafeteria.elaborarPedido(pedidoSel)) {
-                avisar(cafeteria.getUltimoError(), false);
-                return;
-            }
-            estado = "Preparando";
-        }
-        if (estado == "Preparando") {
-            if (!cafeteria.marcarListo(pedidoSel)) {
-                avisar(cafeteria.getUltimoError(), false);
-                return;
-            }
-            estado = "Listo";
-        }
-        if (estado == "Listo" && !cafeteria.entregarPedido(pedidoSel)) {
+        if (cafeteria.completarPedido(pedidoSel)) {
+            avisar("Pedido " + recortar(pedidoSel, 16) + ": Entregado.", true);
+        } else {
             avisar(cafeteria.getUltimoError(), false);
-            return;
         }
-
-        avisar("Pedido " + recortar(pedidoSel, 16) + " completado y entregado.", true);
     };
 
     auto cancelarPedidoSel = [&]() {
@@ -529,7 +664,7 @@ int main(int argc, char* argv[]) {
 
     // Devuelve el indice absoluto de la fila donde se hizo clic (o -1).
     auto filaClicada = [&](float mx, float my, int filasVisibles) -> int {
-        if (mx < 250 || mx > ANCHO - 20) return -1;
+        if (mx < TABLA_X || mx > TABLA_X + TABLA_ANCHO) return -1;
 
         float relativo = my - (TABLA_Y_FILAS - 3);
         if (relativo < 0) return -1;
@@ -538,6 +673,15 @@ int main(int argc, char* argv[]) {
         if (i >= filasVisibles) return -1;
 
         return scroll + i;
+    };
+
+    // Enfoca solo UN campo del formulario / busqueda / restock (los demas pierden el foco).
+    auto enfocarCampoInventario = [&](float mx, float my) {
+        campoBuscar.setEnfocado(campoBuscar.contiene(mx, my));
+        campoNombre.setEnfocado(campoNombre.contiene(mx, my));
+        campoPrecio.setEnfocado(campoPrecio.contiene(mx, my));
+        campoStock.setEnfocado(campoStock.contiene(mx, my));
+        campoRestock.setEnfocado(campoRestock.contiene(mx, my));
     };
 
     // =================================================================
@@ -602,14 +746,16 @@ int main(int argc, char* argv[]) {
 
                     botonFiltro.actualizarHover(mx, my);
                     botonAvanzar.actualizarHover(mx, my);
+                    botonCompletar.actualizarHover(mx, my);
                     botonCancelar.actualizarHover(mx, my);
-                    botonCompletarPedido.actualizarHover(mx, my);
-                    botonAgregarProducto.actualizarHover(mx, my);
-                    botonBuscarProducto.actualizarHover(mx, my);
-                    botonModificarProducto.actualizarHover(mx, my);
-                    botonEliminarProducto.actualizarHover(mx, my);
+
+                    botonAgregar.actualizarHover(mx, my);
+                    botonGuardar.actualizarHover(mx, my);
+                    botonEliminar.actualizarHover(mx, my);
+                    botonLimpiar.actualizarHover(mx, my);
+                    botonSubir.actualizarHover(mx, my);
                     botonRestock.actualizarHover(mx, my);
-                    botonSincronizar.actualizarHover(mx, my);
+
                     botonCobrar.actualizarHover(mx, my);
                 }
                 else if (e.type == sf::Event::MouseButtonPressed && e.mouseButton.button == sf::Mouse::Left) {
@@ -625,35 +771,21 @@ int main(int argc, char* argv[]) {
 
                     // ---- zona de contenido (depende de la vista) ----
                     else if (vista == Vista::INVENTARIO) {
-                        campoNombreProducto.setEnfocado(campoNombreProducto.contiene(mx, my));
-                        campoStockProducto.setEnfocado(campoStockProducto.contiene(mx, my));
-                        campoPrecioProducto.setEnfocado(campoPrecioProducto.contiene(mx, my));
-                        campoBuscarProducto.setEnfocado(campoBuscarProducto.contiene(mx, my));
-                        campoRestock.setEnfocado(campoRestock.contiene(mx, my));
+                        enfocarCampoInventario(mx, my);
 
-                        if (botonAgregarProducto.contiene(mx, my)) {
-                            agregarProducto();
-                        } else if (botonBuscarProducto.contiene(mx, my)) {
-                            buscarProducto();
-                        } else if (botonModificarProducto.contiene(mx, my)) {
-                            modificarProducto();
-                        } else if (botonEliminarProducto.contiene(mx, my)) {
-                            eliminarProducto();
-                        } else if (botonRestock.contiene(mx, my)) {
-                            hacerRestock();
-                        } else if (botonSincronizar.contiene(mx, my)) {
-                            sincronizarInventario();
-                        } else if (campoNombreProducto.contiene(mx, my) ||
-                                   campoStockProducto.contiene(mx, my) ||
-                                   campoPrecioProducto.contiene(mx, my) ||
-                                   campoBuscarProducto.contiene(mx, my) ||
-                                   campoRestock.contiene(mx, my)) {
-                            // El campo seleccionado recibe las siguientes teclas.
-                        } else {
+                        bool hayNuevos = !cafeteria.getProductosPendientes().empty();
+
+                        if (botonAgregar.contiene(mx, my))                    agregarALista();
+                        else if (botonGuardar.contiene(mx, my))               guardarCambios();
+                        else if (botonEliminar.contiene(mx, my))              eliminarSeleccion();
+                        else if (botonLimpiar.contiene(mx, my))               limpiarFormulario();
+                        else if (hayNuevos && botonSubir.contiene(mx, my))    subirNuevos();
+                        else if (botonRestock.contiene(mx, my))               hacerRestock();
+                        else {
                             int fila = filaClicada(mx, my, FILAS_INVENTARIO);
-                            vector<Producto> inv = cafeteria.getInventario();
-                            if (fila >= 0 && fila < static_cast<int>(inv.size())) {
-                                cargarFormularioProducto(inv[fila].getIdProducto());
+                            vector<FilaInv> filas = filasInventario();
+                            if (fila >= 0 && fila < static_cast<int>(filas.size())) {
+                                seleccionarFila(filas[fila]);
                             }
                         }
                     }
@@ -674,6 +806,7 @@ int main(int argc, char* argv[]) {
                         string estadoSel = pedidoSel.empty() ? "" : estadoDePedido(pedidoSel);
                         string textoAvanzar, estadoSiguiente;
                         bool hayAvance = siguienteEstado(estadoSel, textoAvanzar, estadoSiguiente);
+                        bool hayCompletar = (estadoSel == "Pendiente" || estadoSel == "Preparando");
 
                         if (botonFiltro.contiene(mx, my)) {
                             soloActivos = !soloActivos;
@@ -683,8 +816,8 @@ int main(int argc, char* argv[]) {
                         else if (hayAvance && botonAvanzar.contiene(mx, my)) {
                             avanzarPedido();
                         }
-                        else if (!pedidoSel.empty() && botonCompletarPedido.contiene(mx, my)) {
-                            completarPedido();
+                        else if (hayCompletar && botonCompletar.contiene(mx, my)) {
+                            completarPedidoSel();
                         }
                         else if (sePuedeCancelar(estadoSel) && botonCancelar.contiene(mx, my)) {
                             cancelarPedidoSel();
@@ -702,27 +835,69 @@ int main(int argc, char* argv[]) {
                     }
                 }
                 else if (e.type == sf::Event::TextEntered) {
-                    // Texto para nombre/ID y caracteres numericos para stock, precio y cantidad.
                     unsigned int u = e.text.unicode;
+                    bool esDigito = (u >= '0' && u <= '9');
 
                     if (vista == Vista::INVENTARIO) {
-                        campoNombreProducto.recibirCaracter(u);
-                        campoBuscarProducto.recibirCaracter(u);
-                        if (u == 8 || (u >= '0' && u <= '9')) {
-                            campoStockProducto.recibirCaracter(u);
-                            campoRestock.recibirCaracter(u);
+                        if (campoNombre.estaEnfocado()) {
+                            if (u != '|') campoNombre.recibirCaracter(u);  // '|' separa los campos del protocolo
                         }
-                        if (u == 8 || (u >= '0' && u <= '9') || u == '.') {
-                            campoPrecioProducto.recibirCaracter(u);
+                        else if (campoPrecio.estaEnfocado()) {
+                            if (u == 8 || esDigito) {
+                                campoPrecio.recibirCaracter(u);
+                            } else if ((u == '.' || u == ',') &&
+                                       campoPrecio.getContenido().find('.') == string::npos) {
+                                campoPrecio.recibirCaracter('.');
+                            }
                         }
-                    } else if (u == 8 || (u >= '0' && u <= '9')) {
-                        if (vista == Vista::CAJA) campoCaja.recibirCaracter(u);
+                        else if (campoStock.estaEnfocado()) {
+                            if (u == 8 || esDigito) campoStock.recibirCaracter(u);
+                        }
+                        else if (campoRestock.estaEnfocado()) {
+                            if (u == 8 || esDigito) campoRestock.recibirCaracter(u);
+                        }
+                        else if (campoBuscar.estaEnfocado()) {
+                            if (u != '|') {
+                                campoBuscar.recibirCaracter(u);
+                                scroll = 0;
+                            }
+                        }
+                    }
+                    else if (vista == Vista::CAJA) {
+                        // Solo numeros (y borrar) en el campo de cantidad
+                        if (u == 8 || esDigito) campoCaja.recibirCaracter(u);
+                    }
+                }
+                else if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Tab) {
+                    // Tab: pasa al siguiente campo del formulario (Nombre -> Precio -> Existencias)
+                    if (vista == Vista::INVENTARIO) {
+                        if (campoNombre.estaEnfocado()) {
+                            campoNombre.setEnfocado(false);
+                            campoPrecio.setEnfocado(true);
+                        } else if (campoPrecio.estaEnfocado()) {
+                            campoPrecio.setEnfocado(false);
+                            campoStock.setEnfocado(true);
+                        } else if (campoStock.estaEnfocado()) {
+                            campoStock.setEnfocado(false);
+                            campoNombre.setEnfocado(true);
+                        }
                     }
                 }
                 else if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Return) {
-                    if (vista == Vista::INVENTARIO && campoBuscarProducto.estaEnfocado()) buscarProducto();
-                    else if (vista == Vista::INVENTARIO && campoRestock.estaEnfocado()) hacerRestock();
-                    else if (vista == Vista::CAJA && campoCaja.estaEnfocado())     hacerCobro();
+                    if (vista == Vista::INVENTARIO) {
+                        if (campoRestock.estaEnfocado()) {
+                            hacerRestock();
+                        } else if (campoBuscar.estaEnfocado()) {
+                            seleccionarBusqueda();
+                        } else if (campoNombre.estaEnfocado() || campoPrecio.estaEnfocado() ||
+                                   campoStock.estaEnfocado()) {
+                            if (!productoSel.empty() || pendienteSel >= 0) guardarCambios();
+                            else agregarALista();
+                        }
+                    }
+                    else if (vista == Vista::CAJA && campoCaja.estaEnfocado()) {
+                        hacerCobro();
+                    }
                 }
                 else if (e.type == sf::Event::MouseWheelScrolled) {
                     // rueda hacia arriba (delta > 0) = subir en la tabla
@@ -749,6 +924,23 @@ int main(int argc, char* argv[]) {
             mensajeAccion.clear();
         }
 
+        // Si no se confirma "Eliminar" a tiempo, se cancela la confirmacion.
+        if (confirmandoEliminar && relojConfirmar.getElapsedTime().asSeconds() >= SEGUNDOS_CONFIRMAR) {
+            confirmandoEliminar = false;
+        }
+
+        // Si el producto seleccionado ya no existe (lo borraron desde otro lado), se deselecciona.
+        if (pantalla == Pantalla::PANEL && !productoSel.empty() && vista != Vista::PEDIDOS) {
+            bool existe = false;
+            for (const Producto& p : cafeteria.getInventario()) {
+                if (p.getIdProducto() == productoSel) { existe = true; break; }
+            }
+            if (!existe && !cafeteria.getInventario().empty()) {
+                productoSel.clear();
+                confirmandoEliminar = false;
+            }
+        }
+
         // ---------- 3) DIBUJAR ----------
         win.clear(FONDO);
 
@@ -765,7 +957,7 @@ int main(int argc, char* argv[]) {
                 ventana.dibujarTextoCentrado(mensajeLogin, sf::FloatRect(0, 435, ANCHO, 30), 18, ROJO_ERROR);
             }
 
-            ventana.dibujarTextoCentrado("Servidor: " + ip, sf::FloatRect(0, 560, ANCHO, 24), 14, TEXTO_SUAVE);
+            ventana.dibujarTextoCentrado("Servidor: " + ip, sf::FloatRect(0, ALTO - 40, ANCHO, 24), 14, TEXTO_SUAVE);
         }
         else {
             // --- barra lateral ---
@@ -783,13 +975,12 @@ int main(int argc, char* argv[]) {
             botonActualizar.dibujar(ventana);
             botonSalir.dibujar(ventana);
 
-            ventana.dibujarTexto("Sesión de:", 20, 470, 13, sf::Color(200, 180, 160));
-            ventana.dibujarTexto(recortar(cafeteria.getNombreCafeteria(), 18), 20, 490, 16, CREMA);
-            ventana.dibujarTexto("Cafetería " + cafeteria.getIdCafeteria(), 20, 512, 13, sf::Color(200, 180, 160));
+            ventana.dibujarTexto("Sesión de:", 20, ALTO - 150, 13, sf::Color(200, 180, 160));
+            ventana.dibujarTexto(recortar(cafeteria.getNombreCafeteria(), 18), 20, ALTO - 130, 16, CREMA);
+            ventana.dibujarTexto("Cafetería " + cafeteria.getIdCafeteria(), 20, ALTO - 108, 13, sf::Color(200, 180, 160));
 
             // --- zona de contenido ---
-            rectangulo(ventana, 240, 15, static_cast<float>(ANCHO - 260),
-                       static_cast<float>(ALTO - 30), sf::Color(255, 255, 255));
+            rectangulo(ventana, 240, 15, 850, ALTO - 30, sf::Color(255, 255, 255));
 
             // ===================== VISTA PEDIDOS =====================
             if (vista == Vista::PEDIDOS) {
@@ -801,7 +992,7 @@ int main(int argc, char* argv[]) {
 
                 encabezadoTabla(ventana, "Pedidos (" + to_string(total) + ")",
                                 "Haz clic en un pedido para ver su detalle.",
-                                {{"Folio", 260}, {"Cliente", 440}, {"Estado", 660}, {"Total", 860}});
+                                {{"Folio", 260}, {"Cliente", 450}, {"Estado", 650}, {"Total", 900}});
 
                 botonFiltro.dibujar(ventana);
 
@@ -810,10 +1001,10 @@ int main(int argc, char* argv[]) {
                     float y = TABLA_Y_FILAS + i * ALTO_FILA;
 
                     franja(ventana, i, p.getFolio() == pedidoSel);
-                    ventana.dibujarTexto(recortar(p.getFolio(), 13), 260, y, 18, TEXTO_SUAVE);
-                    ventana.dibujarTexto(recortar(p.getUsernameCliente(), 18), 440, y, 18, TEXTO_OSCURO);
-                    ventana.dibujarTexto(p.getEstado(), 660, y, 18, colorEstado(p.getEstado()));
-                    ventana.dibujarTexto(dinero(p.getTotal()), 860, y, 18, TEXTO_OSCURO);
+                    ventana.dibujarTexto(recortar(p.getFolio(), 18), 260, y, 18, TEXTO_SUAVE);
+                    ventana.dibujarTexto(recortar(p.getUsernameCliente(), 18), 450, y, 18, TEXTO_OSCURO);
+                    ventana.dibujarTexto(p.getEstado(), 650, y, 18, colorEstado(p.getEstado()));
+                    ventana.dibujarTexto(dinero(p.getTotal()), 900, y, 18, TEXTO_OSCURO);
                 }
 
                 if (total == 0 && mensajePanel.empty()) {
@@ -823,7 +1014,7 @@ int main(int argc, char* argv[]) {
                 }
 
                 // --- detalle del pedido seleccionado ---
-                rectangulo(ventana, 250, 335, static_cast<float>(ANCHO - 270), 2, sf::Color(200, 190, 178));
+                rectangulo(ventana, TABLA_X, 392, TABLA_ANCHO, 2, sf::Color(200, 190, 178));
 
                 const Pedido* seleccionado = nullptr;
                 for (const Pedido& p : todos) {
@@ -831,42 +1022,42 @@ int main(int argc, char* argv[]) {
                 }
 
                 if (seleccionado == nullptr) {
-                    ventana.dibujarTexto("Detalle del pedido", 260, 348, 18, TEXTO_OSCURO);
-                    ventana.dibujarTexto("Selecciona un pedido de la tabla para ver sus productos.",
-                                         260, 378, 16, TEXTO_SUAVE);
+                    ventana.dibujarTexto("Detalle del pedido", 260, 405, 18, TEXTO_OSCURO);
+                    ventana.dibujarTexto("Selecciona un pedido de la tabla para ver sus productos y cambiar su estado.",
+                                         260, 435, 16, TEXTO_SUAVE);
                 } else {
-                    ventana.dibujarTexto("Pedido " + recortar(seleccionado->getFolio(), 30), 260, 345, 18, TEXTO_OSCURO);
-                    ventana.dibujarTexto("Cliente: " + recortar(seleccionado->getUsernameCliente(), 20) +
+                    ventana.dibujarTexto("Pedido " + recortar(seleccionado->getFolio(), 30), 260, 403, 20, TEXTO_OSCURO);
+                    ventana.dibujarTexto("Cliente: " + recortar(seleccionado->getUsernameCliente(), 24) +
                                          "   ·   Fecha: " + seleccionado->getFecha(),
-                                         260, 372, 15, TEXTO_SUAVE);
+                                         260, 433, 16, TEXTO_SUAVE);
 
-                    ventana.dibujarTexto("Estado:", 260, 394, 16, TEXTO_SUAVE);
-                    ventana.dibujarTexto(seleccionado->getEstado(), 325, 394, 16, colorEstado(seleccionado->getEstado()));
-                    ventana.dibujarTexto("Total: " + dinero(seleccionado->getTotal()), 760, 394, 16, TEXTO_OSCURO);
+                    ventana.dibujarTexto("Estado:", 260, 458, 17, TEXTO_SUAVE);
+                    ventana.dibujarTexto(seleccionado->getEstado(), 335, 458, 17, colorEstado(seleccionado->getEstado()));
+                    ventana.dibujarTexto("Total: " + dinero(seleccionado->getTotal()), 620, 458, 17, TEXTO_OSCURO);
 
                     const vector<pair<Producto, int>>& detalle = cafeteria.getDetallePedido();
                     bool detalleVigente = (cafeteria.getFolioDetalle() == pedidoSel);
-                    int maxLineas = 4;
+                    int maxLineas = 6;
 
                     if (!detalleVigente) {
-                        ventana.dibujarTexto("Cargando productos...", 260, 420, 15, TEXTO_SUAVE);
+                        ventana.dibujarTexto("Cargando productos...", 260, 490, 16, TEXTO_SUAVE);
                     }
 
                     for (int i = 0; detalleVigente && i < static_cast<int>(detalle.size()); i++) {
-                        float y = 420.0f + i * 20.0f;
+                        float y = 490.0f + i * 20.0f;
 
                         if (i == maxLineas - 1 && static_cast<int>(detalle.size()) > maxLineas) {
                             ventana.dibujarTexto("... y " + to_string(detalle.size() - i) + " productos más",
-                                                 260, y, 15, TEXTO_SUAVE);
+                                                 260, y, 16, TEXTO_SUAVE);
                             break;
                         }
 
                         const Producto& prod = detalle[i].first;
                         int cantidad = detalle[i].second;
 
-                        ventana.dibujarTexto(to_string(cantidad) + " x " + recortar(prod.getNombreProducto(), 34),
-                                             260, y, 15, TEXTO_OSCURO);
-                        ventana.dibujarTexto(dinero(prod.getPrecio() * cantidad), 900, y, 15, TEXTO_SUAVE);
+                        ventana.dibujarTexto(to_string(cantidad) + " x " + recortar(prod.getNombreProducto(), 40),
+                                             260, y, 16, TEXTO_OSCURO);
+                        ventana.dibujarTexto(dinero(prod.getPrecio() * cantidad), 900, y, 16, TEXTO_SUAVE);
                     }
 
                     // --- botones de accion (solo los que tienen sentido para este estado) ---
@@ -876,76 +1067,107 @@ int main(int argc, char* argv[]) {
                         botonAvanzar.dibujar(ventana);
                     }
 
+                    if (seleccionado->getEstado() == "Pendiente" || seleccionado->getEstado() == "Preparando") {
+                        botonCompletar.dibujar(ventana);
+                    }
+
                     if (sePuedeCancelar(seleccionado->getEstado())) {
                         botonCancelar.dibujar(ventana);
-                    }
-                    if (estaActivo(seleccionado->getEstado())) {
-                        botonCompletarPedido.dibujar(ventana);
                     }
                 }
             }
             // ==================== VISTA INVENTARIO ====================
             else if (vista == Vista::INVENTARIO) {
                 const vector<Producto> inv = cafeteria.getInventario();
-                int total = static_cast<int>(inv.size());
+                const vector<ProductoNuevo>& nuevos = cafeteria.getProductosPendientes();
+                const vector<FilaInv> filas = filasInventario();
+                int total = static_cast<int>(filas.size());
                 scrollMaximo = max(0, total - FILAS_INVENTARIO);
-                scroll = min(scroll, scrollMaximo);
+                scroll = max(0, min(scroll, scrollMaximo));
 
-                encabezadoTabla(ventana, "Inventario (" + to_string(total) + ")",
-                                "Selecciona una fila para editar o busca por ID. Rueda para desplazarte.",
-                                {{"ID", 260}, {"Producto", 400}, {"Precio", 720}, {"Stock", 880}});
+                string titulo = "Inventario (" + to_string(inv.size()) + ")";
+                if (!nuevos.empty()) titulo += "  +" + to_string(nuevos.size()) + " nuevo(s)";
 
-                const Producto* seleccionado = nullptr;
+                encabezadoTabla(ventana, titulo,
+                                "Clic en un producto para editarlo. Rueda del mouse para bajar.",
+                                {{"ID", 260}, {"Producto", 350}, {"Precio", 700}, {"Stock", 860}});
+
+                campoBuscar.dibujar(ventana);
 
                 for (int i = 0; i < FILAS_INVENTARIO && scroll + i < total; i++) {
-                    const Producto& p = inv[scroll + i];
+                    const FilaInv& fila = filas[scroll + i];
                     float y = TABLA_Y_FILAS + i * ALTO_FILA;
-                    bool esSel = (p.getIdProducto() == productoSel);
 
-                    franja(ventana, i, esSel);
-                    ventana.dibujarTexto(p.getIdProducto(), 260, y, 18, TEXTO_SUAVE);
-                    ventana.dibujarTexto(recortar(p.getNombreProducto(), 34), 400, y, 18, TEXTO_OSCURO);
-                    ventana.dibujarTexto(dinero(p.getPrecio()), 720, y, 18, TEXTO_OSCURO);
+                    if (fila.pendiente) {
+                        const ProductoNuevo& n = nuevos[fila.indice];
+                        bool esSel = (fila.indice == pendienteSel);
 
-                    if (p.getStock() == 0) {
-                        ventana.dibujarTexto("Agotado", 880, y, 18, ROJO_ERROR);
-                    } else if (p.getStock() <= 5) {
-                        ventana.dibujarTexto(to_string(p.getStock()) + " (bajo)", 880, y, 18, ROJO_ERROR);
+                        franja(ventana, i, esSel, true);
+                        ventana.dibujarTexto("NUEVO", 260, y, 18, AMBAR);
+                        ventana.dibujarTexto(recortar(n.nombre, 30), 350, y, 18, TEXTO_OSCURO);
+                        ventana.dibujarTexto(dinero(n.precio), 700, y, 18, TEXTO_OSCURO);
+                        ventana.dibujarTexto(to_string(n.stock) + " (sin subir)", 860, y, 18, AMBAR);
                     } else {
-                        ventana.dibujarTexto(to_string(p.getStock()), 880, y, 18, TEXTO_OSCURO);
+                        const Producto& p = inv[fila.indice];
+                        bool esSel = (p.getIdProducto() == productoSel);
+
+                        franja(ventana, i, esSel);
+                        ventana.dibujarTexto(p.getIdProducto(), 260, y, 18, TEXTO_SUAVE);
+                        ventana.dibujarTexto(recortar(p.getNombreProducto(), 30), 350, y, 18, TEXTO_OSCURO);
+                        ventana.dibujarTexto(dinero(p.getPrecio()), 700, y, 18, TEXTO_OSCURO);
+
+                        if (p.getStock() == 0) {
+                            ventana.dibujarTexto("Agotado", 860, y, 18, ROJO_ERROR);
+                        } else if (p.getStock() <= 5) {
+                            ventana.dibujarTexto(to_string(p.getStock()) + " (bajo)", 860, y, 18, ROJO_ERROR);
+                        } else {
+                            ventana.dibujarTexto(to_string(p.getStock()), 860, y, 18, TEXTO_OSCURO);
+                        }
                     }
                 }
 
-                for (const Producto& p : inv) {
-                    if (p.getIdProducto() == productoSel) { seleccionado = &p; break; }
-                }
-
                 if (total == 0 && mensajePanel.empty()) {
-                    ventana.dibujarTexto("Esta cafetería todavía no tiene productos.", 260, 150, 18, TEXTO_SUAVE);
+                    bool buscando = !campoBuscar.getContenido().empty();
+                    ventana.dibujarTexto(buscando ? "No hay productos con ese ID o nombre."
+                                                  : "Esta cafetería todavía no tiene productos. ¡Agrega el primero abajo!",
+                                         260, 150, 18, TEXTO_SUAVE);
                 }
 
-                rectangulo(ventana, 250, 355, 620, 2, sf::Color(200, 190, 178));
-                ventana.dibujarTexto("ID (solo lectura): " +
-                    (productoSel.empty() ? "selecciona un producto" : productoSel), 260, 360, 14, TEXTO_SUAVE);
-                campoNombreProducto.dibujar(ventana);
-                campoStockProducto.dibujar(ventana);
-                campoPrecioProducto.dibujar(ventana);
-                botonAgregarProducto.dibujar(ventana);
+                // --- editor ---
+                rectangulo(ventana, TABLA_X, 392, TABLA_ANCHO, 2, sf::Color(200, 190, 178));
 
-                if (seleccionado != nullptr) {
-                    ventana.dibujarTexto("ID seleccionado: " + productoSel, 260, 435, 14, TEXTO_OSCURO);
+                if (!productoSel.empty()) {
+                    ventana.dibujarTexto("Editando: " + productoSel + "  (" + recortar(nombreProducto(productoSel), 30) +
+                                         ")   ·   el ID lo genera el sistema y no se puede cambiar",
+                                         260, 402, 16, TEXTO_OSCURO);
+                } else if (pendienteSel >= 0) {
+                    ventana.dibujarTexto("Editando un producto NUEVO (todavía no está en la base de datos).",
+                                         260, 402, 16, AMBAR);
+                } else {
+                    ventana.dibujarTexto("Producto nuevo: llena los campos (existencias: mínimo 1) y pulsa Agregar. "
+                                         "Para editar uno, clic en la tabla.",
+                                         260, 402, 16, TEXTO_SUAVE);
                 }
-                campoBuscarProducto.dibujar(ventana);
-                botonBuscarProducto.dibujar(ventana);
-                botonModificarProducto.dibujar(ventana);
-                botonEliminarProducto.dibujar(ventana);
+
+                campoNombre.dibujar(ventana);
+                campoPrecio.dibujar(ventana);
+                campoStock.dibujar(ventana);
+
+                botonAgregar.dibujar(ventana);
+                botonGuardar.dibujar(ventana);
+                botonEliminar.setTexto(confirmandoEliminar ? "¿Seguro? Clic de nuevo" : "Eliminar");
+                botonEliminar.dibujar(ventana);
+                botonLimpiar.dibujar(ventana);
+
+                if (!nuevos.empty()) {
+                    botonSubir.setTexto("Subir a la base de datos (" + to_string(nuevos.size()) + ")");
+                    botonSubir.dibujar(ventana);
+                    ventana.dibujarTexto("Los productos marcados NUEVO aún no están en la base de datos.",
+                                         630, 574, 15, AMBAR);
+                }
 
                 campoRestock.dibujar(ventana);
                 botonRestock.dibujar(ventana);
-                size_t pendientes = cafeteria.cantidadCambiosInventarioPendientes();
-                botonSincronizar.setTexto("Sincronizar (" + to_string(pendientes) + ")");
-                botonSincronizar.setActivo(pendientes > 0);
-                botonSincronizar.dibujar(ventana);
             }
             // ======================= VISTA CAJA =======================
             else {
@@ -956,7 +1178,7 @@ int main(int argc, char* argv[]) {
 
                 encabezadoTabla(ventana, "Caja",
                                 "Venta directa en mostrador: elige el producto y la cantidad.",
-                                {{"ID", 260}, {"Producto", 400}, {"Precio", 720}, {"Stock", 880}});
+                                {{"ID", 260}, {"Producto", 350}, {"Precio", 700}, {"Stock", 860}});
 
                 const Producto* seleccionado = nullptr;
 
@@ -966,10 +1188,10 @@ int main(int argc, char* argv[]) {
 
                     franja(ventana, i, p.getIdProducto() == productoSel);
                     ventana.dibujarTexto(p.getIdProducto(), 260, y, 18, TEXTO_SUAVE);
-                    ventana.dibujarTexto(recortar(p.getNombreProducto(), 34), 400, y, 18, TEXTO_OSCURO);
-                    ventana.dibujarTexto(dinero(p.getPrecio()), 720, y, 18, TEXTO_OSCURO);
+                    ventana.dibujarTexto(recortar(p.getNombreProducto(), 30), 350, y, 18, TEXTO_OSCURO);
+                    ventana.dibujarTexto(dinero(p.getPrecio()), 700, y, 18, TEXTO_OSCURO);
                     ventana.dibujarTexto(p.getStock() == 0 ? "Agotado" : to_string(p.getStock()),
-                                         880, y, 18, p.getStock() == 0 ? ROJO_ERROR : TEXTO_OSCURO);
+                                         860, y, 18, p.getStock() == 0 ? ROJO_ERROR : TEXTO_OSCURO);
                 }
 
                 for (const Producto& p : inv) {
@@ -980,47 +1202,46 @@ int main(int argc, char* argv[]) {
                     ventana.dibujarTexto("Esta cafetería todavía no tiene productos.", 260, 150, 18, TEXTO_SUAVE);
                 }
 
-                rectangulo(ventana, 250, 385, 620, 2, sf::Color(200, 190, 178));
+                rectangulo(ventana, TABLA_X, 422, TABLA_ANCHO, 2, sf::Color(200, 190, 178));
 
                 if (seleccionado == nullptr) {
-                    ventana.dibujarTexto("Selecciona un producto de la tabla.", 260, 395, 16, TEXTO_SUAVE);
+                    ventana.dibujarTexto("Selecciona un producto de la tabla.", 260, 434, 16, TEXTO_SUAVE);
                 } else {
-                    ventana.dibujarTexto("Seleccionado: " + recortar(seleccionado->getNombreProducto(), 24) +
+                    ventana.dibujarTexto("Seleccionado: " + recortar(seleccionado->getNombreProducto(), 30) +
                                          "   " + dinero(seleccionado->getPrecio()) + " c/u",
-                                         260, 395, 16, TEXTO_OSCURO);
+                                         260, 434, 16, TEXTO_OSCURO);
                 }
 
                 campoCaja.dibujar(ventana);
                 botonCobrar.dibujar(ventana);
 
                 // ganancia del turno (a la derecha)
-                ventana.dibujarTexto("Ganancia del turno", 790, 428, 15, TEXTO_SUAVE);
-                ventana.dibujarTexto(dinero(cafeteria.getGananciaCajaTurno()), 790, 448, 30, VERDE);
+                ventana.dibujarTexto("Ganancia del turno", 800, 462, 15, TEXTO_SUAVE);
+                ventana.dibujarTexto(dinero(cafeteria.getGananciaCajaTurno()), 800, 484, 32, VERDE);
 
                 // ultimas ventas
                 const vector<VentaCaja>& ventas = cafeteria.getHistorialCaja();
-                ventana.dibujarTexto("Últimas ventas", 260, 505, 15, TEXTO_SUAVE);
+                ventana.dibujarTexto("Últimas ventas", 260, 560, 15, TEXTO_SUAVE);
 
                 if (ventas.empty()) {
-                    ventana.dibujarTexto("Todavía no hay ventas en este turno.", 260, 527, 15, TEXTO_SUAVE);
+                    ventana.dibujarTexto("Todavía no hay ventas en este turno.", 260, 584, 15, TEXTO_SUAVE);
                 } else {
-                    for (int k = 0; k < 2 && k < static_cast<int>(ventas.size()); k++) {
+                    for (int k = 0; k < 4 && k < static_cast<int>(ventas.size()); k++) {
                         const VentaCaja& v = ventas[ventas.size() - 1 - k];
-                        ventana.dibujarTexto(to_string(v.cantidad) + " x " + recortar(v.nombreProducto, 30) +
+                        ventana.dibujarTexto(to_string(v.cantidad) + " x " + recortar(v.nombreProducto, 34) +
                                              "  -  " + dinero(v.subtotal),
-                                             260, 527.0f + k * 18.0f, 15, TEXTO_OSCURO);
+                                             260, 584.0f + k * 20.0f, 15, TEXTO_OSCURO);
                     }
                 }
             }
 
             // --- mensaje de la ultima accion, o error de red (si lo hay) ---
-            float yMensaje = (vista == Vista::INVENTARIO) ? 690.0f :
-                             ((vista == Vista::PEDIDOS) ? 568.0f : 562.0f);
+            float yMensaje = ALTO - 42.0f;
 
             if (!mensajeAccion.empty()) {
-                ventana.dibujarTexto(mensajeAccion, 260, yMensaje, 15, accionOk ? VERDE : ROJO_ERROR);
+                ventana.dibujarTexto(mensajeAccion, 260, yMensaje, 16, accionOk ? VERDE : ROJO_ERROR);
             } else if (!mensajePanel.empty()) {
-                ventana.dibujarTexto(mensajePanel, 260, yMensaje, 15, ROJO_ERROR);
+                ventana.dibujarTexto(mensajePanel, 260, yMensaje, 16, ROJO_ERROR);
             }
         }
 

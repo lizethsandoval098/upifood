@@ -7,12 +7,31 @@
 #include "Pago.h"
 #include "Tarjeta.h"
 
-#include <cstdio>
-#include <cmath>
-#include <algorithm>
 #include <iostream>
 
 using namespace std;
+
+int numeroCafeteria(const string& idCafeteria) {
+	size_t pos = idCafeteria.find_first_of("0123456789");
+
+	if(pos == string::npos) {
+		return 0;
+	}
+
+	int numero = 0;
+
+	while(pos < idCafeteria.size() && idCafeteria[pos] >= '0' && idCafeteria[pos] <= '9') {
+		numero = numero * 10 + (idCafeteria[pos] - '0');
+
+		if(numero > 99) {
+			return 0;
+		}
+
+		pos++;
+	}
+
+	return (numero >= 1 && numero <= 9) ? numero : 0;
+}
 
 BaseDatos::BaseDatos() {
 	nombreBD = "upifood.db";
@@ -33,9 +52,6 @@ bool BaseDatos::conectar() {
 	}
 
 	cout << "Conexion a SQLite exitosa (" << nombreBD << ")" << endl;
-	if (!ejecutarQuery("PRAGMA foreign_keys = ON;")) {
-		return false;
-	}
 
 	return inicializarTablas();
 }
@@ -778,75 +794,15 @@ bool BaseDatos::guardarProducto(const Producto& producto) {
 	return exito;
 }
 
-bool BaseDatos::agregarProductoAutomatico(const string& idCafeteria, const string& nombre,
-                                         int stock, float precio, string& idAsignado) {
-	if ((idCafeteria != "1" && idCafeteria != "2") || nombre.empty() ||
-	    nombre.find('|') != string::npos || stock < 0 || !isfinite(precio) || precio <= 0.0f) {
-		return false;
-	}
-
-	int mayorConsecutivo = 0;
-	for (const Producto& producto : obtenerInventario(idCafeteria)) {
-		const string& id = producto.getIdProducto();
-		if (id.size() == 5 && id[0] == 'C' && id[1] == idCafeteria[0] && id[2] == '-' &&
-		    id[3] >= '0' && id[3] <= '9' && id[4] >= '0' && id[4] <= '9') {
-			int numero = (id[3] - '0') * 10 + (id[4] - '0');
-			mayorConsecutivo = max(mayorConsecutivo, numero);
-		}
-	}
-
-	const int siguienteConsecutivo = mayorConsecutivo + 1;
-	if (siguienteConsecutivo > 20) return false;
-
-	char idBuffer[6];
-	snprintf(idBuffer, sizeof(idBuffer), "C%s-%02d", idCafeteria.c_str(), siguienteConsecutivo);
-	idAsignado = idBuffer;
-	Producto producto(nombre, idAsignado, stock, precio);
-	if (!guardarProducto(producto)) {
-		idAsignado.clear();
-		return false;
-	}
-	return true;
-}
-
-bool BaseDatos::modificarProducto(const string& idProducto, const string& nombre,
-                                  int stock, float precio) {
-	if (nombre.empty() || nombre.find('|') != string::npos || stock < 0 ||
-	    !isfinite(precio) || precio <= 0.0f) return false;
-
-	const string sql = "UPDATE Productos SET nombreProducto = ?, stock = ?, precio = ? "
-	                   "WHERE idProducto = ?;";
-	sqlite3_stmt* stmt = nullptr;
-	if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) return false;
-
-	sqlite3_bind_text(stmt, 1, nombre.c_str(), -1, SQLITE_TRANSIENT);
-	sqlite3_bind_int(stmt, 2, stock);
-	sqlite3_bind_double(stmt, 3, precio);
-	sqlite3_bind_text(stmt, 4, idProducto.c_str(), -1, SQLITE_TRANSIENT);
-	const bool actualizado = sqlite3_step(stmt) == SQLITE_DONE && sqlite3_changes(db) == 1;
-	sqlite3_finalize(stmt);
-	return actualizado;
-}
-
-bool BaseDatos::eliminarProducto(const string& idProducto) {
-	const string sql = "DELETE FROM Productos WHERE idProducto = ?;";
-	sqlite3_stmt* stmt = nullptr;
-	if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) return false;
-
-	sqlite3_bind_text(stmt, 1, idProducto.c_str(), -1, SQLITE_TRANSIENT);
-	const bool eliminado = sqlite3_step(stmt) == SQLITE_DONE && sqlite3_changes(db) == 1;
-	sqlite3_finalize(stmt);
-	return eliminado;
-}
-
 /*
  *    Los productos se distinguen por cafeteria: C1-01, C1-02, ...
  *    y C2-01, C2-02, ...
- *    idCafeteria en la BD sigue siendo "1" o "2".
+ *    idCafeteria en la BD puede ser "1", "2" o "C-01", "C-02" (el numero manda).
  */
 vector<Producto> BaseDatos::obtenerInventario(const string& idCafeteria) {        // para cafeteria
 	vector<Producto> inventario;
-	string patron = "C" + idCafeteria + "-%";
+	// idCafeteria puede ser "1" o "C-01": en los dos casos los productos son C1-01, C1-02, ...
+	string patron = "C" + to_string(numeroCafeteria(idCafeteria)) + "-%";
 
 	string sql = "SELECT nombreProducto, stock, precio, idProducto "
 	       	     "FROM Productos "
@@ -896,6 +852,76 @@ bool BaseDatos::actualizarExistencia(const string& idProducto, int nuevoStock) {
 	sqlite3_finalize(stmt);
 
 	return exito;
+}
+
+// Modifica nombre, precio y existencias de un producto ya guardado.
+// Regresa true solo si de verdad se modifico una fila (el producto existe).
+bool BaseDatos::actualizarProducto(const string& idProducto, const string& nombre,
+                                   float precio, int stock) {
+	string sql = "UPDATE Productos "
+		     "SET nombreProducto = ?, precio = ?, stock = ? "
+		     "WHERE idProducto = ?;";
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al modificar el producto: " << sqlite3_errmsg(db) << endl;
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, nombre.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_double(stmt, 2, precio);
+	sqlite3_bind_int(stmt, 3, stock);
+	sqlite3_bind_text(stmt, 4, idProducto.c_str(), -1, SQLITE_TRANSIENT);
+
+	bool exito = (sqlite3_step(stmt) == SQLITE_DONE) && (sqlite3_changes(db) > 0);
+
+	sqlite3_finalize(stmt);
+
+	return exito;
+}
+
+// Borra un producto. (Antes de llamarla, el servidor revisa con
+// productoTienePedidos() que no tenga historial de pedidos.)
+bool BaseDatos::eliminarProducto(const string& idProducto) {
+	string sql = "DELETE FROM Productos WHERE idProducto = ?;";
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al eliminar el producto: " << sqlite3_errmsg(db) << endl;
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, idProducto.c_str(), -1, SQLITE_TRANSIENT);
+
+	bool exito = (sqlite3_step(stmt) == SQLITE_DONE) && (sqlite3_changes(db) > 0);
+
+	sqlite3_finalize(stmt);
+
+	return exito;
+}
+
+// true si el producto aparece en el detalle de algun pedido (asi no se
+// pierde el historial de pedidos al borrarlo).
+bool BaseDatos::productoTienePedidos(const string& idProducto) {
+	string sql = "SELECT COUNT(*) FROM DetallePedido WHERE idProducto = ?;";
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al revisar los pedidos del producto: " << sqlite3_errmsg(db) << endl;
+		return true; // ante la duda, NO dejar borrar
+	}
+
+	sqlite3_bind_text(stmt, 1, idProducto.c_str(), -1, SQLITE_TRANSIENT);
+
+	int cantidad = 0;
+
+	if(sqlite3_step(stmt) == SQLITE_ROW) {
+		cantidad = sqlite3_column_int(stmt, 0);
+	}
+
+	sqlite3_finalize(stmt);
+
+	return cantidad > 0;
 }
 
 

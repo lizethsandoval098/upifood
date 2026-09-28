@@ -1,4 +1,5 @@
 #include "Widgets.h"
+#include <algorithm>
 
 // Paleta (tonos cafe/crema, acorde a una cafeteria)
 static const sf::Color CAFE_NORMAL(111, 78, 55);
@@ -13,11 +14,18 @@ static const sf::Color TEXTO_SUAVE(130, 120, 110);
 Boton::Boton() : hover(false), activo(false) {
 }
 
+void Boton::setColor(const sf::Color& normal) {
+    colorNormal = normal;
+    colorHover = sf::Color(static_cast<sf::Uint8>(std::min(255, normal.r + 30)),
+                           static_cast<sf::Uint8>(std::min(255, normal.g + 30)),
+                           static_cast<sf::Uint8>(std::min(255, normal.b + 30)));
+}
+
 Boton::Boton(const std::string& textoBoton, float x, float y, float ancho, float alto)
     : texto(textoBoton), hover(false), activo(false) {
     forma.setSize(sf::Vector2f(ancho, alto));
     forma.setPosition(x, y);
-    forma.setFillColor(CAFE_NORMAL);
+    forma.setFillColor(colorNormal);
 }
 
 void Boton::setTexto(const std::string& t) {
@@ -40,9 +48,9 @@ void Boton::dibujar(Ventana& ventana) {
     if (activo) {
         forma.setFillColor(CAFE_ACTIVO);
     } else if (hover) {
-        forma.setFillColor(CAFE_HOVER);
+        forma.setFillColor(colorHover);
     } else {
-        forma.setFillColor(CAFE_NORMAL);
+        forma.setFillColor(colorNormal);
     }
 
     ventana.getWindow().draw(forma);
@@ -81,14 +89,30 @@ void CampoTexto::recibirCaracter(sf::Uint32 unicode) {
         return;
     }
 
-    if (unicode == 8) {                    // backspace
-        if (!contenido.empty()) {
+    if (unicode == 8) {                    // backspace: borra UN caracter (aunque sea acentuado)
+        while (!contenido.empty()) {
+            unsigned char ultimo = static_cast<unsigned char>(contenido.back());
             contenido.pop_back();
+            if ((ultimo & 0xC0) != 0x80) {
+                break;
+            }
         }
-    } else if (unicode >= 32 && unicode < 127) { // caracteres ASCII imprimibles
-        if (contenido.size() < maxLongitud) {
-            contenido += static_cast<char>(unicode);
-        }
+        return;
+    }
+
+    std::string bytes;
+
+    if (unicode >= 32 && unicode < 127) {           // ASCII imprimible
+        bytes += static_cast<char>(unicode);
+    } else if (unicode >= 0xA0 && unicode <= 0x24F) { // letras con acento, ñ, ¿, ¡, etc. (UTF-8 de 2 bytes)
+        bytes += static_cast<char>(0xC0 | (unicode >> 6));
+        bytes += static_cast<char>(0x80 | (unicode & 0x3F));
+    } else {
+        return; // otros caracteres (emojis, control) se ignoran
+    }
+
+    if (contenido.size() + bytes.size() <= maxLongitud) {
+        contenido += bytes;
     }
     // Enter (13) y Tab (9) los maneja quien usa el campo, no el campo.
 }
@@ -98,7 +122,11 @@ const std::string& CampoTexto::getContenido() const {
 }
 
 void CampoTexto::setContenido(const std::string& texto) {
-    contenido = texto.substr(0, maxLongitud);
+    contenido = texto;
+}
+
+void CampoTexto::setMaxLongitud(std::size_t maximo) {
+    maxLongitud = maximo;
 }
 
 void CampoTexto::limpiar() {
