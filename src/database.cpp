@@ -9,6 +9,7 @@
 
 #include <cstdio>
 #include <cmath>
+#include <algorithm>
 #include <iostream>
 
 using namespace std;
@@ -784,26 +785,21 @@ bool BaseDatos::agregarProductoAutomatico(const string& idCafeteria, const strin
 		return false;
 	}
 
-	vector<bool> ocupados(21, false);
+	int mayorConsecutivo = 0;
 	for (const Producto& producto : obtenerInventario(idCafeteria)) {
 		const string& id = producto.getIdProducto();
-		if (id.size() == 5 && id[3] >= '0' && id[3] <= '9' && id[4] >= '0' && id[4] <= '9') {
+		if (id.size() == 5 && id[0] == 'C' && id[1] == idCafeteria[0] && id[2] == '-' &&
+		    id[3] >= '0' && id[3] <= '9' && id[4] >= '0' && id[4] <= '9') {
 			int numero = (id[3] - '0') * 10 + (id[4] - '0');
-			if (numero >= 1 && numero <= 20) ocupados[numero] = true;
+			mayorConsecutivo = max(mayorConsecutivo, numero);
 		}
 	}
 
-	int numeroDisponible = 0;
-	for (int numero = 1; numero <= 20; ++numero) {
-		if (!ocupados[numero]) {
-			numeroDisponible = numero;
-			break;
-		}
-	}
-	if (numeroDisponible == 0) return false;
+	const int siguienteConsecutivo = mayorConsecutivo + 1;
+	if (siguienteConsecutivo > 20) return false;
 
 	char idBuffer[6];
-	snprintf(idBuffer, sizeof(idBuffer), "C%s-%02d", idCafeteria.c_str(), numeroDisponible);
+	snprintf(idBuffer, sizeof(idBuffer), "C%s-%02d", idCafeteria.c_str(), siguienteConsecutivo);
 	idAsignado = idBuffer;
 	Producto producto(nombre, idAsignado, stock, precio);
 	if (!guardarProducto(producto)) {

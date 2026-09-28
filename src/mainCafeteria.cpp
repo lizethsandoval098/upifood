@@ -58,8 +58,8 @@ static const sf::Color FILA_OSCURA(246, 240, 230);
 static const sf::Color FILA_SELECCION(232, 208, 176);
 
 // ---- Medidas de la ventana y de la zona de tablas ----
-static const int ANCHO = 900;
-static const int ALTO = 680;
+static const int ANCHO = 1000;
+static const int ALTO = 720;
 static const float TABLA_Y_FILAS = 140.0f;
 static const float ALTO_FILA = 30.0f;
 static const int FILAS_INVENTARIO = 7;
@@ -144,7 +144,7 @@ static void encabezadoTabla(Ventana& v, const string& titulo, const string& subt
         v.dibujarTexto(c.first, c.second, 104, 16, TEXTO_SUAVE);
     }
 
-    rectangulo(v, 250, 130, 620, 2, sf::Color(200, 190, 178));
+    rectangulo(v, 250, 130, static_cast<float>(ANCHO - 270), 2, sf::Color(200, 190, 178));
 }
 
 // Franja de fondo de la fila i (alternando color para que se lea mejor;
@@ -153,7 +153,7 @@ static void franja(Ventana& v, int i, bool seleccionada = false) {
     float y = TABLA_Y_FILAS + i * ALTO_FILA;
     sf::Color color = seleccionada ? FILA_SELECCION
                                    : ((i % 2 == 0) ? FILA_CLARA : FILA_OSCURA);
-    rectangulo(v, 250, y - 3, 620, ALTO_FILA - 2, color);
+    rectangulo(v, 250, y - 3, static_cast<float>(ANCHO - 270), ALTO_FILA - 2, color);
 }
 
 static sf::Color colorEstado(const string& estado) {
@@ -209,26 +209,26 @@ int main(int argc, char* argv[]) {
     Boton botonInventario("Inventario", 20, 165, 180, 44);
     Boton botonCaja("Caja", 20, 220, 180, 44);
     Boton botonActualizar("Actualizar ahora", 20, 300, 180, 44);
-    Boton botonSalir("Salir", 20, 610, 180, 44);
+    Boton botonSalir("Salir", 20, 645, 180, 44);
 
     // vista PEDIDOS
     Boton botonFiltro("Ver: Activos", 730, 22, 140, 32);
-    Boton botonAvanzar("Avanzar", 260, 522, 230, 40);
-    Boton botonCancelar("Cancelar pedido", 510, 522, 200, 40);
-    Boton botonCompletarPedido("Completar pedido", 720, 522, 150, 40);
+    Boton botonAvanzar("Avanzar", 260, 522, 210, 40);
+    Boton botonCancelar("Cancelar pedido", 490, 522, 190, 40);
+    Boton botonCompletarPedido("Completar pedido", 700, 522, 250, 40);
 
     // vista INVENTARIO
-    CampoTexto campoNombreProducto("Nombre", 260, 410, 190, 38);
-    CampoTexto campoStockProducto("Stock", 460, 410, 90, 38);
-    CampoTexto campoPrecioProducto("Precio", 560, 410, 120, 38);
-    Boton botonAgregarProducto("Agregar", 690, 410, 170, 38);
-    CampoTexto campoBuscarProducto("ID para modificar", 260, 475, 180, 38);
-    Boton botonBuscarProducto("Buscar", 450, 475, 105, 38);
-    Boton botonModificarProducto("Modificar", 565, 475, 135, 38);
-    Boton botonEliminarProducto("Eliminar", 710, 475, 150, 38);
-    CampoTexto campoRestock("Cantidad a agregar", 260, 545, 170, 38);
-    Boton botonRestock("Reabastecer", 440, 545, 160, 38);
-    Boton botonSincronizar("Sincronizar cambios", 610, 545, 250, 38);
+    CampoTexto campoNombreProducto("Nombre", 260, 410, 220, 38);
+    CampoTexto campoStockProducto("Stock", 490, 410, 110, 38);
+    CampoTexto campoPrecioProducto("Precio", 610, 410, 140, 38);
+    Boton botonAgregarProducto("Agregar", 760, 410, 190, 38);
+    CampoTexto campoBuscarProducto("ID para modificar", 260, 475, 220, 38);
+    Boton botonBuscarProducto("Buscar", 490, 475, 120, 38);
+    Boton botonModificarProducto("Modificar", 620, 475, 150, 38);
+    Boton botonEliminarProducto("Eliminar", 780, 475, 170, 38);
+    CampoTexto campoRestock("Cantidad a agregar", 260, 545, 200, 38);
+    Boton botonRestock("Reabastecer", 470, 545, 180, 38);
+    Boton botonSincronizar("Sincronizar cambios", 670, 545, 280, 38);
 
     // vista CAJA
     CampoTexto campoCaja("Cantidad vendida", 260, 452, 150, 38);
@@ -530,7 +530,7 @@ int main(int argc, char* argv[]) {
 
     // Devuelve el indice absoluto de la fila donde se hizo clic (o -1).
     auto filaClicada = [&](float mx, float my, int filasVisibles) -> int {
-        if (mx < 250 || mx > 870) return -1;
+        if (mx < 250 || mx > ANCHO - 20) return -1;
 
         float relativo = my - (TABLA_Y_FILAS - 3);
         if (relativo < 0) return -1;
@@ -789,7 +789,8 @@ int main(int argc, char* argv[]) {
             ventana.dibujarTexto("Cafetería " + cafeteria.getIdCafeteria(), 20, 512, 13, sf::Color(200, 180, 160));
 
             // --- zona de contenido ---
-            rectangulo(ventana, 240, 15, 650, 650, sf::Color(255, 255, 255));
+            rectangulo(ventana, 240, 15, static_cast<float>(ANCHO - 260),
+                       static_cast<float>(ALTO - 30), sf::Color(255, 255, 255));
 
             // ===================== VISTA PEDIDOS =====================
             if (vista == Vista::PEDIDOS) {
@@ -801,7 +802,7 @@ int main(int argc, char* argv[]) {
 
                 encabezadoTabla(ventana, "Pedidos (" + to_string(total) + ")",
                                 "Haz clic en un pedido para ver su detalle.",
-                                {{"Folio", 260}, {"Cliente", 410}, {"Estado", 550}, {"Total", 740}});
+                                {{"Folio", 260}, {"Cliente", 440}, {"Estado", 660}, {"Total", 860}});
 
                 botonFiltro.dibujar(ventana);
 
@@ -811,9 +812,9 @@ int main(int argc, char* argv[]) {
 
                     franja(ventana, i, p.getFolio() == pedidoSel);
                     ventana.dibujarTexto(recortar(p.getFolio(), 13), 260, y, 18, TEXTO_SUAVE);
-                    ventana.dibujarTexto(recortar(p.getUsernameCliente(), 13), 410, y, 18, TEXTO_OSCURO);
-                    ventana.dibujarTexto(p.getEstado(), 550, y, 18, colorEstado(p.getEstado()));
-                    ventana.dibujarTexto(dinero(p.getTotal()), 740, y, 18, TEXTO_OSCURO);
+                    ventana.dibujarTexto(recortar(p.getUsernameCliente(), 18), 440, y, 18, TEXTO_OSCURO);
+                    ventana.dibujarTexto(p.getEstado(), 660, y, 18, colorEstado(p.getEstado()));
+                    ventana.dibujarTexto(dinero(p.getTotal()), 860, y, 18, TEXTO_OSCURO);
                 }
 
                 if (total == 0 && mensajePanel.empty()) {
@@ -823,7 +824,7 @@ int main(int argc, char* argv[]) {
                 }
 
                 // --- detalle del pedido seleccionado ---
-                rectangulo(ventana, 250, 335, 620, 2, sf::Color(200, 190, 178));
+                rectangulo(ventana, 250, 335, static_cast<float>(ANCHO - 270), 2, sf::Color(200, 190, 178));
 
                 const Pedido* seleccionado = nullptr;
                 for (const Pedido& p : todos) {
@@ -842,7 +843,7 @@ int main(int argc, char* argv[]) {
 
                     ventana.dibujarTexto("Estado:", 260, 394, 16, TEXTO_SUAVE);
                     ventana.dibujarTexto(seleccionado->getEstado(), 325, 394, 16, colorEstado(seleccionado->getEstado()));
-                    ventana.dibujarTexto("Total: " + dinero(seleccionado->getTotal()), 560, 394, 16, TEXTO_OSCURO);
+                    ventana.dibujarTexto("Total: " + dinero(seleccionado->getTotal()), 760, 394, 16, TEXTO_OSCURO);
 
                     const vector<pair<Producto, int>>& detalle = cafeteria.getDetallePedido();
                     bool detalleVigente = (cafeteria.getFolioDetalle() == pedidoSel);
@@ -866,7 +867,7 @@ int main(int argc, char* argv[]) {
 
                         ventana.dibujarTexto(to_string(cantidad) + " x " + recortar(prod.getNombreProducto(), 34),
                                              260, y, 15, TEXTO_OSCURO);
-                        ventana.dibujarTexto(dinero(prod.getPrecio() * cantidad), 780, y, 15, TEXTO_SUAVE);
+                        ventana.dibujarTexto(dinero(prod.getPrecio() * cantidad), 900, y, 15, TEXTO_SUAVE);
                     }
 
                     // --- botones de accion (solo los que tienen sentido para este estado) ---
@@ -893,7 +894,7 @@ int main(int argc, char* argv[]) {
 
                 encabezadoTabla(ventana, "Inventario (" + to_string(total) + ")",
                                 "Selecciona una fila para editar o busca por ID. Rueda para desplazarte.",
-                                {{"ID", 260}, {"Producto", 340}, {"Precio", 640}, {"Stock", 760}});
+                                {{"ID", 260}, {"Producto", 400}, {"Precio", 720}, {"Stock", 880}});
 
                 const Producto* seleccionado = nullptr;
 
@@ -904,15 +905,15 @@ int main(int argc, char* argv[]) {
 
                     franja(ventana, i, esSel);
                     ventana.dibujarTexto(p.getIdProducto(), 260, y, 18, TEXTO_SUAVE);
-                    ventana.dibujarTexto(recortar(p.getNombreProducto(), 26), 340, y, 18, TEXTO_OSCURO);
-                    ventana.dibujarTexto(dinero(p.getPrecio()), 640, y, 18, TEXTO_OSCURO);
+                    ventana.dibujarTexto(recortar(p.getNombreProducto(), 34), 400, y, 18, TEXTO_OSCURO);
+                    ventana.dibujarTexto(dinero(p.getPrecio()), 720, y, 18, TEXTO_OSCURO);
 
                     if (p.getStock() == 0) {
-                        ventana.dibujarTexto("Agotado", 760, y, 18, ROJO_ERROR);
+                        ventana.dibujarTexto("Agotado", 880, y, 18, ROJO_ERROR);
                     } else if (p.getStock() <= 5) {
-                        ventana.dibujarTexto(to_string(p.getStock()) + " (bajo)", 760, y, 18, ROJO_ERROR);
+                        ventana.dibujarTexto(to_string(p.getStock()) + " (bajo)", 880, y, 18, ROJO_ERROR);
                     } else {
-                        ventana.dibujarTexto(to_string(p.getStock()), 760, y, 18, TEXTO_OSCURO);
+                        ventana.dibujarTexto(to_string(p.getStock()), 880, y, 18, TEXTO_OSCURO);
                     }
                 }
 
@@ -956,7 +957,7 @@ int main(int argc, char* argv[]) {
 
                 encabezadoTabla(ventana, "Caja",
                                 "Venta directa en mostrador: elige el producto y la cantidad.",
-                                {{"ID", 260}, {"Producto", 340}, {"Precio", 640}, {"Stock", 760}});
+                                {{"ID", 260}, {"Producto", 400}, {"Precio", 720}, {"Stock", 880}});
 
                 const Producto* seleccionado = nullptr;
 
@@ -966,10 +967,10 @@ int main(int argc, char* argv[]) {
 
                     franja(ventana, i, p.getIdProducto() == productoSel);
                     ventana.dibujarTexto(p.getIdProducto(), 260, y, 18, TEXTO_SUAVE);
-                    ventana.dibujarTexto(recortar(p.getNombreProducto(), 26), 340, y, 18, TEXTO_OSCURO);
-                    ventana.dibujarTexto(dinero(p.getPrecio()), 640, y, 18, TEXTO_OSCURO);
+                    ventana.dibujarTexto(recortar(p.getNombreProducto(), 34), 400, y, 18, TEXTO_OSCURO);
+                    ventana.dibujarTexto(dinero(p.getPrecio()), 720, y, 18, TEXTO_OSCURO);
                     ventana.dibujarTexto(p.getStock() == 0 ? "Agotado" : to_string(p.getStock()),
-                                         760, y, 18, p.getStock() == 0 ? ROJO_ERROR : TEXTO_OSCURO);
+                                         880, y, 18, p.getStock() == 0 ? ROJO_ERROR : TEXTO_OSCURO);
                 }
 
                 for (const Producto& p : inv) {
@@ -994,8 +995,8 @@ int main(int argc, char* argv[]) {
                 botonCobrar.dibujar(ventana);
 
                 // ganancia del turno (a la derecha)
-                ventana.dibujarTexto("Ganancia del turno", 640, 428, 15, TEXTO_SUAVE);
-                ventana.dibujarTexto(dinero(cafeteria.getGananciaCajaTurno()), 640, 448, 30, VERDE);
+                ventana.dibujarTexto("Ganancia del turno", 790, 428, 15, TEXTO_SUAVE);
+                ventana.dibujarTexto(dinero(cafeteria.getGananciaCajaTurno()), 790, 448, 30, VERDE);
 
                 // ultimas ventas
                 const vector<VentaCaja>& ventas = cafeteria.getHistorialCaja();
@@ -1014,7 +1015,7 @@ int main(int argc, char* argv[]) {
             }
 
             // --- mensaje de la ultima accion, o error de red (si lo hay) ---
-            float yMensaje = (vista == Vista::INVENTARIO) ? 620.0f :
+            float yMensaje = (vista == Vista::INVENTARIO) ? 690.0f :
                              ((vista == Vista::PEDIDOS) ? 568.0f : 562.0f);
 
             if (!mensajeAccion.empty()) {
