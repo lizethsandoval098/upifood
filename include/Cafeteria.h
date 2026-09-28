@@ -127,6 +127,13 @@ class Cafeteria : public Usuario {
 		// Descuenta del inventario en el servidor y suma a la ganancia del turno.
 		bool venderEnCaja(const string& idProducto, int cantidad);
 
+		// Corte de caja / cierre de dia: le pide al servidor que archive los
+		// pedidos ya Entregado (no vuelven a contarse ni a aparecer) y, si
+		// sale bien, reinicia la ganancia/historial local para el nuevo
+		// turno. Regresa por referencia cuantos pedidos se cerraron y la
+		// suma de sus totales (para el resumen que se muestra en pantalla).
+		bool cerrarCaja(int& pedidosCerrados, float& totalPedidosCerrados);
+
 		// ---- Versiones de consola (cargan y ademas imprimen) ----
 		void verInventario();
 

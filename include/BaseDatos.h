@@ -52,11 +52,16 @@ class BaseDatos{
 		// Pedidos
 		bool guardarPedido(const Pedido& pedido);
 		vector<pair<Producto, int>> listaProductosPedido(const string& folio);
-		vector<Pedido> obtenerPedidosCafeteria(const string& idCafeteria); // para cafeteria
+		vector<Pedido> obtenerPedidosCafeteria(const string& idCafeteria); // para cafeteria (solo los no cerrados)
 		vector<Pedido> obtenerHistorialPedidos(const string& username);   // para cliente
 		Pedido obtenerPedido_Folio(const string& folio);
 		Pedido obtenerPedido_Username(const string& username);            // pedido activo mas reciente
 		bool actualizarEstadoPedido(const string& folio, const string& nuevoEstado); // para cafeteria
+
+		// Corte de caja: archiva ("cerrado") los pedidos ya Entregado de esa
+		// cafeteria (para que el turno siguiente empiece con la lista limpia)
+		// y regresa cuantos se cerraron y la suma de sus totales.
+		bool corteDeCaja(const string& idCafeteria, int& pedidosCerrados, float& totalCerrado);
 
 		// Productos
 		bool guardarProducto(const Producto& producto);
@@ -73,6 +78,7 @@ class BaseDatos{
 
 		// Tarjetas
 		bool guardarTarjeta(const Tarjeta& tarjeta);
+		Tarjeta obtenerTarjetaCliente(const string& username); // la mas reciente guardada (para cobros automaticos)
 };
 
 #endif

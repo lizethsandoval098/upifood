@@ -58,6 +58,12 @@ private:
     void marcarUsuarioFueraDeLinea(const string& username);
     string obtenerUsuariosEnLinea();
 
+    // Resuelve el idCafeteria EXACTO tal como esta guardado en la tabla
+    // Cafeterias a partir de cualquier formato que traiga un digito 1-9
+    // (ej. "1", "C-01"). Regresa "" si no existe esa cafeteria. Debe
+    // llamarse con dbMutex ya tomado (usa db.obtenerCafeterias()).
+    string resolverIdCafeteriaCanonico(int numeroCafeteriaSolicitado);
+
     // ---- Simulador de clientes ----
     void asegurarUsuariosSimulados();
     void iniciarSimuladorClientes();
