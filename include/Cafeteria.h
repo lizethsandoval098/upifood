@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <set>
 
 #include "Usuario.h"
 #include "Producto.h"
@@ -18,6 +19,7 @@ class Cafeteria : public Usuario {
 		string idCafeteria;
 		vector<Producto> inventario;
 		vector<Pedido> listaPedidos;
+		set<string> foliosPagados;   // folios de listaPedidos cuyo pago fue aprobado
 
 		// para la barra de "Atendiendo cajas..." (ventas directas sin pedido/QR)
 		float gananciaCajaTurno;
@@ -47,18 +49,25 @@ class Cafeteria : public Usuario {
 
 		void cargarInventario();
 		void verInventario();
+
+		// Todo va por el socket (LISTAR_PEDIDOS, CAMBIAR_ESTADO, ESTADO_PEDIDO, VENTA_CAJA).
 		void cargarListaPedidos();
+		void verPedidos();
+		bool estaPagado(const string& folio) const;
 
 		void restockProducto(const string& idProducto, int cantidad);
 
-		// Estas dos hacen el trabajo de verdad; gestionarPedido() las orquesta.
-		void elaborarPedido(const string& folio);
-		void entregarPedido(const string& folio);
-		void gestionarPedido(const string& folio);
+		// Ciclo de vida de un pedido:  Pendiente -> Preparando -> Listo -> Entregado
+		void elaborarPedido(const string& folio);   // Pendiente  -> Preparando (solo si esta pagado)
+		void marcarListo(const string& folio);      // Preparando -> Listo
+		void entregarPedido(const string& folio);   // Listo      -> Entregado
+		void cancelarPedido(const string& folio);   // (Pendiente | Preparando) -> Cancelado
+		void gestionarPedido(const string& folio);  // avanza UN paso segun el estado actual
 
 		void verificarPago(const string& folio);
 
 		// Venta directa en caja (sin pasar por el flujo de pedido con QR).
+		// Descuenta stock en el servidor (VENTA_CAJA).
 		void atenderCajas(const Producto& producto, int cantidad);
 
 		// Pide username/contrasena por consola y los manda al SERVIDOR por el

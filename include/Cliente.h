@@ -38,6 +38,11 @@ class Cliente : public Usuario {
 		~Cliente();
 
 		bool conectar();
+		bool estaConectado() const;
+
+		// Cliente INVITADO: no tiene cuenta; se le asigna un username temporal
+		// "inv_<pid>_<hora>" y el servidor lo da de alta solo al hacer su primer pedido.
+		void entrarComoInvitado(const string& nombreCompleto);
 
 		string getApellidoPaterno() const;
 		string getApellidoMaterno() const;
@@ -53,14 +58,16 @@ class Cliente : public Usuario {
 		void setHistorialPedidos(const vector<Pedido>& historial);
 		void setPedidoActual(const Pedido& pedido);
 
-		void cargarTarjetasGuardadas();
-		void cargarPedidoActual();
+		// Todo esto va POR EL SOCKET al servidor (el cliente ya no abre la BD).
+		void cargarTarjetasGuardadas();   // TARJETAS|user
+		void cargarHistorial();           // HISTORIAL|user
+		void cargarPedidoActual();        // el ultimo pedido no entregado/cancelado del historial
 
 		void verHistorialP();
-		void hacerPedido();
-		void pagar();
-		void recogerPedido();
-		void verEstadoPedido();
+		void hacerPedido();               // elige cafeteria + productos -> CREAR_PEDIDO
+		void pagar();                     // PAGAR|folio|tarjeta
+		void recogerPedido();             // Listo -> Entregado (CAMBIAR_ESTADO)
+		void verEstadoPedido();           // ESTADO_PEDIDO|folio
 
 		// ---- Registro e inicio de sesion (flujo de consola, via el servidor) ----
 		// Hace todas las preguntas por consola, valida el correo institucional

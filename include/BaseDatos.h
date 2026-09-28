@@ -51,6 +51,8 @@ class BaseDatos{
 		vector<Pedido> obtenerHistorialPedidos(const string& username);   // para cliente
 		Pedido obtenerPedido_Folio(const string& folio);
 		Pedido obtenerPedido_Username(const string& username);            // pedido activo mas reciente
+		bool actualizarEstadoPedido(const string& folio, const string& nuevoEstado);
+		int contarPedidosTotales();
 
 		// Productos
 		bool guardarProducto(const Producto& producto);
@@ -60,6 +62,10 @@ class BaseDatos{
 		// Pagos
 		bool guardarPago(const Pago& pago);
 		Pago obtenerPago(const string& folio);
+		// -1 = sin pago registrado, 0 = pago rechazado, 1 = pago aprobado.
+		// (obtenerPago() hace JOIN con Tarjetas; para clientes invitados no
+		// hay tarjeta guardada, por eso esta consulta va directo a Pagos.)
+		int estadoPago(const string& folio);
 
 		// Tarjetas
 		bool guardarTarjeta(const Tarjeta& tarjeta);

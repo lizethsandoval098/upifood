@@ -34,6 +34,7 @@ public:
     void verUsuarios();
     void verCafeterias();
     void verUsuariosEnLinea();
+    void verEstadisticas();     // ESTADISTICAS: matrices de inventario/ventas/estados del servidor
 
     bool iniciarSesionAdmin();
 };
