@@ -3,6 +3,9 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Menu from './components/Menu';
 import OrderSection from './components/OrderSection';
+import PedidosModal from './components/PedidosModal';
+
+const DEMO_USER_ID = 'usuario-demo';
 
 function App() {
   const [cartItems, setCartItems] = useState([]);
@@ -10,6 +13,11 @@ function App() {
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [isPaymentConfirmed, setIsPaymentConfirmed] = useState(false);
   const [receiptData, setReceiptData] = useState(null);
+  const [pedidoActual, setPedidoActual] = useState(null);
+  const [historialPedidos, setHistorialPedidos] = useState([]);
+  const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false);
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+  const [pedidoError, setPedidoError] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     try {
       return localStorage.getItem('cafeteria_session') === 'true';
@@ -71,13 +79,38 @@ function App() {
     setIsReceiptOpen(true);
   };
 
+  const handleCloseReceipt = () => {
+    setIsReceiptOpen(false);
+    setPedidoError('');
+  };
+
   const handleConfirmPayment = () => {
+    if (!cartItems.length || isSubmittingOrder) return;
+
+    const now = new Date();
+    const createdPedido = {
+      id: `#UPI-${String(now.getTime()).slice(-4)}`,
+      fecha: now.toISOString(),
+      items: cartItems.map((item) => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        image: item.image || '',
+      })),
+      total: totalToPay,
+      tiempoEstimado: 20,
+      estatus: 'En preparación',
+    };
+
+    setPedidoActual(createdPedido);
+    setHistorialPedidos((currentPedidos) => [createdPedido, ...currentPedidos]);
+    setCartItems([]);
     setIsReceiptOpen(false);
     setIsPaymentConfirmed(true);
-    setCartItems([]);
-    setTimeout(() => {
-      window.alert('¡Gracias por tu compra!');
-    }, 250);
+    setIsOrdersModalOpen(false);
+    setPedidoError('');
+    setIsSubmittingOrder(false);
   };
 
   const handleLogin = () => {
@@ -90,8 +123,16 @@ function App() {
     setIsCartOpen(false);
     setIsReceiptOpen(false);
     setIsPaymentConfirmed(false);
+    setIsOrdersModalOpen(false);
     setReceiptData(null);
+    setPedidoActual(null);
+    setHistorialPedidos([]);
+    setPedidoError('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenOrders = () => {
+    setIsOrdersModalOpen(true);
   };
 
   useEffect(() => {
@@ -288,6 +329,7 @@ function App() {
           onCartClick={() => setIsCartOpen(true)}
           isLoggedIn={isLoggedIn}
           onLogout={handleLogout}
+          onOpenOrders={handleOpenOrders}
         />
 
         <main>
@@ -355,9 +397,30 @@ function App() {
       </div>
 
       {isReceiptOpen && receiptData ? (
-        <div className="receipt-overlay" onClick={() => setIsReceiptOpen(false)}>
+        <div className="receipt-overlay" onClick={handleCloseReceipt}>
           <div className="receipt-modal" onClick={(event) => event.stopPropagation()}>
-            <header className="receipt-header">
+            <header className="receipt-header" style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onClick={handleCloseReceipt}
+                style={{
+                  position: 'absolute',
+                  top: '18px',
+                  right: '18px',
+                  border: 'none',
+                  background: '#fff8f2',
+                  color: '#3c2a21',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '999px',
+                  fontSize: '1.2rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                }}
+                aria-label="Cerrar resumen de compra"
+              >
+                ×
+              </button>
               <p className="receipt-kicker">Recibo</p>
               <h2 className="receipt-title">Resumen de Orden</h2>
             </header>
@@ -393,14 +456,24 @@ function App() {
               </aside>
             </div>
 
-            <div className="receipt-actions">
-              <button type="button" className="receipt-confirm-button" onClick={handleConfirmPayment}>
-                Confirmar pago
+            <div className="receipt-actions" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
+              {pedidoError ? (
+                <p style={{ margin: 0, color: '#8d4638', fontWeight: 700, fontSize: '0.9rem' }}>{pedidoError}</p>
+              ) : null}
+              <button type="button" className="receipt-confirm-button" onClick={handleConfirmPayment} disabled={isSubmittingOrder} style={{ opacity: isSubmittingOrder ? 0.7 : 1, cursor: isSubmittingOrder ? 'wait' : 'pointer' }}>
+                {isSubmittingOrder ? 'Registrando pedido...' : 'Confirmar pago'}
               </button>
             </div>
           </div>
         </div>
       ) : null}
+
+      <PedidosModal
+        open={isOrdersModalOpen}
+        activePedido={pedidoActual}
+        historialPedidos={historialPedidos}
+        onClose={() => setIsOrdersModalOpen(false)}
+      />
 
       {isPaymentConfirmed ? (
         <div className="success-overlay" onClick={() => setIsPaymentConfirmed(false)}>
@@ -414,7 +487,14 @@ function App() {
                 Tu pedido se ha registrado correctamente y el pago fue confirmado con éxito.<br />
                 ¡Estamos preparando tu pedido y pronto estará listo!
               </p>
-              <button type="button" className="success-button" onClick={() => setIsPaymentConfirmed(false)}>
+              <button
+                type="button"
+                className="success-button"
+                onClick={() => {
+                  setIsPaymentConfirmed(false);
+                  setIsOrdersModalOpen(true);
+                }}
+              >
                 Cerrar
               </button>
             </div>

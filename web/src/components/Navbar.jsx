@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import logo from '../assets/logo.jpg';
 
-export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLoggedIn = false, onLogout = () => {} }) {
+export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLoggedIn = false, onLogout = () => {}, onOpenOrders = () => {} }) {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   return (
@@ -306,7 +306,10 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
                     <button
                       type="button"
                       className="profile-option"
-                      onClick={() => setProfileMenuOpen(false)}
+                      onClick={() => {
+                        setProfileMenuOpen(false);
+                        onOpenOrders();
+                      }}
                     >
                       <span>Mis pedidos</span>
                       <span>›</span>
