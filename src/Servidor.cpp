@@ -51,6 +51,9 @@ bool Servidor::iniciar() {
         return false;
     }
 
+    cout << "Base de datos en uso: " << db.getRutaBD() << endl;
+    db.asegurarCuentasPorDefecto();
+
     cargarMatrizInventario();
 
     socketServidor = socket(AF_INET, SOCK_STREAM, 0);
