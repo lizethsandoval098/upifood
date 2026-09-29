@@ -81,6 +81,8 @@ class BaseDatos{
 
 		// Tarjetas
 		bool guardarTarjeta(const Tarjeta& tarjeta);
+		// Tarjeta REAL de un cliente, ligada por username (no por nombre).
+		bool guardarTarjetaCliente(const string& username, const Tarjeta& tarjeta);
 		// Tarjetas SIMULADAS de los bots (se ligan por username, no por nombre).
 		bool guardarTarjetaSimulada(const string& username, const Tarjeta& tarjeta);
 		bool obtenerTarjetaSimulada(const string& username, Tarjeta& tarjeta);
