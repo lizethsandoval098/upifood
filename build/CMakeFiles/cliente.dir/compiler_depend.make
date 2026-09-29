@@ -9,6 +9,7 @@ CMakeFiles/cliente.dir/src/mainCliente.cpp.o: /home/berenicepf/upifood/src/mainC
   /home/berenicepf/upifood/include/Tarjeta.h \
   /home/berenicepf/upifood/include/Usuario.h \
   /home/berenicepf/upifood/include/Ventana.h \
+  /home/berenicepf/upifood/include/Widgets.h \
   /usr/include/SFML/Config.hpp \
   /usr/include/SFML/Graphics.hpp \
   /usr/include/SFML/Graphics/BlendMode.hpp \
@@ -584,8 +585,6 @@ cliente: /lib64/ld-linux-x86-64.so.2 \
 
 /usr/include/bits/libc-header-start.h:
 
-/usr/include/bits/fp-logb.h:
-
 /usr/include/c++/16/cstdlib:
 
 /usr/include/bits/errno.h:
@@ -758,9 +757,11 @@ libmodelo.a:
 
 /usr/include/c++/16/bits/std_abs.h:
 
-/usr/include/bits/pthread_stack_min-dynamic.h:
+/usr/include/c++/16/bits/ptr_traits.h:
 
-/usr/include/SFML/Graphics/Glsl.hpp:
+/usr/include/SFML/System/Vector3.hpp:
+
+/home/berenicepf/upifood/include/Producto.h:
 
 /usr/include/SFML/Window/Vulkan.hpp:
 
@@ -776,15 +777,31 @@ libmodelo.a:
 
 /usr/include/c++/16/bits/ostream.tcc:
 
-/usr/include/c++/16/bits/ptr_traits.h:
-
-/usr/include/SFML/System/Vector3.hpp:
-
-/home/berenicepf/upifood/include/Producto.h:
-
 /usr/include/c++/16/bits/stl_construct.h:
 
 /home/berenicepf/upifood/include/Usuario.h:
+
+/usr/include/bits/pthread_stack_min-dynamic.h:
+
+/usr/include/SFML/Graphics/Glsl.hpp:
+
+/usr/include/bits/fp-logb.h:
+
+/home/berenicepf/upifood/include/Widgets.h:
+
+/usr/include/SFML/Window/ContextSettings.hpp:
+
+/usr/include/bits/waitflags.h:
+
+/usr/include/c++/16/cerrno:
+
+/usr/include/SFML/Graphics/Sprite.hpp:
+
+/usr/include/SFML/Graphics/Export.hpp:
+
+/usr/include/asm-generic/errno.h:
+
+/usr/include/c++/16/bits/stl_vector.h:
 
 /usr/include/c++/16/tr1/bessel_function.tcc:
 
@@ -797,18 +814,6 @@ libmodelo.a:
 /home/berenicepf/upifood/include/Ventana.h:
 
 /usr/include/c++/16/bits/locale_facets_nonio.tcc:
-
-/usr/include/SFML/Graphics/RenderWindow.hpp:
-
-/usr/include/bits/types/sigset_t.h:
-
-/usr/include/c++/16/bits/memory_resource.h:
-
-/usr/include/SFML/Graphics/Export.hpp:
-
-/usr/include/asm-generic/errno.h:
-
-/usr/include/c++/16/bits/stl_vector.h:
 
 /usr/include/SFML/Graphics/Rect.hpp:
 
@@ -824,13 +829,11 @@ libmodelo.a:
 
 /usr/include/bits/floatn-common.h:
 
-/usr/include/bits/stdio_lim.h:
+/usr/include/SFML/Graphics/RenderWindow.hpp:
 
-/usr/include/asm/posix_types.h:
+/usr/include/bits/types/sigset_t.h:
 
-/usr/include/bits/time.h:
-
-/usr/include/bits/types/__mbstate_t.h:
+/usr/include/c++/16/bits/memory_resource.h:
 
 /usr/include/SFML/Graphics/Drawable.hpp:
 
@@ -966,6 +969,14 @@ libmodelo.a:
 
 /usr/include/SFML/Graphics/Shader.hpp:
 
+/usr/include/bits/stdio_lim.h:
+
+/usr/include/asm/posix_types.h:
+
+/usr/include/bits/time.h:
+
+/usr/include/bits/types/__mbstate_t.h:
+
 /usr/include/bits/stdlib-float.h:
 
 /usr/include/bits/time64.h:
@@ -1003,10 +1014,6 @@ libmodelo.a:
 /usr/include/c++/16/bits/istream.tcc:
 
 /usr/include/c++/16/bits/stl_tree.h:
-
-/usr/include/SFML/Graphics/Sprite.hpp:
-
-/usr/include/c++/16/cerrno:
 
 /usr/include/c++/16/string_view:
 
@@ -1083,10 +1090,6 @@ CMakeFiles/cliente.dir/src/mainCliente.cpp.o:
 /usr/include/c++/16/backward/binders.h:
 
 /usr/include/bits/uintn-identity.h:
-
-/usr/include/SFML/Window/ContextSettings.hpp:
-
-/usr/include/bits/waitflags.h:
 
 /usr/include/bits/wctype-wchar.h:
 

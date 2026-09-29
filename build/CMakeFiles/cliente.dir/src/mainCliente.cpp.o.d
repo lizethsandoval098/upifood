@@ -255,4 +255,6 @@ CMakeFiles/cliente.dir/src/mainCliente.cpp.o: \
  /usr/include/SFML/Graphics/Sprite.hpp \
  /usr/include/SFML/Graphics/Text.hpp \
  /usr/include/SFML/Graphics/VertexBuffer.hpp \
+ /home/berenicepf/upifood/include/Widgets.h \
+ /home/berenicepf/upifood/include/Ventana.h \
  /home/berenicepf/upifood/include/Config.h

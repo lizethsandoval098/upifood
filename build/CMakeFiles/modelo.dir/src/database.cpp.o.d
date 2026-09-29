@@ -181,8 +181,4 @@ CMakeFiles/modelo.dir/src/database.cpp.o: \
  /home/berenicepf/upifood/include/Producto.h \
  /home/berenicepf/upifood/include/Pedido.h \
  /home/berenicepf/upifood/include/Pago.h \
- /home/berenicepf/upifood/include/Tarjeta.h /usr/include/c++/16/fstream \
- /usr/include/c++/16/bits/codecvt.h \
- /usr/include/c++/16/x86_64-redhat-linux/bits/basic_file.h \
- /usr/include/c++/16/x86_64-redhat-linux/bits/c++io.h \
- /usr/include/c++/16/bits/fstream.tcc
+ /home/berenicepf/upifood/include/Tarjeta.h

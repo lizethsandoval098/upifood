@@ -733,6 +733,7 @@ CMakeFiles/modelo.dir/src/Cliente.cpp.o: /home/berenicepf/upifood/src/Cliente.cp
   /usr/include/c++/16/cstdint \
   /usr/include/c++/16/cstdio \
   /usr/include/c++/16/cstdlib \
+  /usr/include/c++/16/ctime \
   /usr/include/c++/16/cwchar \
   /usr/include/c++/16/cwctype \
   /usr/include/c++/16/debug/assertions.h \
@@ -2966,7 +2967,6 @@ CMakeFiles/modelo.dir/src/database.cpp.o: /home/berenicepf/upifood/src/database.
   /usr/include/c++/16/bits/basic_string.tcc \
   /usr/include/c++/16/bits/char_traits.h \
   /usr/include/c++/16/bits/charconv.h \
-  /usr/include/c++/16/bits/codecvt.h \
   /usr/include/c++/16/bits/concept_check.h \
   /usr/include/c++/16/bits/cpp_type_traits.h \
   /usr/include/c++/16/bits/cxxabi_forced.h \
@@ -2975,7 +2975,6 @@ CMakeFiles/modelo.dir/src/database.cpp.o: /home/berenicepf/upifood/src/database.
   /usr/include/c++/16/bits/exception.h \
   /usr/include/c++/16/bits/exception_defines.h \
   /usr/include/c++/16/bits/exception_ptr.h \
-  /usr/include/c++/16/bits/fstream.tcc \
   /usr/include/c++/16/bits/functexcept.h \
   /usr/include/c++/16/bits/functional_hash.h \
   /usr/include/c++/16/bits/hash_bytes.h \
@@ -3051,7 +3050,6 @@ CMakeFiles/modelo.dir/src/database.cpp.o: /home/berenicepf/upifood/src/database.
   /usr/include/c++/16/ext/numeric_traits.h \
   /usr/include/c++/16/ext/string_conversions.h \
   /usr/include/c++/16/ext/type_traits.h \
-  /usr/include/c++/16/fstream \
   /usr/include/c++/16/initializer_list \
   /usr/include/c++/16/ios \
   /usr/include/c++/16/iosfwd \
@@ -3088,10 +3086,8 @@ CMakeFiles/modelo.dir/src/database.cpp.o: /home/berenicepf/upifood/src/database.
   /usr/include/c++/16/utility \
   /usr/include/c++/16/vector \
   /usr/include/c++/16/x86_64-redhat-linux/bits/atomic_word.h \
-  /usr/include/c++/16/x86_64-redhat-linux/bits/basic_file.h \
   /usr/include/c++/16/x86_64-redhat-linux/bits/c++allocator.h \
   /usr/include/c++/16/x86_64-redhat-linux/bits/c++config.h \
-  /usr/include/c++/16/x86_64-redhat-linux/bits/c++io.h \
   /usr/include/c++/16/x86_64-redhat-linux/bits/c++locale.h \
   /usr/include/c++/16/x86_64-redhat-linux/bits/cpu_defines.h \
   /usr/include/c++/16/x86_64-redhat-linux/bits/ctype_base.h \
@@ -3133,8 +3129,6 @@ CMakeFiles/modelo.dir/src/database.cpp.o: /home/berenicepf/upifood/src/database.
   /usr/lib/gcc/x86_64-redhat-linux/16/include/stddef.h \
   /usr/lib/gcc/x86_64-redhat-linux/16/include/stdint.h
 
-
-/usr/include/c++/16/bits/fstream.tcc:
 
 /home/berenicepf/upifood/include/Widgets.h:
 
@@ -3198,8 +3192,6 @@ CMakeFiles/modelo.dir/src/database.cpp.o: /home/berenicepf/upifood/src/database.
 
 /usr/include/SFML/Graphics/Shader.hpp:
 
-/usr/include/c++/16/x86_64-redhat-linux/bits/c++io.h:
-
 /usr/include/SFML/Graphics/RenderWindow.hpp:
 
 /usr/include/SFML/Graphics/Rect.inl:
@@ -3254,8 +3246,6 @@ CMakeFiles/modelo.dir/src/database.cpp.o: /home/berenicepf/upifood/src/database.
 
 /usr/include/c++/16/locale:
 
-/usr/include/c++/16/ctime:
-
 /usr/include/c++/16/bits/sstream.tcc:
 
 /usr/include/c++/16/bits/quoted_string.h:
@@ -3269,6 +3259,8 @@ CMakeFiles/modelo.dir/src/database.cpp.o: /home/berenicepf/upifood/src/database.
 /usr/include/c++/16/bits/locale_conv.h:
 
 /home/berenicepf/upifood/src/Pedido.cpp:
+
+/usr/include/c++/16/ctime:
 
 /home/berenicepf/upifood/include/Cliente.h:
 
@@ -3550,8 +3542,6 @@ CMakeFiles/modelo.dir/src/database.cpp.o: /home/berenicepf/upifood/src/database.
 
 /usr/include/bits/byteswap.h:
 
-/usr/include/c++/16/x86_64-redhat-linux/bits/basic_file.h:
-
 /usr/include/SFML/Graphics.hpp:
 
 /usr/include/c++/16/bits/requires_hosted.h:
@@ -3805,8 +3795,6 @@ CMakeFiles/modelo.dir/src/database.cpp.o: /home/berenicepf/upifood/src/database.
 /usr/include/asm/socket.h:
 
 /usr/include/c++/16/bits/uses_allocator_args.h:
-
-/usr/include/c++/16/fstream:
 
 /usr/include/c++/16/bits/version.h:
 
