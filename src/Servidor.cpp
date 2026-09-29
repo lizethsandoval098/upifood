@@ -51,9 +51,6 @@ bool Servidor::iniciar() {
         return false;
     }
 
-    cout << "Base de datos en uso: " << db.getRutaBD() << endl;
-    db.asegurarCuentasPorDefecto();
-
     cargarMatrizInventario();
 
     socketServidor = socket(AF_INET, SOCK_STREAM, 0);
@@ -915,64 +912,6 @@ string Servidor::procesarComando(const string& comando) {
                pago.getTarjeta().getNombrePropietario() + "|" + pago.getFechaPago() + "|" +
                pago.getReferencia() + "|" + pago.getMotivo() + "|" +
                pago.getUsernameCliente() + "|" + pago.getIdCafeteria();
-    }
-
-    // ---------------------------------------------------------------
-    // PEDIDOS_CLIENTE|username        (historial de un cliente, mas nuevos primero, max 30)
-    // PEDIDO_CONSULTAR|folio          (un solo pedido)
-    // Respuesta:  OK|M   y luego, por cada pedido:
-    //   folio|estado|total|fecha|idCafeteria|username|N
-    //   N lineas:  idProducto|nombre|cantidad|precioUnitario
-    // Los usa la API web (api/server.js) para que el cliente vea sus pedidos
-    // y como los va moviendo la cafeteria (Pendiente -> ... -> Entregado).
-    // ---------------------------------------------------------------
-    if (tipo == "PEDIDOS_CLIENTE" || tipo == "PEDIDO_CONSULTAR") {
-        if (campos.size() < 2 || campos[1].empty()) return "ERR|Formato invalido.";
-
-        vector<Pedido> pedidos;
-
-        {
-            lock_guard<mutex> guard(dbMutex);
-
-            if (tipo == "PEDIDOS_CLIENTE") {
-                pedidos = db.obtenerHistorialPedidos(campos[1]);
-
-                // mas recientes primero (la fecha es "YYYY-MM-DD HH:MM:SS", ordena como texto)
-                stable_sort(pedidos.begin(), pedidos.end(), [](const Pedido& a, const Pedido& b) {
-                    return a.getFecha() > b.getFecha();
-                });
-
-                if (pedidos.size() > 30) pedidos.resize(30);
-            } else {
-                Pedido unico = db.obtenerPedido_Folio(campos[1]);
-
-                if (unico.getFolio().empty()) {
-                    return "ERR|Pedido no encontrado.";
-                }
-
-                pedidos.push_back(unico);
-            }
-        }
-
-        string respuesta = "OK|" + to_string(pedidos.size());
-
-        for (const auto& pedido : pedidos) {
-            vector<pair<Producto, int>> lista = pedido.getListaProductos();
-
-            respuesta += "\n" + pedido.getFolio() + "|" + pedido.getEstado() + "|" +
-                         to_string(pedido.getTotal()) + "|" + pedido.getFecha() + "|" +
-                         pedido.getIdCafeteria() + "|" + pedido.getUsernameCliente() + "|" +
-                         to_string(lista.size());
-
-            for (const auto& par : lista) {
-                respuesta += "\n" + par.first.getIdProducto() + "|" +
-                             par.first.getNombreProducto() + "|" +
-                             to_string(par.second) + "|" +
-                             to_string(par.first.getPrecio());
-            }
-        }
-
-        return respuesta;
     }
 
     // ---------------------------------------------------------------

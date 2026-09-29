@@ -8,8 +8,6 @@
 #include "Tarjeta.h"
 
 #include <iostream>
-#include <fstream>
-#include <cstdlib>
 
 using namespace std;
 
@@ -59,55 +57,9 @@ static bool tablaTieneColumna(sqlite3* db, const string& tabla, const string& co
 	return encontrada;
 }
 
-// Copia un archivo (sirve para migrar la BD vieja de build/ a database/).
-static bool copiarArchivo(const string& origen, const string& destino) {
-	ifstream in(origen, ios::binary);
-	if(!in) return false;
-	ofstream out(destino, ios::binary);
-	if(!out) return false;
-	out << in.rdbuf();
-	return static_cast<bool>(out);
-}
-
-static bool archivoExiste(const string& ruta) {
-	ifstream f(ruta, ios::binary);
-	return static_cast<bool>(f);
-}
-
 BaseDatos::BaseDatos() {
-	// ANTES la BD se llamaba "upifood.db" a secas, o sea que se creaba en la
-	// carpeta DESDE DONDE ejecutabas ./servidor (build/, la raiz, etc.). Por eso
-	// podia haber varias upifood.db distintas y los productos "desaparecian".
-	// AHORA la ruta es siempre la misma, sin importar desde donde lo ejecutes:
-	//   1) variable de entorno UPIIFOOD_DB (ruta completa), o
-	//   2) <carpeta del proyecto>/database/upifood.db
-#ifdef DB_DIR
-	nombreBD = string(DB_DIR) + "/upifood.db";
-#else
 	nombreBD = "upifood.db";
-#endif
-
-	const char* deEntorno = getenv("UPIIFOOD_DB");
-	if(deEntorno != nullptr && deEntorno[0] != '\0') {
-		nombreBD = deEntorno;
-	}
-
-#ifdef DB_DIR
-	// Migracion: si todavia no existe database/upifood.db pero si la vieja
-	// build/upifood.db, se copia para no perder usuarios ni productos.
-	string vieja = string(DB_DIR) + "/../build/upifood.db";
-	if(!archivoExiste(nombreBD) && archivoExiste(vieja)) {
-		if(copiarArchivo(vieja, nombreBD)) {
-			cout << "Base de datos migrada de build/upifood.db a " << nombreBD << endl;
-		}
-	}
-#endif
-
 	db = nullptr;
-}
-
-string BaseDatos::getRutaBD() const {
-	return nombreBD;
 }
 
 BaseDatos::~BaseDatos() {
@@ -375,54 +327,6 @@ bool BaseDatos::guardarAdministrador(const Usuario& admin) {
 	sqlite3_finalize(stmt);
 
 	return exito;
-}
-
-bool BaseDatos::asegurarCuentasPorDefecto() {
-	// 1) Administrador: la BD nunca traia uno y nada en el programa lo creaba,
-	//    por eso el login de administrador SIEMPRE decia "Usuario inexistente".
-	sqlite3_stmt* stmt = nullptr;
-	int admins = 0;
-
-	if(sqlite3_prepare_v2(db, "SELECT COUNT(*) FROM Usuarios WHERE tipoUsuario = 'Admin';",
-	                      -1, &stmt, nullptr) == SQLITE_OK) {
-		if(sqlite3_step(stmt) == SQLITE_ROW) {
-			admins = sqlite3_column_int(stmt, 0);
-		}
-	}
-	sqlite3_finalize(stmt);
-
-	if(admins == 0) {
-		Usuario admin("Admin", "Administrador UPIIFOOD", "admin@upiifood.com", "admin123", "admin");
-
-		if(guardarAdministrador(admin)) {
-			cout << "Cuenta de administrador creada: usuario 'admin' / contrasena 'admin123'" << endl;
-		} else {
-			cerr << "No se pudo crear la cuenta de administrador por defecto." << endl;
-		}
-	}
-
-	// 2) Cafeteria por defecto (solo si no hay ninguna).
-	int cafeterias = 0;
-	stmt = nullptr;
-
-	if(sqlite3_prepare_v2(db, "SELECT COUNT(*) FROM Cafeterias;", -1, &stmt, nullptr) == SQLITE_OK) {
-		if(sqlite3_step(stmt) == SQLITE_ROW) {
-			cafeterias = sqlite3_column_int(stmt, 0);
-		}
-	}
-	sqlite3_finalize(stmt);
-
-	if(cafeterias == 0) {
-		Cafeteria cafe("UPIFOOD COFFEE", "upifoodcoffee@gmail.com", "12345678", "upifood_coffee", "C-01");
-
-		if(guardarCafeteria(cafe)) {
-			cout << "Cafeteria creada: usuario 'upifood_coffee' / contrasena '12345678'" << endl;
-		} else {
-			cerr << "No se pudo crear la cafeteria por defecto." << endl;
-		}
-	}
-
-	return true;
 }
 
 Usuario BaseDatos::obtenerAdministrador(const string& username) {

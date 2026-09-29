@@ -68,10 +68,6 @@ int main(){
 
 	servidor.iniciar(); // bloquea aceptando conexiones hasta que detener() cierre el socket
 
-	// Si iniciar() regreso (por error o por apagado), avisamos al hilo monitor
-	// para que termine; si no, join() se quedaba esperando para siempre.
-	banderaApagado.store(true);
-
 	hiloMonitor.join();
 
 	return 0;
