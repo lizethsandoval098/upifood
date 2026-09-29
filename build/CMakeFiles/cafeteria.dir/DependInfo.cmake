@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/berenicepf/upifood/src/mainCafeteria.cpp" "CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o" "gcc" "CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o.d"
+  "/home/annysandoval/proyectof/src/mainCafeteria.cpp" "CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o" "gcc" "CMakeFiles/cafeteria.dir/src/mainCafeteria.cpp.o.d"
   "" "cafeteria" "gcc" "CMakeFiles/cafeteria.dir/link.d"
   )
 

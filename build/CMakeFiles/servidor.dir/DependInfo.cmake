@@ -8,8 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/berenicepf/upifood/src/Servidor.cpp" "CMakeFiles/servidor.dir/src/Servidor.cpp.o" "gcc" "CMakeFiles/servidor.dir/src/Servidor.cpp.o.d"
-  "/home/berenicepf/upifood/src/mainServidor.cpp" "CMakeFiles/servidor.dir/src/mainServidor.cpp.o" "gcc" "CMakeFiles/servidor.dir/src/mainServidor.cpp.o.d"
+  "/home/annysandoval/proyectof/src/Servidor.cpp" "CMakeFiles/servidor.dir/src/Servidor.cpp.o" "gcc" "CMakeFiles/servidor.dir/src/Servidor.cpp.o.d"
+  "/home/annysandoval/proyectof/src/mainServidor.cpp" "CMakeFiles/servidor.dir/src/mainServidor.cpp.o" "gcc" "CMakeFiles/servidor.dir/src/mainServidor.cpp.o.d"
   "" "servidor" "gcc" "CMakeFiles/servidor.dir/link.d"
   )
 

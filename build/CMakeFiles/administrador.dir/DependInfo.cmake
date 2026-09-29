@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/berenicepf/upifood/src/mainAdministrador.cpp" "CMakeFiles/administrador.dir/src/mainAdministrador.cpp.o" "gcc" "CMakeFiles/administrador.dir/src/mainAdministrador.cpp.o.d"
+  "/home/annysandoval/proyectof/src/mainAdministrador.cpp" "CMakeFiles/administrador.dir/src/mainAdministrador.cpp.o" "gcc" "CMakeFiles/administrador.dir/src/mainAdministrador.cpp.o.d"
   "" "administrador" "gcc" "CMakeFiles/administrador.dir/link.d"
   )
 

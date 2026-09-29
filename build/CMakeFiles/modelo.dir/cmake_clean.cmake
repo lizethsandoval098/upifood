@@ -19,6 +19,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/modelo.dir/src/Usuario.cpp.o.d"
   "CMakeFiles/modelo.dir/src/Ventana.cpp.o"
   "CMakeFiles/modelo.dir/src/Ventana.cpp.o.d"
+  "CMakeFiles/modelo.dir/src/Widgets.cpp.o"
+  "CMakeFiles/modelo.dir/src/Widgets.cpp.o.d"
   "CMakeFiles/modelo.dir/src/database.cpp.o"
   "CMakeFiles/modelo.dir/src/database.cpp.o.d"
   "libmodelo.a"

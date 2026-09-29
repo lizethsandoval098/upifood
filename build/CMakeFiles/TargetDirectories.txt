@@ -1,7 +1,7 @@
-/home/berenicepf/upifood/build/CMakeFiles/modelo.dir
-/home/berenicepf/upifood/build/CMakeFiles/cliente.dir
-/home/berenicepf/upifood/build/CMakeFiles/cafeteria.dir
-/home/berenicepf/upifood/build/CMakeFiles/administrador.dir
-/home/berenicepf/upifood/build/CMakeFiles/servidor.dir
-/home/berenicepf/upifood/build/CMakeFiles/edit_cache.dir
-/home/berenicepf/upifood/build/CMakeFiles/rebuild_cache.dir
+/home/annysandoval/proyectof/build/CMakeFiles/modelo.dir
+/home/annysandoval/proyectof/build/CMakeFiles/cliente.dir
+/home/annysandoval/proyectof/build/CMakeFiles/cafeteria.dir
+/home/annysandoval/proyectof/build/CMakeFiles/administrador.dir
+/home/annysandoval/proyectof/build/CMakeFiles/servidor.dir
+/home/annysandoval/proyectof/build/CMakeFiles/edit_cache.dir
+/home/annysandoval/proyectof/build/CMakeFiles/rebuild_cache.dir
