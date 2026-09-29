@@ -36,6 +36,13 @@ class BaseDatos{
 		void desconectar();
 		bool inicializarTablas();
 
+		// Ruta ABSOLUTA del archivo .db que se esta usando (el servidor la imprime al arrancar).
+		string getRutaBD() const;
+
+		// Si la BD no tiene administrador / cafeteria, crea las cuentas por defecto
+		// (admin/admin123 y upifood_coffee/12345678). No toca nada si ya existen.
+		bool asegurarCuentasPorDefecto();
+
 		// Usuarios / Clientes
 		bool guardarUsuarioCliente(const Cliente& cliente);
 		vector<Usuario> obtenerUsuarios();               // para admin
