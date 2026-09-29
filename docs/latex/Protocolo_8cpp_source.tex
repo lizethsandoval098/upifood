@@ -1,0 +1,85 @@
+\doxysection{Protocolo.\+cpp}
+\hypertarget{Protocolo_8cpp_source}{}\label{Protocolo_8cpp_source}\index{src/Protocolo.cpp@{src/Protocolo.cpp}}
+\doxymbox{\hyperlink{Protocolo_8cpp}{Ir a la documentación de este archivo.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00001}00001\ \textcolor{preprocessor}{\#include\ "{}Protocolo.h"{}}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00002}00002\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00003}00003\ \textcolor{preprocessor}{\#include\ <sys/socket.h>}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00004}00004\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00005}00005\ \textcolor{comment}{//\ Sin\ esto,\ escribir\ en\ un\ socket\ que\ el\ otro\ lado\ ya\ cerro\ manda\ la\ senal}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00006}00006\ \textcolor{comment}{//\ SIGPIPE\ y\ el\ sistema\ MATA\ el\ programa\ sin\ avisar.\ Con\ MSG\_NOSIGNAL,\ send()}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00007}00007\ \textcolor{comment}{//\ solo\ regresa\ error\ y\ nosotros\ lo\ manejamos.}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00008}00008\ \textcolor{preprocessor}{\#ifndef\ MSG\_NOSIGNAL}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00009}\doxymbox{\hyperlink{Protocolo_8cpp_a9f55d0e90dc8cc6b2287312435cdde48}{00009}}\ \textcolor{preprocessor}{\#define\ MSG\_NOSIGNAL\ 0}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00010}00010\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00011}00011\ \textcolor{preprocessor}{\#include\ <sstream>}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00012}00012\ \textcolor{preprocessor}{\#include\ <iostream>}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00013}00013\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00014}00014\ \textcolor{keyword}{using\ namespace\ }std;}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00016}\doxymbox{\hyperlink{Protocolo_8cpp_a2a1fbfbf256b9f159323ef8c93a7d311}{00016}}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{Protocolo_8cpp_a2a1fbfbf256b9f159323ef8c93a7d311}{enviarMensaje}}(\textcolor{keywordtype}{int}\ socket,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{string}\&\ mensaje)\ \{}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00017}00017\ \ \ \ \ \textcolor{keywordtype}{string}\ aEnviar\ =\ mensaje\ +\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00018}00018\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00019}00019\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ totalEnviado\ =\ 0;}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00020}00020\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00021}00021\ \ \ \ \ \textcolor{keywordflow}{while}\ (totalEnviado\ <\ aEnviar.size())\ \{}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00022}00022\ \ \ \ \ \ \ \ \ ssize\_t\ enviado\ =\ send(socket,\ aEnviar.c\_str()\ +\ totalEnviado,}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00023}00023\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ aEnviar.size()\ -\/\ totalEnviado,\ \doxymbox{\hyperlink{Protocolo_8cpp_a9f55d0e90dc8cc6b2287312435cdde48}{MSG\_NOSIGNAL}});}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00024}00024\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00025}00025\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (enviado\ <=\ 0)\ \{}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00026}00026\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \textcolor{comment}{//\ el\ socket\ se\ cerro\ o\ hubo\ error}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00027}00027\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00028}00028\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00029}00029\ \ \ \ \ \ \ \ \ totalEnviado\ +=\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(enviado);}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00030}00030\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00031}00031\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00032}00032\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00033}00033\ \}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00034}00034\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00035}\doxymbox{\hyperlink{Protocolo_8cpp_a317307ea1b6bb17756a6aba3e2d20804}{00035}}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{Protocolo_8cpp_a317307ea1b6bb17756a6aba3e2d20804}{recibirMensaje}}(\textcolor{keywordtype}{int}\ socket,\ \textcolor{keywordtype}{string}\&\ mensajeRecibido)\ \{}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00036}00036\ \ \ \ \ mensajeRecibido.clear();}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00037}00037\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00038}00038\ \ \ \ \ \textcolor{keywordtype}{char}\ byte;}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00039}00039\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00040}00040\ \ \ \ \ \textcolor{keywordflow}{while}\ (\textcolor{keyword}{true})\ \{}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00041}00041\ \ \ \ \ \ \ \ \ ssize\_t\ leido\ =\ recv(socket,\ \&\textcolor{keywordtype}{byte},\ 1,\ 0);}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00042}00042\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00043}00043\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (leido\ <=\ 0)\ \{}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00044}00044\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \textcolor{comment}{//\ conexion\ cerrada\ o\ error}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00045}00045\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00046}00046\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00047}00047\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keywordtype}{byte}\ ==\ \textcolor{charliteral}{'\(\backslash\)n'})\ \{}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00048}00048\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};\ \textcolor{comment}{//\ mensaje\ completo}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00049}00049\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00050}00050\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00051}00051\ \ \ \ \ \ \ \ \ mensajeRecibido\ +=\ byte;}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00052}00052\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00053}00053\ \}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00054}00054\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00055}\doxymbox{\hyperlink{Protocolo_8cpp_a2d0ca82e9f165c46123eaf75dab309ac}{00055}}\ \textcolor{keywordtype}{string}\ \doxymbox{\hyperlink{Protocolo_8cpp_a2d0ca82e9f165c46123eaf75dab309ac}{enviarComando}}(\textcolor{keywordtype}{int}\ socket,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{string}\&\ comando)\ \{}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00056}00056\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{Protocolo_8cpp_a2a1fbfbf256b9f159323ef8c93a7d311}{enviarMensaje}}(socket,\ comando))\ \{}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00057}00057\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}ERR|No\ se\ pudo\ enviar\ la\ peticion\ al\ servidor."{}};}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00058}00058\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00059}00059\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00060}00060\ \ \ \ \ \textcolor{keywordtype}{string}\ respuesta;}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00061}00061\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00062}00062\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{Protocolo_8cpp_a317307ea1b6bb17756a6aba3e2d20804}{recibirMensaje}}(socket,\ respuesta))\ \{}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00063}00063\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}ERR|No\ se\ recibio\ respuesta\ del\ servidor."{}};}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00064}00064\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00065}00065\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00066}00066\ \ \ \ \ \textcolor{keywordflow}{return}\ respuesta;}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00067}00067\ \}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00068}00068\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00069}\doxymbox{\hyperlink{Protocolo_8cpp_a60579ec13f33a16d60573138dea6c8bd}{00069}}\ vector<string>\ \doxymbox{\hyperlink{Protocolo_8cpp_a60579ec13f33a16d60573138dea6c8bd}{separarCampos}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{string}\&\ mensaje,\ \textcolor{keywordtype}{char}\ separador)\ \{}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00070}00070\ \ \ \ \ vector<string>\ campos;}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00071}00071\ \ \ \ \ stringstream\ ss(mensaje);}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00072}00072\ \ \ \ \ \textcolor{keywordtype}{string}\ campo;}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00073}00073\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00074}00074\ \ \ \ \ \textcolor{keywordflow}{while}\ (getline(ss,\ campo,\ separador))\ \{}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00075}00075\ \ \ \ \ \ \ \ \ campos.push\_back(campo);}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00076}00076\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00077}00077\ }
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00078}00078\ \ \ \ \ \textcolor{keywordflow}{return}\ campos;}
+\DoxyCodeLine{\Hypertarget{Protocolo_8cpp_source_l00079}00079\ \}}
+
+\end{DoxyCode}

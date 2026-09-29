@@ -1,0 +1,23 @@
+<map id="src/mainCafeteria.cpp" name="src/mainCafeteria.cpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="421,5,571,32"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,80,91,107"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="418,31,279,53,106,82,105,77,278,48,423,29"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="115,80,194,107"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="435,35,210,82,209,77,432,30"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="218,80,299,107"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="457,32,314,78,313,73,452,33"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="324,80,394,107"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="475,32,397,75,395,70,469,33"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="418,80,489,107"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="491,31,470,69,467,65,486,34"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="513,80,567,107"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="505,30,527,68,522,66,502,35"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="591,80,649,107"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="518,30,588,72,583,72,517,35"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="672,80,746,107"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="534,30,661,75,655,75,533,35"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="770,80,827,107"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="557,30,758,79,753,79,556,35"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="851,80,912,107"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="571,28,692,48,839,80,833,80,691,53,571,34"/>
+</map>

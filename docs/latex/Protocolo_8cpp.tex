@@ -1,0 +1,90 @@
+\doxysection{Referencia del archivo src/\+\+Protocolo.cpp}
+\hypertarget{Protocolo_8cpp}{}\label{Protocolo_8cpp}\index{src/Protocolo.cpp@{src/Protocolo.cpp}}
+{\ttfamily \+\#include "{}Protocolo.\+h"{}}\newline
+{\ttfamily \+\#include $<$sys/\+socket.\+h$>$}\newline
+{\ttfamily \+\#include $<$sstream$>$}\newline
+{\ttfamily \+\#include $<$iostream$>$}\newline
+Gráfico de dependencias incluidas en Protocolo.\+cpp:\+
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{Protocolo_8cpp__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{defines}
+\begin{DoxyCompactItemize}
+\item 
+\+\#define \doxymbox{\hyperlink{Protocolo_8cpp_a9f55d0e90dc8cc6b2287312435cdde48}{MSG\+\_\+\+NOSIGNAL}}~0
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Funciones}
+\begin{DoxyCompactItemize}
+\item 
+bool \doxymbox{\hyperlink{Protocolo_8cpp_a2a1fbfbf256b9f159323ef8c93a7d311}{enviar\+Mensaje}} (int socket, const string \&mensaje)
+\item 
+bool \doxymbox{\hyperlink{Protocolo_8cpp_a317307ea1b6bb17756a6aba3e2d20804}{recibir\+Mensaje}} (int socket, string \&mensaje\+Recibido)
+\item 
+string \doxymbox{\hyperlink{Protocolo_8cpp_a2d0ca82e9f165c46123eaf75dab309ac}{enviar\+Comando}} (int socket, const string \&comando)
+\item 
+vector$<$ string $>$ \doxymbox{\hyperlink{Protocolo_8cpp_a60579ec13f33a16d60573138dea6c8bd}{separar\+Campos}} (const string \&mensaje, char separador)
+\end{DoxyCompactItemize}
+
+
+\label{doc-define-members}
+\Hypertarget{Protocolo_8cpp_doc-define-members}
+\doxysubsection{Documentación de «define»}
+\Hypertarget{Protocolo_8cpp_a9f55d0e90dc8cc6b2287312435cdde48}\index{Protocolo.cpp@{Protocolo.cpp}!MSG\_NOSIGNAL@{MSG\_NOSIGNAL}}
+\index{MSG\_NOSIGNAL@{MSG\_NOSIGNAL}!Protocolo.cpp@{Protocolo.cpp}}
+\doxysubsubsection{\texorpdfstring{MSG\_NOSIGNAL}{MSG\_NOSIGNAL}}
+{\footnotesize\ttfamily \label{Protocolo_8cpp_a9f55d0e90dc8cc6b2287312435cdde48} 
+\+\#define MSG\+\_\+\+NOSIGNAL~0}
+
+
+
+Definición en la línea \doxymbox{\hyperlink{Protocolo_8cpp_source_l00009}{9}} del archivo \doxymbox{\hyperlink{Protocolo_8cpp_source}{Protocolo.\+cpp}}.
+
+
+
+\label{doc-func-members}
+\Hypertarget{Protocolo_8cpp_doc-func-members}
+\doxysubsection{Documentación de funciones}
+\Hypertarget{Protocolo_8cpp_a2d0ca82e9f165c46123eaf75dab309ac}\index{Protocolo.cpp@{Protocolo.cpp}!enviarComando@{enviarComando}}
+\index{enviarComando@{enviarComando}!Protocolo.cpp@{Protocolo.cpp}}
+\doxysubsubsection{\texorpdfstring{enviarComando()}{enviarComando()}}
+{\footnotesize\ttfamily \label{Protocolo_8cpp_a2d0ca82e9f165c46123eaf75dab309ac} 
+string enviar\+Comando (\begin{DoxyParamCaption}\item[{int}]{socket}{, }\item[{const string \&}]{comando}{}\end{DoxyParamCaption})}
+
+
+
+Definición en la línea \doxymbox{\hyperlink{Protocolo_8cpp_source_l00055}{55}} del archivo \doxymbox{\hyperlink{Protocolo_8cpp_source}{Protocolo.\+cpp}}.
+
+\Hypertarget{Protocolo_8cpp_a2a1fbfbf256b9f159323ef8c93a7d311}\index{Protocolo.cpp@{Protocolo.cpp}!enviarMensaje@{enviarMensaje}}
+\index{enviarMensaje@{enviarMensaje}!Protocolo.cpp@{Protocolo.cpp}}
+\doxysubsubsection{\texorpdfstring{enviarMensaje()}{enviarMensaje()}}
+{\footnotesize\ttfamily \label{Protocolo_8cpp_a2a1fbfbf256b9f159323ef8c93a7d311} 
+bool enviar\+Mensaje (\begin{DoxyParamCaption}\item[{int}]{socket}{, }\item[{const string \&}]{mensaje}{}\end{DoxyParamCaption})}
+
+
+
+Definición en la línea \doxymbox{\hyperlink{Protocolo_8cpp_source_l00016}{16}} del archivo \doxymbox{\hyperlink{Protocolo_8cpp_source}{Protocolo.\+cpp}}.
+
+\Hypertarget{Protocolo_8cpp_a317307ea1b6bb17756a6aba3e2d20804}\index{Protocolo.cpp@{Protocolo.cpp}!recibirMensaje@{recibirMensaje}}
+\index{recibirMensaje@{recibirMensaje}!Protocolo.cpp@{Protocolo.cpp}}
+\doxysubsubsection{\texorpdfstring{recibirMensaje()}{recibirMensaje()}}
+{\footnotesize\ttfamily \label{Protocolo_8cpp_a317307ea1b6bb17756a6aba3e2d20804} 
+bool recibir\+Mensaje (\begin{DoxyParamCaption}\item[{int}]{socket}{, }\item[{string \&}]{mensaje\+Recibido}{}\end{DoxyParamCaption})}
+
+
+
+Definición en la línea \doxymbox{\hyperlink{Protocolo_8cpp_source_l00035}{35}} del archivo \doxymbox{\hyperlink{Protocolo_8cpp_source}{Protocolo.\+cpp}}.
+
+\Hypertarget{Protocolo_8cpp_a60579ec13f33a16d60573138dea6c8bd}\index{Protocolo.cpp@{Protocolo.cpp}!separarCampos@{separarCampos}}
+\index{separarCampos@{separarCampos}!Protocolo.cpp@{Protocolo.cpp}}
+\doxysubsubsection{\texorpdfstring{separarCampos()}{separarCampos()}}
+{\footnotesize\ttfamily \label{Protocolo_8cpp_a60579ec13f33a16d60573138dea6c8bd} 
+vector$<$ string $>$ separar\+Campos (\begin{DoxyParamCaption}\item[{const string \&}]{mensaje}{, }\item[{char}]{separador}{}\end{DoxyParamCaption})}
+
+
+
+Definición en la línea \doxymbox{\hyperlink{Protocolo_8cpp_source_l00069}{69}} del archivo \doxymbox{\hyperlink{Protocolo_8cpp_source}{Protocolo.\+cpp}}.
+

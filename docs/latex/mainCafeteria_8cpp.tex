@@ -1,0 +1,249 @@
+\doxysection{Referencia del archivo src/\+main\+Cafeteria.cpp}
+\hypertarget{mainCafeteria_8cpp}{}\label{mainCafeteria_8cpp}\index{src/mainCafeteria.cpp@{src/mainCafeteria.cpp}}
+{\ttfamily \+\#include "{}Cafeteria.\+h"{}}\newline
+{\ttfamily \+\#include "{}Ventana.\+h"{}}\newline
+{\ttfamily \+\#include "{}Widgets.\+h"{}}\newline
+{\ttfamily \+\#include "{}Config.\+h"{}}\newline
+{\ttfamily \+\#include $<$iostream$>$}\newline
+{\ttfamily \+\#include $<$string$>$}\newline
+{\ttfamily \+\#include $<$vector$>$}\newline
+{\ttfamily \+\#include $<$algorithm$>$}\newline
+{\ttfamily \+\#include $<$cstdio$>$}\newline
+{\ttfamily \+\#include $<$cctype$>$}\newline
+Gráfico de dependencias incluidas en main\+Cafeteria.\+cpp:\+
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{mainCafeteria_8cpp__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Enumeraciones}
+\begin{DoxyCompactItemize}
+\item 
+enum class \doxymbox{\hyperlink{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3c}{Pantalla}} \{ \newline
+\doxymbox{\hyperlink{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef}{LOGIN}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909}{PANEL}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef}{LOGIN}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909}{PANEL}}
+, \newline
+\doxymbox{\hyperlink{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef}{LOGIN}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3caddae29b9a83223746a408862a29c4d54}{REGISTRO}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909}{PANEL}}
+ \}
+\item 
+enum class \doxymbox{\hyperlink{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8}{Vista}} \{ \newline
+\doxymbox{\hyperlink{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a0abc28bcb832a6bbd1c673309cbad21a}{USUARIOS}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a25f27e565960d73dbc29be2f9929cfe9}{CAFETERIAS}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a71150316cb2226568bb7c92f92e19c15}{EN\+\_\+\+LINEA}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8aaa793d97ae316679b0b380e0d415e912}{PEDIDOS}}
+, \newline
+\doxymbox{\hyperlink{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a35b0b332ae25047c12146d7640f486ee}{INVENTARIO}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a335f07edf0462e587f5ea48957ba5f9a}{CAJA}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a25f27e565960d73dbc29be2f9929cfe9}{CAFETERIAS}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a3ed53fbeb1eab0443561b68ca0c0b5cf}{MENU}}
+, \newline
+\doxymbox{\hyperlink{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8afc2e879d54f48aa8714a1abc5ccd3bc3}{CARRITO}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8aaa793d97ae316679b0b380e0d415e912}{PEDIDOS}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a7a0f1c5f863bd6b7b718dc314d995c3b}{TARJETAS}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8af46073a2a25ba044fc5d445b54a9624c}{PAGO}}
+ \}
+\item 
+enum class \doxymbox{\hyperlink{mainCafeteria_8cpp_a7aee61a15c75136ee03d6f469cf927d1}{Modal\+Cierre}} \{ \doxymbox{\hyperlink{mainCafeteria_8cpp_a7aee61a15c75136ee03d6f469cf927d1af03b6bab9c92c2b9aa15b0e612af2d6a}{NINGUNO}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_a7aee61a15c75136ee03d6f469cf927d1ae50f525ed16303987ac2b7eebf9e6621}{CONFIRMAR}}
+, \doxymbox{\hyperlink{mainCafeteria_8cpp_a7aee61a15c75136ee03d6f469cf927d1a316406f439cd0880cab1b5911541f5df}{RESUMEN}}
+ \}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Funciones}
+\begin{DoxyCompactItemize}
+\item 
+int \doxymbox{\hyperlink{mainCafeteria_8cpp_a0ddf1224851353fc92bfbff6f499fa97}{main}} (int argc, char \texorpdfstring{$\ast$}{*}argv\+[$\,$]\+)
+\end{DoxyCompactItemize}
+
+
+\label{doc-enum-members}
+\Hypertarget{mainCafeteria_8cpp_doc-enum-members}
+\doxysubsection{Documentación de enumeraciones}
+\Hypertarget{mainCafeteria_8cpp_a7aee61a15c75136ee03d6f469cf927d1}\index{mainCafeteria.cpp@{mainCafeteria.cpp}!ModalCierre@{ModalCierre}}
+\index{ModalCierre@{ModalCierre}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\doxysubsubsection{\texorpdfstring{ModalCierre}{ModalCierre}}
+{\footnotesize\ttfamily \label{mainCafeteria_8cpp_a7aee61a15c75136ee03d6f469cf927d1} 
+enum class \doxymbox{\hyperlink{mainCafeteria_8cpp_a7aee61a15c75136ee03d6f469cf927d1}{Modal\+Cierre}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+\begin{DoxyEnumFields}[2]{Valores de enumeraciones}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{NINGUNO@{NINGUNO}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!NINGUNO@{NINGUNO}}
+}\Hypertarget{mainCafeteria_8cpp_a7aee61a15c75136ee03d6f469cf927d1af03b6bab9c92c2b9aa15b0e612af2d6a}\label{mainCafeteria_8cpp_a7aee61a15c75136ee03d6f469cf927d1af03b6bab9c92c2b9aa15b0e612af2d6a} 
+NINGUNO&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CONFIRMAR@{CONFIRMAR}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!CONFIRMAR@{CONFIRMAR}}
+}\Hypertarget{mainCafeteria_8cpp_a7aee61a15c75136ee03d6f469cf927d1ae50f525ed16303987ac2b7eebf9e6621}\label{mainCafeteria_8cpp_a7aee61a15c75136ee03d6f469cf927d1ae50f525ed16303987ac2b7eebf9e6621} 
+CONFIRMAR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RESUMEN@{RESUMEN}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!RESUMEN@{RESUMEN}}
+}\Hypertarget{mainCafeteria_8cpp_a7aee61a15c75136ee03d6f469cf927d1a316406f439cd0880cab1b5911541f5df}\label{mainCafeteria_8cpp_a7aee61a15c75136ee03d6f469cf927d1a316406f439cd0880cab1b5911541f5df} 
+RESUMEN&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definición en la línea \doxymbox{\hyperlink{mainCafeteria_8cpp_source_l00050}{50}} del archivo \doxymbox{\hyperlink{mainCafeteria_8cpp_source}{main\+Cafeteria.\+cpp}}.
+
+\Hypertarget{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3c}\index{mainCafeteria.cpp@{mainCafeteria.cpp}!Pantalla@{Pantalla}}
+\index{Pantalla@{Pantalla}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\doxysubsubsection{\texorpdfstring{Pantalla}{Pantalla}}
+{\footnotesize\ttfamily \label{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3c} 
+enum class \doxymbox{\hyperlink{mainAdministrador_8cpp_a3379b2380d4dd55e6034b45463536f3c}{Pantalla}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+\begin{DoxyEnumFields}[2]{Valores de enumeraciones}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{LOGIN@{LOGIN}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!LOGIN@{LOGIN}}
+}\Hypertarget{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef}\label{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef} 
+LOGIN&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PANEL@{PANEL}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!PANEL@{PANEL}}
+}\Hypertarget{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909}\label{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909} 
+PANEL&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{LOGIN@{LOGIN}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!LOGIN@{LOGIN}}
+}\Hypertarget{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef}\label{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef} 
+LOGIN&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PANEL@{PANEL}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!PANEL@{PANEL}}
+}\Hypertarget{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909}\label{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909} 
+PANEL&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{LOGIN@{LOGIN}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!LOGIN@{LOGIN}}
+}\Hypertarget{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef}\label{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef} 
+LOGIN&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{REGISTRO@{REGISTRO}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!REGISTRO@{REGISTRO}}
+}\Hypertarget{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3caddae29b9a83223746a408862a29c4d54}\label{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3caddae29b9a83223746a408862a29c4d54} 
+REGISTRO&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PANEL@{PANEL}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!PANEL@{PANEL}}
+}\Hypertarget{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909}\label{mainCafeteria_8cpp_a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909} 
+PANEL&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definición en la línea \doxymbox{\hyperlink{mainCafeteria_8cpp_source_l00046}{46}} del archivo \doxymbox{\hyperlink{mainCafeteria_8cpp_source}{main\+Cafeteria.\+cpp}}.
+
+\Hypertarget{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8}\index{mainCafeteria.cpp@{mainCafeteria.cpp}!Vista@{Vista}}
+\index{Vista@{Vista}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\doxysubsubsection{\texorpdfstring{Vista}{Vista}}
+{\footnotesize\ttfamily \label{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8} 
+enum class \doxymbox{\hyperlink{mainAdministrador_8cpp_afc03402b6e61c887a14338cadaaa75c8}{Vista}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+\begin{DoxyEnumFields}[2]{Valores de enumeraciones}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{USUARIOS@{USUARIOS}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!USUARIOS@{USUARIOS}}
+}\Hypertarget{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a0abc28bcb832a6bbd1c673309cbad21a}\label{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a0abc28bcb832a6bbd1c673309cbad21a} 
+USUARIOS&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CAFETERIAS@{CAFETERIAS}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!CAFETERIAS@{CAFETERIAS}}
+}\Hypertarget{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a25f27e565960d73dbc29be2f9929cfe9}\label{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a25f27e565960d73dbc29be2f9929cfe9} 
+CAFETERIAS&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EN\_LINEA@{EN\_LINEA}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!EN\_LINEA@{EN\_LINEA}}
+}\Hypertarget{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a71150316cb2226568bb7c92f92e19c15}\label{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a71150316cb2226568bb7c92f92e19c15} 
+EN\+\_\+\+LINEA&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PEDIDOS@{PEDIDOS}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!PEDIDOS@{PEDIDOS}}
+}\Hypertarget{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8aaa793d97ae316679b0b380e0d415e912}\label{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8aaa793d97ae316679b0b380e0d415e912} 
+PEDIDOS&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{INVENTARIO@{INVENTARIO}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!INVENTARIO@{INVENTARIO}}
+}\Hypertarget{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a35b0b332ae25047c12146d7640f486ee}\label{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a35b0b332ae25047c12146d7640f486ee} 
+INVENTARIO&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CAJA@{CAJA}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!CAJA@{CAJA}}
+}\Hypertarget{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a335f07edf0462e587f5ea48957ba5f9a}\label{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a335f07edf0462e587f5ea48957ba5f9a} 
+CAJA&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CAFETERIAS@{CAFETERIAS}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!CAFETERIAS@{CAFETERIAS}}
+}\Hypertarget{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a25f27e565960d73dbc29be2f9929cfe9}\label{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a25f27e565960d73dbc29be2f9929cfe9} 
+CAFETERIAS&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{MENU@{MENU}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!MENU@{MENU}}
+}\Hypertarget{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a3ed53fbeb1eab0443561b68ca0c0b5cf}\label{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a3ed53fbeb1eab0443561b68ca0c0b5cf} 
+MENU&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CARRITO@{CARRITO}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!CARRITO@{CARRITO}}
+}\Hypertarget{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8afc2e879d54f48aa8714a1abc5ccd3bc3}\label{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8afc2e879d54f48aa8714a1abc5ccd3bc3} 
+CARRITO&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PEDIDOS@{PEDIDOS}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!PEDIDOS@{PEDIDOS}}
+}\Hypertarget{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8aaa793d97ae316679b0b380e0d415e912}\label{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8aaa793d97ae316679b0b380e0d415e912} 
+PEDIDOS&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{TARJETAS@{TARJETAS}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!TARJETAS@{TARJETAS}}
+}\Hypertarget{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a7a0f1c5f863bd6b7b718dc314d995c3b}\label{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8a7a0f1c5f863bd6b7b718dc314d995c3b} 
+TARJETAS&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PAGO@{PAGO}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\index{mainCafeteria.cpp@{mainCafeteria.cpp}!PAGO@{PAGO}}
+}\Hypertarget{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8af46073a2a25ba044fc5d445b54a9624c}\label{mainCafeteria_8cpp_afc03402b6e61c887a14338cadaaa75c8af46073a2a25ba044fc5d445b54a9624c} 
+PAGO&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+Definición en la línea \doxymbox{\hyperlink{mainCafeteria_8cpp_source_l00047}{47}} del archivo \doxymbox{\hyperlink{mainCafeteria_8cpp_source}{main\+Cafeteria.\+cpp}}.
+
+
+
+\label{doc-func-members}
+\Hypertarget{mainCafeteria_8cpp_doc-func-members}
+\doxysubsection{Documentación de funciones}
+\Hypertarget{mainCafeteria_8cpp_a0ddf1224851353fc92bfbff6f499fa97}\index{mainCafeteria.cpp@{mainCafeteria.cpp}!main@{main}}
+\index{main@{main}!mainCafeteria.cpp@{mainCafeteria.cpp}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily \label{mainCafeteria_8cpp_a0ddf1224851353fc92bfbff6f499fa97} 
+int main (\begin{DoxyParamCaption}\item[{int}]{argc}{, }\item[{char \texorpdfstring{$\ast$}{*}}]{argv}{\+[$\,$]\+}\end{DoxyParamCaption})}
+
+
+
+Definición en la línea \doxymbox{\hyperlink{mainCafeteria_8cpp_source_l00233}{233}} del archivo \doxymbox{\hyperlink{mainCafeteria_8cpp_source}{main\+Cafeteria.\+cpp}}.
+

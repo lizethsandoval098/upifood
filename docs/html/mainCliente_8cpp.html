@@ -1,0 +1,284 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.16.1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>UPIIFOOD: Referencia del archivo src/mainCliente.cpp</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<script type="text/javascript" src="clipboard.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript" src="cookie.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectalign">
+   <div id="projectname">UPIIFOOD
+   </div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Generado por Doxygen 1.16.1 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+</script>
+<script type="text/javascript">
+$(function() { codefold.init(); });
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Buscar',true);
+  $(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(function(){initNavTree('mainCliente_8cpp.html','',''); });
+</script>
+<div id="container">
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Cargando...</div>
+<div class="SRStatus" id="Searching">Buscando...</div>
+<div class="SRStatus" id="NoMatches">Nada coincide</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="headertitle"><div class="title">Referencia del archivo mainCliente.cpp</div></div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &quot;Cliente.h&quot;</code><br />
+<code>#include &quot;Ventana.h&quot;</code><br />
+<code>#include &quot;Widgets.h&quot;</code><br />
+<code>#include &quot;Config.h&quot;</code><br />
+<code>#include &lt;iostream&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;cstdio&gt;</code><br />
+<code>#include &lt;stdexcept&gt;</code><br />
+</div><div class="textblock"><div class="dynheader">
+Gráfico de dependencias incluidas en mainCliente.cpp:</div>
+<div class="dyncontent">
+<div class="center"><img src="mainCliente_8cpp__incl.png" border="0" usemap="#asrc_2mainCliente_8cpp" loading="lazy" alt=""/></div>
+<map name="asrc_2mainCliente_8cpp" id="asrc_2mainCliente_8cpp">
+<area shape="rect" title=" " alt="" coords="415,5,552,32"/>
+<area shape="rect" title=" " alt="" coords="5,80,79,107"/>
+<area shape="poly" title=" " alt="" coords="411,29,271,51,95,82,94,77,270,46,417,28"/>
+<area shape="rect" title=" " alt="" coords="102,80,182,107"/>
+<area shape="poly" title=" " alt="" coords="422,35,198,82,196,77,420,30"/>
+<area shape="rect" title=" " alt="" coords="206,80,286,107"/>
+<area shape="poly" title=" " alt="" coords="445,32,302,78,300,73,439,33"/>
+<area shape="rect" title=" " alt="" coords="311,80,381,107"/>
+<area shape="poly" title=" " alt="" coords="462,32,384,75,383,70,457,33"/>
+<area shape="rect" title=" " alt="" coords="405,80,476,107"/>
+<area shape="poly" title=" " alt="" coords="478,31,457,69,454,65,474,34"/>
+<area shape="rect" title=" " alt="" coords="501,80,554,107"/>
+<area shape="poly" title=" " alt="" coords="492,30,514,68,509,66,490,35"/>
+<area shape="rect" title=" " alt="" coords="579,80,636,107"/>
+<area shape="poly" title=" " alt="" coords="506,30,576,72,570,72,504,35"/>
+<area shape="rect" title=" " alt="" coords="660,80,734,107"/>
+<area shape="poly" title=" " alt="" coords="521,30,648,75,643,75,520,35"/>
+<area shape="rect" title=" " alt="" coords="758,80,814,107"/>
+<area shape="poly" title=" " alt="" coords="544,30,745,79,740,79,543,35"/>
+<area shape="rect" title=" " alt="" coords="839,80,917,107"/>
+<area shape="poly" title=" " alt="" coords="553,28,826,79,821,80,552,34"/>
+</map>
+</div>
+</div>
+<p><a href="mainCliente_8cpp_source.html">Ir al código fuente de este archivo.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumeraciones</h2></td></tr>
+<tr class="memitem:a3379b2380d4dd55e6034b45463536f3c" id="r_a3379b2380d4dd55e6034b45463536f3c"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#a3379b2380d4dd55e6034b45463536f3c">Pantalla</a> { <br />
+&#160;&#160;<a class="el" href="#a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef">LOGIN</a>
+, <a class="el" href="#a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909">PANEL</a>
+, <a class="el" href="#a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef">LOGIN</a>
+, <a class="el" href="#a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909">PANEL</a>
+, <br />
+&#160;&#160;<a class="el" href="#a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef">LOGIN</a>
+, <a class="el" href="#a3379b2380d4dd55e6034b45463536f3caddae29b9a83223746a408862a29c4d54">REGISTRO</a>
+, <a class="el" href="#a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909">PANEL</a>
+<br />
+ }</td></tr>
+<tr class="memitem:afc03402b6e61c887a14338cadaaa75c8" id="r_afc03402b6e61c887a14338cadaaa75c8"><td class="memItemLeft">enum class &#160;</td><td class="memItemRight"><a class="el" href="#afc03402b6e61c887a14338cadaaa75c8">Vista</a> { <br />
+&#160;&#160;<a class="el" href="#afc03402b6e61c887a14338cadaaa75c8a0abc28bcb832a6bbd1c673309cbad21a">USUARIOS</a>
+, <a class="el" href="#afc03402b6e61c887a14338cadaaa75c8a25f27e565960d73dbc29be2f9929cfe9">CAFETERIAS</a>
+, <a class="el" href="#afc03402b6e61c887a14338cadaaa75c8a71150316cb2226568bb7c92f92e19c15">EN_LINEA</a>
+, <a class="el" href="#afc03402b6e61c887a14338cadaaa75c8aaa793d97ae316679b0b380e0d415e912">PEDIDOS</a>
+, <br />
+&#160;&#160;<a class="el" href="#afc03402b6e61c887a14338cadaaa75c8a35b0b332ae25047c12146d7640f486ee">INVENTARIO</a>
+, <a class="el" href="#afc03402b6e61c887a14338cadaaa75c8a335f07edf0462e587f5ea48957ba5f9a">CAJA</a>
+, <a class="el" href="#afc03402b6e61c887a14338cadaaa75c8a25f27e565960d73dbc29be2f9929cfe9">CAFETERIAS</a>
+, <a class="el" href="#afc03402b6e61c887a14338cadaaa75c8a3ed53fbeb1eab0443561b68ca0c0b5cf">MENU</a>
+, <br />
+&#160;&#160;<a class="el" href="#afc03402b6e61c887a14338cadaaa75c8afc2e879d54f48aa8714a1abc5ccd3bc3">CARRITO</a>
+, <a class="el" href="#afc03402b6e61c887a14338cadaaa75c8aaa793d97ae316679b0b380e0d415e912">PEDIDOS</a>
+, <a class="el" href="#afc03402b6e61c887a14338cadaaa75c8a7a0f1c5f863bd6b7b718dc314d995c3b">TARJETAS</a>
+, <a class="el" href="#afc03402b6e61c887a14338cadaaa75c8af46073a2a25ba044fc5d445b54a9624c">PAGO</a>
+<br />
+ }</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
+Funciones</h2></td></tr>
+<tr class="memitem:a0ddf1224851353fc92bfbff6f499fa97" id="r_a0ddf1224851353fc92bfbff6f499fa97"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a0ddf1224851353fc92bfbff6f499fa97">main</a> (int argc, char *argv[])</td></tr>
+</table>
+<a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Documentación de enumeraciones</h2>
+<a id="a3379b2380d4dd55e6034b45463536f3c" name="a3379b2380d4dd55e6034b45463536f3c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3379b2380d4dd55e6034b45463536f3c">&#9670;&#160;</a></span>Pantalla</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="mainAdministrador_8cpp.html#a3379b2380d4dd55e6034b45463536f3c">Pantalla</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel strong">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Valores de enumeraciones</th></tr><tr><td class="fieldname"><a id="a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef" name="a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef"></a>LOGIN&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909" name="a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909"></a>PANEL&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef" name="a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef"></a>LOGIN&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909" name="a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909"></a>PANEL&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef" name="a3379b2380d4dd55e6034b45463536f3ca4976d7ca80f2cb54c1c7d5c87fb0c7ef"></a>LOGIN&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a3379b2380d4dd55e6034b45463536f3caddae29b9a83223746a408862a29c4d54" name="a3379b2380d4dd55e6034b45463536f3caddae29b9a83223746a408862a29c4d54"></a>REGISTRO&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909" name="a3379b2380d4dd55e6034b45463536f3cabb9975cf612c5c8db99b518052cc0909"></a>PANEL&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+<p class="definition">Definición en la línea <a class="el" href="mainCliente_8cpp_source.html#l00031">31</a> del archivo <a class="el" href="mainCliente_8cpp_source.html">mainCliente.cpp</a>.</p>
+
+</div>
+</div>
+<a id="afc03402b6e61c887a14338cadaaa75c8" name="afc03402b6e61c887a14338cadaaa75c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc03402b6e61c887a14338cadaaa75c8">&#9670;&#160;</a></span>Vista</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="mainAdministrador_8cpp.html#afc03402b6e61c887a14338cadaaa75c8">Vista</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel strong">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Valores de enumeraciones</th></tr><tr><td class="fieldname"><a id="afc03402b6e61c887a14338cadaaa75c8a0abc28bcb832a6bbd1c673309cbad21a" name="afc03402b6e61c887a14338cadaaa75c8a0abc28bcb832a6bbd1c673309cbad21a"></a>USUARIOS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afc03402b6e61c887a14338cadaaa75c8a25f27e565960d73dbc29be2f9929cfe9" name="afc03402b6e61c887a14338cadaaa75c8a25f27e565960d73dbc29be2f9929cfe9"></a>CAFETERIAS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afc03402b6e61c887a14338cadaaa75c8a71150316cb2226568bb7c92f92e19c15" name="afc03402b6e61c887a14338cadaaa75c8a71150316cb2226568bb7c92f92e19c15"></a>EN_LINEA&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afc03402b6e61c887a14338cadaaa75c8aaa793d97ae316679b0b380e0d415e912" name="afc03402b6e61c887a14338cadaaa75c8aaa793d97ae316679b0b380e0d415e912"></a>PEDIDOS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afc03402b6e61c887a14338cadaaa75c8a35b0b332ae25047c12146d7640f486ee" name="afc03402b6e61c887a14338cadaaa75c8a35b0b332ae25047c12146d7640f486ee"></a>INVENTARIO&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afc03402b6e61c887a14338cadaaa75c8a335f07edf0462e587f5ea48957ba5f9a" name="afc03402b6e61c887a14338cadaaa75c8a335f07edf0462e587f5ea48957ba5f9a"></a>CAJA&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afc03402b6e61c887a14338cadaaa75c8a25f27e565960d73dbc29be2f9929cfe9" name="afc03402b6e61c887a14338cadaaa75c8a25f27e565960d73dbc29be2f9929cfe9"></a>CAFETERIAS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afc03402b6e61c887a14338cadaaa75c8a3ed53fbeb1eab0443561b68ca0c0b5cf" name="afc03402b6e61c887a14338cadaaa75c8a3ed53fbeb1eab0443561b68ca0c0b5cf"></a>MENU&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afc03402b6e61c887a14338cadaaa75c8afc2e879d54f48aa8714a1abc5ccd3bc3" name="afc03402b6e61c887a14338cadaaa75c8afc2e879d54f48aa8714a1abc5ccd3bc3"></a>CARRITO&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afc03402b6e61c887a14338cadaaa75c8aaa793d97ae316679b0b380e0d415e912" name="afc03402b6e61c887a14338cadaaa75c8aaa793d97ae316679b0b380e0d415e912"></a>PEDIDOS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afc03402b6e61c887a14338cadaaa75c8a7a0f1c5f863bd6b7b718dc314d995c3b" name="afc03402b6e61c887a14338cadaaa75c8a7a0f1c5f863bd6b7b718dc314d995c3b"></a>TARJETAS&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="afc03402b6e61c887a14338cadaaa75c8af46073a2a25ba044fc5d445b54a9624c" name="afc03402b6e61c887a14338cadaaa75c8af46073a2a25ba044fc5d445b54a9624c"></a>PAGO&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+<p class="definition">Definición en la línea <a class="el" href="mainCliente_8cpp_source.html#l00032">32</a> del archivo <a class="el" href="mainCliente_8cpp_source.html">mainCliente.cpp</a>.</p>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Documentación de funciones</h2>
+<a id="a0ddf1224851353fc92bfbff6f499fa97" name="a0ddf1224851353fc92bfbff6f499fa97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ddf1224851353fc92bfbff6f499fa97">&#9670;&#160;</a></span>main()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int main </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>argc</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *</td>          <td class="paramname"><span class="paramname"><em>argv</em></span>[]&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definición en la línea <a class="el" href="mainCliente_8cpp_source.html#l00154">154</a> del archivo <a class="el" href="mainCliente_8cpp_source.html">mainCliente.cpp</a>.</p>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<div id="page-nav" class="page-nav-panel">
+<div id="page-nav-resize-handle"></div>
+<div id="page-nav-tree">
+<div id="page-nav-contents">
+</div><!-- page-nav-contents -->
+</div><!-- page-nav-tree -->
+</div><!-- page-nav -->
+</div><!-- container -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a href="mainCliente_8cpp.html">mainCliente.cpp</a></li>
+    <li class="footer">Generado por <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
+  </ul>
+</div>
+</body>
+</html>

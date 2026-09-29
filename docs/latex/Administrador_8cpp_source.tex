@@ -1,0 +1,330 @@
+\doxysection{Administrador.\+cpp}
+\hypertarget{Administrador_8cpp_source}{}\label{Administrador_8cpp_source}\index{src/Administrador.cpp@{src/Administrador.cpp}}
+\doxymbox{\hyperlink{Administrador_8cpp}{Ir a la documentación de este archivo.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00001}00001\ \textcolor{preprocessor}{\#include\ "{}Administrador.h"{}}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00002}00002\ \textcolor{preprocessor}{\#include\ "{}Protocolo.h"{}}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00003}00003\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00004}00004\ \textcolor{preprocessor}{\#include\ <unistd.h>}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00005}00005\ \textcolor{preprocessor}{\#include\ <arpa/inet.h>}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00006}00006\ \textcolor{preprocessor}{\#include\ <sys/socket.h>}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00007}00007\ \textcolor{preprocessor}{\#include\ <netinet/in.h>}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00008}00008\ \textcolor{preprocessor}{\#include\ <sys/time.h>}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00009}00009\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00010}00010\ \textcolor{keyword}{using\ namespace\ }std;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00011}00011\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00012}00012\ Administrador::Administrador()\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00013}00013\ \ \ \ \ socketAdmin\ =\ -\/1;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00014}00014\ \ \ \ \ ipServidor\ =\ \textcolor{stringliteral}{"{}100.70.231.3"{}};\ \textcolor{comment}{//\ 100.91.99.27}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00015}00015\ \ \ \ \ ipServidor\ =\ \textcolor{stringliteral}{"{}100.70.231.3"{}};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00016}00016\ \ \ \ \ puerto\ =\ 5000;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00017}00017\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00018}00018\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00019}00019\ Administrador::Administrador(\textcolor{keywordtype}{string}\ nombre,\ \textcolor{keywordtype}{string}\ correo,\ \textcolor{keywordtype}{string}\ contrasena,\ \textcolor{keywordtype}{string}\ username)}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00020}00020\ \ \ \ \ :\ Usuario(\textcolor{stringliteral}{"{}Admin"{}},\ nombre,\ correo,\ contrasena,\ username)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00021}00021\ \ \ \ \ socketAdmin\ =\ -\/1;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00022}00022\ \ \ \ \ ipServidor\ =\ \textcolor{stringliteral}{"{}100.70.231.3"{}};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00023}00023\ \ \ \ \ puerto\ =\ 5000;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00024}00024\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00025}00025\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00026}00026\ Administrador::\string~Administrador()\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00027}00027\ \ \ \ \ \textcolor{keywordflow}{if}\ (socketAdmin\ !=\ -\/1)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00028}00028\ \ \ \ \ \ \ \ \ close(socketAdmin);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00029}00029\ \ \ \ \ \ \ \ \ socketAdmin\ =\ -\/1;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00030}00030\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00031}00031\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00032}00032\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00033}00033\ \textcolor{keywordtype}{void}\ Administrador::setIpServidor(\textcolor{keyword}{const}\ \textcolor{keywordtype}{string}\&\ ip)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00034}00034\ \ \ \ \ ipServidor\ =\ ip;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00035}00035\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00036}00036\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00037}00037\ \textcolor{keywordtype}{bool}\ Administrador::conectar()\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00038}00038\ \ \ \ \ socketAdmin\ =\ socket(AF\_INET,\ SOCK\_STREAM,\ 0);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00039}00039\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00040}00040\ \ \ \ \ \textcolor{keywordflow}{if}\ (socketAdmin\ ==\ -\/1)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00041}00041\ \ \ \ \ \ \ \ \ ultimoError\ =\ \textcolor{stringliteral}{"{}Error\ creando\ el\ socket."{}};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00042}00042\ \ \ \ \ \ \ \ \ cout\ <<\ ultimoError\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00043}00043\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00044}00044\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00045}00045\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00046}00046\ \ \ \ \ sockaddr\_in\ direccionServidor;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00047}00047\ \ \ \ \ direccionServidor.sin\_family\ =\ AF\_INET;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00048}00048\ \ \ \ \ direccionServidor.sin\_port\ =\ htons(puerto);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00049}00049\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00050}00050\ \ \ \ \ \textcolor{keywordflow}{if}\ (inet\_pton(AF\_INET,\ ipServidor.c\_str(),\ \&direccionServidor.sin\_addr)\ !=\ 1)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00051}00051\ \ \ \ \ \ \ \ \ ultimoError\ =\ \textcolor{stringliteral}{"{}La\ IP\ del\ servidor\ no\ es\ valida:\ "{}}\ +\ ipServidor;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00052}00052\ \ \ \ \ \ \ \ \ cout\ <<\ ultimoError\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00053}00053\ \ \ \ \ \ \ \ \ close(socketAdmin);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00054}00054\ \ \ \ \ \ \ \ \ socketAdmin\ =\ -\/1;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00055}00055\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00056}00056\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00057}00057\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00058}00058\ \ \ \ \ \textcolor{keywordflow}{if}\ (connect(socketAdmin,\ (sockaddr*)\&direccionServidor,\ \textcolor{keyword}{sizeof}(direccionServidor))\ ==\ -\/1)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00059}00059\ \ \ \ \ \ \ \ \ ultimoError\ =\ \textcolor{stringliteral}{"{}No\ se\ pudo\ conectar\ a\ "{}}\ +\ ipServidor\ +\ \textcolor{stringliteral}{"{}.\ Revisa\ Tailscale\ y\ que\ 'servidor'\ este\ corriendo."{}};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00060}00060\ \ \ \ \ \ \ \ \ cout\ <<\ ultimoError\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00061}00061\ \ \ \ \ \ \ \ \ close(socketAdmin);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00062}00062\ \ \ \ \ \ \ \ \ socketAdmin\ =\ -\/1;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00063}00063\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00064}00064\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00065}00065\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00066}00066\ \ \ \ \ \textcolor{comment}{//\ Si\ el\ servidor\ no\ contesta\ en\ 5\ s,\ recv()\ falla\ en\ vez\ de\ quedarse}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00067}00067\ \ \ \ \ \textcolor{comment}{//\ esperando\ para\ siempre\ (y\ congelar\ la\ ventana).}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00068}00068\ \ \ \ \ timeval\ limite;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00069}00069\ \ \ \ \ limite.tv\_sec\ =\ 5;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00070}00070\ \ \ \ \ limite.tv\_usec\ =\ 0;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00071}00071\ \ \ \ \ setsockopt(socketAdmin,\ SOL\_SOCKET,\ SO\_RCVTIMEO,\ \&limite,\ \textcolor{keyword}{sizeof}(limite));}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00072}00072\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00073}00073\ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}Conectado\ al\ servidor\ ("{}}\ <<\ ipServidor\ <<\ \textcolor{stringliteral}{"{})."{}}\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00074}00074\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00075}00075\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00076}00076\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00077}00077\ \textcolor{keyword}{const}\ vector<Usuario>\&\ Administrador::getListaUsuarios()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00078}00078\ \ \ \ \ \textcolor{keywordflow}{return}\ listaUsuarios;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00079}00079\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00080}00080\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00081}00081\ \textcolor{keyword}{const}\ vector<Cafeteria>\&\ Administrador::getListaCafeterias()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00082}00082\ \ \ \ \ \textcolor{keywordflow}{return}\ listaCafeterias;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00083}00083\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00084}00084\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00085}00085\ \textcolor{keyword}{const}\ vector<ResumenCafeteria>\&\ Administrador::getResumenCafeterias()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00086}00086\ \ \ \ \ \textcolor{keywordflow}{return}\ resumenCafeterias;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00087}00087\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00088}00088\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00089}00089\ \textcolor{keyword}{const}\ vector<string>\&\ Administrador::getUsuariosEnLinea()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00090}00090\ \ \ \ \ \textcolor{keywordflow}{return}\ usuariosEnLinea;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00091}00091\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00092}00092\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00093}00093\ \textcolor{keywordtype}{string}\ Administrador::getUltimoError()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00094}00094\ \ \ \ \ \textcolor{keywordflow}{return}\ ultimoError;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00095}00095\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00096}00096\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00097}00097\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00098}00098\ \textcolor{comment}{//\ Peticiones\ de\ lista:\ el\ servidor\ contesta\ "{}OK|N"{}\ y\ luego\ N\ lineas\ mas.}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00099}00099\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00100}00100\ \textcolor{keywordtype}{bool}\ Administrador::pedirLista(\textcolor{keyword}{const}\ \textcolor{keywordtype}{string}\&\ comando,\ vector<string>\&\ lineas)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00101}00101\ \ \ \ \ lineas.clear();}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00102}00102\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00103}00103\ \ \ \ \ \textcolor{keywordtype}{string}\ respuesta\ =\ \doxymbox{\hyperlink{Protocolo_8cpp_a2d0ca82e9f165c46123eaf75dab309ac}{enviarComando}}(socketAdmin,\ comando);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00104}00104\ \ \ \ \ vector<string>\ encabezado\ =\ \doxymbox{\hyperlink{Protocolo_8cpp_a60579ec13f33a16d60573138dea6c8bd}{separarCampos}}(respuesta);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00105}00105\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00106}00106\ \ \ \ \ \textcolor{keywordflow}{if}\ (encabezado.empty()\ ||\ encabezado[0]\ !=\ \textcolor{stringliteral}{"{}OK"{}}\ ||\ encabezado.size()\ <\ 2)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00107}00107\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!encabezado.empty()\ \&\&\ encabezado[0]\ ==\ \textcolor{stringliteral}{"{}ERR"{}}\ \&\&\ encabezado.size()\ >\ 1)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ \ \ ultimoError\ =\ encabezado[1];}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00109}00109\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ \ \ ultimoError\ =\ \textcolor{stringliteral}{"{}Respuesta\ invalida\ del\ servidor."{}};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00111}00111\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00112}00112\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00113}00113\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00114}00114\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00115}00115\ \ \ \ \ \textcolor{keywordtype}{int}\ cantidad\ =\ 0;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00116}00116\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00117}00117\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00118}00118\ \ \ \ \ \ \ \ \ cantidad\ =\ stoi(encabezado[1]);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00119}00119\ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (...)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00120}00120\ \ \ \ \ \ \ \ \ ultimoError\ =\ \textcolor{stringliteral}{"{}Respuesta\ invalida\ del\ servidor."{}};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00121}00121\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00122}00122\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00123}00123\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00124}00124\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ cantidad;\ i++)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00125}00125\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{string}\ linea;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00126}00126\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00127}00127\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{Protocolo_8cpp_a317307ea1b6bb17756a6aba3e2d20804}{recibirMensaje}}(socketAdmin,\ linea))\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ \ \ ultimoError\ =\ \textcolor{stringliteral}{"{}Se\ perdio\ la\ conexion\ con\ el\ servidor."{}};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00129}00129\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00130}00130\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00131}00131\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00132}00132\ \ \ \ \ \ \ \ \ lineas.push\_back(linea);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00133}00133\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00134}00134\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00135}00135\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00136}00136\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00137}00137\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00138}00138\ \textcolor{keywordtype}{bool}\ Administrador::cargarUsuarios()\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00139}00139\ \ \ \ \ vector<string>\ lineas;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00140}00140\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00141}00141\ \ \ \ \ \textcolor{keywordflow}{if}\ (!pedirLista(\textcolor{stringliteral}{"{}LISTAR\_USUARIOS"{}},\ lineas))\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00142}00142\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00143}00143\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00144}00144\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00145}00145\ \ \ \ \ listaUsuarios.clear();}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00146}00146\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00147}00147\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{string}\&\ linea\ :\ lineas)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00148}00148\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ nombre|username|correo|tipoUsuario}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00149}00149\ \ \ \ \ \ \ \ \ vector<string>\ campos\ =\ \doxymbox{\hyperlink{Protocolo_8cpp_a60579ec13f33a16d60573138dea6c8bd}{separarCampos}}(linea);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00150}00150\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00151}00151\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (campos.size()\ <\ 4)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00152}00152\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00153}00153\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00154}00154\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00155}00155\ \ \ \ \ \ \ \ \ Usuario\ usuario;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00156}00156\ \ \ \ \ \ \ \ \ usuario.setNombre(campos[0]);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00157}00157\ \ \ \ \ \ \ \ \ usuario.setUsername(campos[1]);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00158}00158\ \ \ \ \ \ \ \ \ usuario.setCorreo(campos[2]);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00159}00159\ \ \ \ \ \ \ \ \ usuario.setTipoUsuario(campos[3]);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00160}00160\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00161}00161\ \ \ \ \ \ \ \ \ listaUsuarios.push\_back(usuario);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00162}00162\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00163}00163\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00164}00164\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00165}00165\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00166}00166\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00167}00167\ \textcolor{keywordtype}{bool}\ Administrador::cargarCafeterias()\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00168}00168\ \ \ \ \ vector<string>\ lineas;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00169}00169\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00170}00170\ \ \ \ \ \textcolor{keywordflow}{if}\ (!pedirLista(\textcolor{stringliteral}{"{}LISTAR\_CAFETERIAS"{}},\ lineas))\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00171}00171\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00172}00172\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00173}00173\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00174}00174\ \ \ \ \ listaCafeterias.clear();}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00175}00175\ \ \ \ \ resumenCafeterias.clear();}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00176}00176\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00177}00177\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{string}\&\ linea\ :\ lineas)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00178}00178\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ idCafeteria|nombre|correo|username|cantidadPedidos}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00179}00179\ \ \ \ \ \ \ \ \ vector<string>\ campos\ =\ \doxymbox{\hyperlink{Protocolo_8cpp_a60579ec13f33a16d60573138dea6c8bd}{separarCampos}}(linea);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00180}00180\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00181}00181\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (campos.size()\ <\ 5)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00182}00182\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00183}00183\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00184}00184\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00185}00185\ \ \ \ \ \ \ \ \ ResumenCafeteria\ r;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00186}00186\ \ \ \ \ \ \ \ \ r.idCafeteria\ =\ campos[0];}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00187}00187\ \ \ \ \ \ \ \ \ r.nombre\ =\ campos[1];}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00188}00188\ \ \ \ \ \ \ \ \ r.correo\ =\ campos[2];}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00189}00189\ \ \ \ \ \ \ \ \ r.username\ =\ campos[3];}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00190}00190\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00191}00191\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00192}00192\ \ \ \ \ \ \ \ \ \ \ \ \ r.pedidos\ =\ stoi(campos[4]);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00193}00193\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (...)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00194}00194\ \ \ \ \ \ \ \ \ \ \ \ \ r.pedidos\ =\ 0;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00195}00195\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00196}00196\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00197}00197\ \ \ \ \ \ \ \ \ resumenCafeterias.push\_back(r);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00198}00198\ \ \ \ \ \ \ \ \ listaCafeterias.push\_back(Cafeteria(r.nombre,\ r.correo,\ \textcolor{stringliteral}{"{}"{}},\ r.username,\ r.idCafeteria));}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00199}00199\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00200}00200\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00201}00201\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00202}00202\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00203}00203\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00204}00204\ \textcolor{keywordtype}{bool}\ Administrador::cargarUsuariosEnLinea()\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00205}00205\ \ \ \ \ vector<string>\ lineas;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00206}00206\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00207}00207\ \ \ \ \ \textcolor{keywordflow}{if}\ (!pedirLista(\textcolor{stringliteral}{"{}LISTAR\_USUARIOS\_EN\_LINEA"{}},\ lineas))\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00208}00208\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00209}00209\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00210}00210\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00211}00211\ \ \ \ \ usuariosEnLinea\ =\ lineas;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00212}00212\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00213}00213\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00214}00214\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00215}00215\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00216}00216\ \textcolor{comment}{//\ Versiones\ de\ consola}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00217}00217\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00218}00218\ \textcolor{keywordtype}{void}\ Administrador::verUsuarios()\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00219}00219\ \ \ \ \ \textcolor{keywordflow}{if}\ (!cargarUsuarios())\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00220}00220\ \ \ \ \ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}No\ se\ pudo\ cargar\ la\ lista\ de\ usuarios:\ "{}}\ <<\ ultimoError\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00221}00221\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00222}00222\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00223}00223\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00224}00224\ \ \ \ \ \textcolor{keywordflow}{if}\ (listaUsuarios.empty())\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00225}00225\ \ \ \ \ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}No\ hay\ usuarios\ registrados."{}}\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00226}00226\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00227}00227\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00228}00228\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00229}00229\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ listaUsuarios.size();\ i++)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00230}00230\ \ \ \ \ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}Nombre:\ "{}}\ <<\ listaUsuarios[i].getNombre()\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00231}00231\ \ \ \ \ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}Username:\ "{}}\ <<\ listaUsuarios[i].getUsername()\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00232}00232\ \ \ \ \ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}Correo:\ "{}}\ <<\ listaUsuarios[i].getCorreo()\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00233}00233\ \ \ \ \ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}Tipo\ de\ usuario:\ "{}}\ <<\ listaUsuarios[i].getTipoUsuario()\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00234}00234\ \ \ \ \ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/"{}}\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00235}00235\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00236}00236\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00237}00237\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00238}00238\ \textcolor{keywordtype}{void}\ Administrador::verCafeterias()\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00239}00239\ \ \ \ \ \textcolor{keywordflow}{if}\ (!cargarCafeterias())\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00240}00240\ \ \ \ \ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}No\ se\ pudo\ cargar\ la\ lista\ de\ cafeterias:\ "{}}\ <<\ ultimoError\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00241}00241\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00242}00242\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00243}00243\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00244}00244\ \ \ \ \ \textcolor{keywordflow}{if}\ (resumenCafeterias.empty())\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00245}00245\ \ \ \ \ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}No\ hay\ cafeterias\ registradas."{}}\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00246}00246\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00247}00247\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00248}00248\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00249}00249\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ r\ :\ resumenCafeterias)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00250}00250\ \ \ \ \ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}Cafeteria\ ["{}}\ <<\ r.idCafeteria\ <<\ \textcolor{stringliteral}{"{}]\ "{}}\ <<\ r.nombre}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00251}00251\ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ -\/>\ "{}}\ <<\ r.pedidos\ <<\ \textcolor{stringliteral}{"{}\ pedidos"{}}\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00252}00252\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00253}00253\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00254}00254\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00255}00255\ \textcolor{keywordtype}{void}\ Administrador::verUsuariosEnLinea()\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00256}00256\ \ \ \ \ \textcolor{keywordflow}{if}\ (!cargarUsuariosEnLinea())\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00257}00257\ \ \ \ \ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}No\ se\ pudo\ obtener\ la\ lista\ de\ usuarios\ en\ linea:\ "{}}\ <<\ ultimoError\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00258}00258\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00259}00259\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00260}00260\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00261}00261\ \ \ \ \ \textcolor{keywordflow}{if}\ (usuariosEnLinea.empty())\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00262}00262\ \ \ \ \ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}No\ hay\ usuarios\ conectados\ en\ este\ momento."{}}\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00263}00263\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00264}00264\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00265}00265\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00266}00266\ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}Usuarios\ en\ linea\ ("{}}\ <<\ usuariosEnLinea.size()\ <<\ \textcolor{stringliteral}{"{}):"{}}\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00267}00267\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00268}00268\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ username\ :\ usuariosEnLinea)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00269}00269\ \ \ \ \ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}\ -\/\ "{}}\ <<\ username\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00270}00270\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00271}00271\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00272}00272\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00273}00273\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00274}00274\ \textcolor{comment}{//\ Login}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00275}00275\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00276}00276\ \textcolor{keywordtype}{bool}\ Administrador::iniciarSesionAdmin(\textcolor{keyword}{const}\ \textcolor{keywordtype}{string}\&\ username,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{string}\&\ contrasena)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00277}00277\ \ \ \ \ \textcolor{keywordflow}{if}\ (username.empty()\ ||\ contrasena.empty())\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00278}00278\ \ \ \ \ \ \ \ \ ultimoError\ =\ \textcolor{stringliteral}{"{}Escribe\ tu\ usuario\ y\ tu\ contrasena."{}};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00279}00279\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00280}00280\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00281}00281\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00282}00282\ \ \ \ \ \textcolor{keywordtype}{string}\ respuesta\ =\ \doxymbox{\hyperlink{Protocolo_8cpp_a2d0ca82e9f165c46123eaf75dab309ac}{enviarComando}}(socketAdmin,\ \textcolor{stringliteral}{"{}LOGIN\_ADMIN|"{}}\ +\ username\ +\ \textcolor{stringliteral}{"{}|"{}}\ +\ contrasena);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00283}00283\ \ \ \ \ vector<string>\ campos\ =\ \doxymbox{\hyperlink{Protocolo_8cpp_a60579ec13f33a16d60573138dea6c8bd}{separarCampos}}(respuesta);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00284}00284\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00285}00285\ \ \ \ \ \textcolor{keywordflow}{if}\ (campos.empty()\ ||\ campos[0]\ !=\ \textcolor{stringliteral}{"{}OK"{}})\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00286}00286\ \ \ \ \ \ \ \ \ ultimoError\ =\ (campos.size()\ >\ 1)\ ?\ campos[1]\ :\ \textcolor{stringliteral}{"{}Error\ desconocido."{}};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00287}00287\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00288}00288\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00289}00289\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00290}00290\ \ \ \ \ \textcolor{comment}{//\ Respuesta\ esperada:\ OK|nombre|correo|username}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00291}00291\ \ \ \ \ \textcolor{keywordflow}{if}\ (campos.size()\ <\ 4)\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00292}00292\ \ \ \ \ \ \ \ \ ultimoError\ =\ \textcolor{stringliteral}{"{}Respuesta\ invalida\ del\ servidor."{}};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00293}00293\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00294}00294\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00295}00295\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00296}00296\ \ \ \ \ setNombre(campos[1]);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00297}00297\ \ \ \ \ setCorreo(campos[2]);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00298}00298\ \ \ \ \ setUsername(campos[3]);}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00299}00299\ \ \ \ \ setTipoUsuario(\textcolor{stringliteral}{"{}Admin"{}});}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00300}00300\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00301}00301\ \ \ \ \ ultimoError.clear();}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00302}00302\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00303}00303\ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00304}00304\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00305}00305\ \textcolor{keywordtype}{bool}\ Administrador::iniciarSesionAdmin()\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00306}00306\ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}=================================="{}}\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00307}00307\ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}Inicio\ de\ sesion\ (Administrador)"{}}\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00308}00308\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00309}00309\ \ \ \ \ \textcolor{keywordtype}{string}\ username,\ contrasena;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00310}00310\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00311}00311\ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}Ingrese\ username:\ "{}};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00312}00312\ \ \ \ \ cin\ >>\ username;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00313}00313\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00314}00314\ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}Ingrese\ contrasena:\ "{}};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00315}00315\ \ \ \ \ cin\ >>\ contrasena;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00316}00316\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00317}00317\ \ \ \ \ \textcolor{keywordflow}{if}\ (!iniciarSesionAdmin(username,\ contrasena))\ \{}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00318}00318\ \ \ \ \ \ \ \ \ cout\ <<\ ultimoError\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00319}00319\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00320}00320\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00321}00321\ }
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00322}00322\ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}Inicio\ de\ sesion\ correcto."{}}\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00323}00323\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{\Hypertarget{Administrador_8cpp_source_l00324}00324\ \}}
+
+\end{DoxyCode}

@@ -1,0 +1,200 @@
+\doxysection{Widgets.\+cpp}
+\hypertarget{Widgets_8cpp_source}{}\label{Widgets_8cpp_source}\index{src/Widgets.cpp@{src/Widgets.cpp}}
+\doxymbox{\hyperlink{Widgets_8cpp}{Ir a la documentación de este archivo.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00001}00001\ \textcolor{preprocessor}{\#include\ "{}Widgets.h"{}}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00002}00002\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00003}00003\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00004}00004\ \textcolor{comment}{//\ Paleta\ (tonos\ cafe/crema,\ acorde\ a\ una\ cafeteria)}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00005}00005\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ sf::Color\ CAFE\_NORMAL(111,\ 78,\ 55);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00006}00006\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ sf::Color\ CAFE\_HOVER(140,\ 102,\ 74);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00007}00007\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ sf::Color\ CAFE\_ACTIVO(74,\ 50,\ 35);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00008}00008\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ sf::Color\ GRIS\_BORDE(190,\ 180,\ 170);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00009}00009\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ sf::Color\ TEXTO\_OSCURO(50,\ 40,\ 35);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00010}00010\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ sf::Color\ TEXTO\_SUAVE(130,\ 120,\ 110);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00011}00011\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00012}00012\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ Boton\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00013}00013\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00014}00014\ Boton::Boton()\ :\ hover(false),\ activo(false)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00015}00015\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00016}00016\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00017}00017\ \textcolor{keywordtype}{void}\ Boton::setColor(\textcolor{keyword}{const}\ sf::Color\&\ normal)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00018}00018\ \ \ \ \ colorNormal\ =\ normal;}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00019}00019\ \ \ \ \ colorHover\ =\ sf::Color(\textcolor{keyword}{static\_cast<}sf::Uint8\textcolor{keyword}{>}(std::min(255,\ normal.r\ +\ 30)),}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00020}00020\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}sf::Uint8\textcolor{keyword}{>}(std::min(255,\ normal.g\ +\ 30)),}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00021}00021\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}sf::Uint8\textcolor{keyword}{>}(std::min(255,\ normal.b\ +\ 30)));}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00022}00022\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00023}00023\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00024}00024\ Boton::Boton(\textcolor{keyword}{const}\ std::string\&\ textoBoton,\ \textcolor{keywordtype}{float}\ x,\ \textcolor{keywordtype}{float}\ y,\ \textcolor{keywordtype}{float}\ ancho,\ \textcolor{keywordtype}{float}\ alto)}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00025}00025\ \ \ \ \ :\ texto(textoBoton),\ hover(false),\ activo(false)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00026}00026\ \ \ \ \ forma.setSize(sf::Vector2f(ancho,\ alto));}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00027}00027\ \ \ \ \ forma.setPosition(x,\ y);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00028}00028\ \ \ \ \ forma.setFillColor(colorNormal);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00029}00029\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00030}00030\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00031}00031\ \textcolor{keywordtype}{void}\ Boton::setTexto(\textcolor{keyword}{const}\ std::string\&\ t)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00032}00032\ \ \ \ \ texto\ =\ t;}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00033}00033\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00034}00034\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00035}00035\ \textcolor{keywordtype}{void}\ Boton::setActivo(\textcolor{keywordtype}{bool}\ a)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00036}00036\ \ \ \ \ activo\ =\ a;}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00037}00037\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00038}00038\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00039}00039\ \textcolor{keywordtype}{bool}\ Boton::contiene(\textcolor{keywordtype}{float}\ x,\ \textcolor{keywordtype}{float}\ y)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00040}00040\ \ \ \ \ \textcolor{keywordflow}{return}\ forma.getGlobalBounds().contains(x,\ y);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00041}00041\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00042}00042\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00043}00043\ \textcolor{keywordtype}{void}\ Boton::actualizarHover(\textcolor{keywordtype}{float}\ x,\ \textcolor{keywordtype}{float}\ y)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00044}00044\ \ \ \ \ hover\ =\ contiene(x,\ y);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00045}00045\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00046}00046\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00047}00047\ \textcolor{keywordtype}{void}\ Boton::dibujar(Ventana\&\ ventana)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00048}00048\ \ \ \ \ \textcolor{keywordflow}{if}\ (activo)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00049}00049\ \ \ \ \ \ \ \ \ forma.setFillColor(CAFE\_ACTIVO);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00050}00050\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (hover)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00051}00051\ \ \ \ \ \ \ \ \ forma.setFillColor(colorHover);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00052}00052\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00053}00053\ \ \ \ \ \ \ \ \ forma.setFillColor(colorNormal);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00054}00054\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00055}00055\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00056}00056\ \ \ \ \ ventana.getWindow().draw(forma);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00057}00057\ \ \ \ \ ventana.dibujarTextoCentrado(texto,\ forma.getGlobalBounds(),\ 18,\ sf::Color::White);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00058}00058\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00059}00059\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00060}00060\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ CampoTexto\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00061}00061\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00062}00062\ CampoTexto::CampoTexto()\ :\ enfocado(false),\ oculto(false),\ maxLongitud(32)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00063}00063\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00064}00064\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00065}00065\ CampoTexto::CampoTexto(\textcolor{keyword}{const}\ std::string\&\ textoEtiqueta,\ \textcolor{keywordtype}{float}\ x,\ \textcolor{keywordtype}{float}\ y,}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ ancho,\ \textcolor{keywordtype}{float}\ alto,\ \textcolor{keywordtype}{bool}\ esOculto)}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00067}00067\ \ \ \ \ :\ etiqueta(textoEtiqueta),\ enfocado(false),\ oculto(esOculto),\ maxLongitud(32)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00068}00068\ \ \ \ \ forma.setSize(sf::Vector2f(ancho,\ alto));}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00069}00069\ \ \ \ \ forma.setPosition(x,\ y);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00070}00070\ \ \ \ \ forma.setFillColor(sf::Color::White);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00071}00071\ \ \ \ \ forma.setOutlineThickness(2.0f);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00072}00072\ \ \ \ \ forma.setOutlineColor(GRIS\_BORDE);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00073}00073\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00074}00074\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00075}00075\ \textcolor{keywordtype}{void}\ CampoTexto::setEnfocado(\textcolor{keywordtype}{bool}\ e)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00076}00076\ \ \ \ \ enfocado\ =\ e;}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00077}00077\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00078}00078\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00079}00079\ \textcolor{keywordtype}{bool}\ CampoTexto::estaEnfocado()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00080}00080\ \ \ \ \ \textcolor{keywordflow}{return}\ enfocado;}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00081}00081\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00082}00082\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00083}00083\ \textcolor{keywordtype}{bool}\ CampoTexto::contiene(\textcolor{keywordtype}{float}\ x,\ \textcolor{keywordtype}{float}\ y)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00084}00084\ \ \ \ \ \textcolor{keywordflow}{return}\ forma.getGlobalBounds().contains(x,\ y);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00085}00085\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00086}00086\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00087}00087\ \textcolor{keywordtype}{void}\ CampoTexto::recibirCaracter(sf::Uint32\ unicode)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00088}00088\ \ \ \ \ \textcolor{keywordflow}{if}\ (!enfocado)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00089}00089\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00090}00090\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00091}00091\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00092}00092\ \ \ \ \ \textcolor{keywordflow}{if}\ (unicode\ ==\ 8)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ backspace:\ borra\ UN\ caracter\ (aunque\ sea\ acentuado)}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00093}00093\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (!contenido.empty())\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00094}00094\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ ultimo\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}(contenido.back());}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00095}00095\ \ \ \ \ \ \ \ \ \ \ \ \ contenido.pop\_back();}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00096}00096\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((ultimo\ \&\ 0xC0)\ !=\ 0x80)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00097}00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00098}00098\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00099}00099\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00100}00100\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (modo\ ==\ ModoCampo::FECHA\_MMAA\ \&\&\ !contenido.empty()\ \&\&\ contenido.back()\ ==\ \textcolor{charliteral}{'/'})\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00101}00101\ \ \ \ \ \ \ \ \ \ \ \ \ contenido.pop\_back();\ \textcolor{comment}{//\ al\ borrar\ despues\ de\ "{}12/"{}\ se\ va\ tambien\ la\ barra}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00102}00102\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00103}00103\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00104}00104\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00105}00105\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00106}00106\ \ \ \ \ \textcolor{keywordflow}{if}\ (modo\ !=\ ModoCampo::LIBRE)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00107}00107\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ esDigito\ =\ (unicode\ >=\ \textcolor{charliteral}{'0'}\ \&\&\ unicode\ <=\ \textcolor{charliteral}{'9'});}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00108}00108\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00109}00109\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (modo\ ==\ ModoCampo::SOLO\_DIGITOS)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (esDigito\ \&\&\ contenido.size()\ <\ maxLongitud)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ contenido\ +=\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{char}\textcolor{keyword}{>}(unicode);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00112}00112\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00114}00114\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00115}00115\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00116}00116\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ FECHA\_MMAA}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00117}00117\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (unicode\ ==\ \textcolor{charliteral}{'/'})\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00118}00118\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (contenido.size()\ ==\ 1\ \&\&\ contenido[0]\ >=\ \textcolor{charliteral}{'1'})\ \{\ \textcolor{comment}{//\ "{}5/"{}\ -\/>\ "{}05/"{}}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ contenido\ =\ \textcolor{stringliteral}{"{}0"{}}\ +\ contenido\ +\ \textcolor{stringliteral}{"{}/"{}};}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00122}00122\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00123}00123\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00124}00124\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!esDigito\ ||\ contenido.size()\ >=\ 5)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00126}00126\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00127}00127\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00128}00128\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (contenido.empty()\ \&\&\ unicode\ >=\ \textcolor{charliteral}{'2'})\ \{\ \textcolor{comment}{//\ "{}5"{}\ -\/>\ "{}05/"{}\ (no\ existe\ el\ mes\ 5x)}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00129}00129\ \ \ \ \ \ \ \ \ \ \ \ \ contenido\ =\ std::string(\textcolor{stringliteral}{"{}0"{}})\ +\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{char}\textcolor{keyword}{>}(unicode)\ +\ \textcolor{stringliteral}{"{}/"{}};}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00130}00130\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00131}00131\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00132}00132\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00133}00133\ \ \ \ \ \ \ \ \ contenido\ +=\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{char}\textcolor{keyword}{>}(unicode);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00134}00134\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00135}00135\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (contenido.size()\ ==\ 2)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00136}00136\ \ \ \ \ \ \ \ \ \ \ \ \ contenido\ +=\ \textcolor{charliteral}{'/'};}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00137}00137\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00138}00138\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00139}00139\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00140}00140\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00141}00141\ \ \ \ \ std::string\ bytes;}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00142}00142\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00143}00143\ \ \ \ \ \textcolor{keywordflow}{if}\ (unicode\ >=\ 32\ \&\&\ unicode\ <\ 127)\ \{\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ ASCII\ imprimible}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00144}00144\ \ \ \ \ \ \ \ \ bytes\ +=\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{char}\textcolor{keyword}{>}(unicode);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00145}00145\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (unicode\ >=\ 0xA0\ \&\&\ unicode\ <=\ 0x24F)\ \{\ \textcolor{comment}{//\ letras\ con\ acento,\ ñ,\ ¿,\ ¡,\ etc.\ (UTF-\/8\ de\ 2\ bytes)}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00146}00146\ \ \ \ \ \ \ \ \ bytes\ +=\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{char}\textcolor{keyword}{>}(0xC0\ |\ (unicode\ >>\ 6));}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00147}00147\ \ \ \ \ \ \ \ \ bytes\ +=\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{char}\textcolor{keyword}{>}(0x80\ |\ (unicode\ \&\ 0x3F));}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00148}00148\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00149}00149\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};\ \textcolor{comment}{//\ otros\ caracteres\ (emojis,\ control)\ se\ ignoran}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00150}00150\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00151}00151\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00152}00152\ \ \ \ \ \textcolor{keywordflow}{if}\ (contenido.size()\ +\ bytes.size()\ <=\ maxLongitud)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00153}00153\ \ \ \ \ \ \ \ \ contenido\ +=\ bytes;}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00154}00154\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00155}00155\ \ \ \ \ \textcolor{comment}{//\ Enter\ (13)\ y\ Tab\ (9)\ los\ maneja\ quien\ usa\ el\ campo,\ no\ el\ campo.}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00156}00156\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00157}00157\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00158}00158\ \textcolor{keyword}{const}\ std::string\&\ CampoTexto::getContenido()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00159}00159\ \ \ \ \ \textcolor{keywordflow}{return}\ contenido;}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00160}00160\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00161}00161\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00162}00162\ \textcolor{keywordtype}{void}\ CampoTexto::setContenido(\textcolor{keyword}{const}\ std::string\&\ texto)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00163}00163\ \ \ \ \ contenido\ =\ texto;}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00164}00164\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00165}00165\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00166}00166\ \textcolor{keywordtype}{void}\ CampoTexto::setMaxLongitud(std::size\_t\ maximo)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00167}00167\ \ \ \ \ maxLongitud\ =\ maximo;}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00168}00168\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00169}00169\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00170}00170\ \textcolor{keywordtype}{void}\ CampoTexto::setModo(ModoCampo\ m)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00171}00171\ \ \ \ \ modo\ =\ m;}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00172}00172\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00173}00173\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00174}00174\ \textcolor{keywordtype}{void}\ CampoTexto::limpiar()\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00175}00175\ \ \ \ \ contenido.clear();}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00176}00176\ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00177}00177\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00178}00178\ \textcolor{keywordtype}{void}\ CampoTexto::dibujar(Ventana\&\ ventana)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00179}00179\ \ \ \ \ forma.setOutlineColor(enfocado\ ?\ CAFE\_NORMAL\ :\ GRIS\_BORDE);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00180}00180\ \ \ \ \ ventana.getWindow().draw(forma);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00181}00181\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00182}00182\ \ \ \ \ sf::FloatRect\ r\ =\ forma.getGlobalBounds();}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00183}00183\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00184}00184\ \ \ \ \ \textcolor{comment}{//\ Etiqueta\ arriba\ del\ campo}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00185}00185\ \ \ \ \ ventana.dibujarTexto(etiqueta,\ r.left,\ r.top\ -\/\ 24.0f,\ 16,\ TEXTO\_SUAVE);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00186}00186\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00187}00187\ \ \ \ \ \textcolor{comment}{//\ Contenido\ (asteriscos\ si\ es\ contrasena)\ +\ cursor\ "{}\_"{}\ si\ tiene\ el\ foco}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00188}00188\ \ \ \ \ std::string\ mostrado\ =\ oculto\ ?\ std::string(contenido.size(),\ \textcolor{charliteral}{'*'})\ :\ contenido;}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00189}00189\ \ \ \ \ \textcolor{keywordflow}{if}\ (enfocado)\ \{}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00190}00190\ \ \ \ \ \ \ \ \ mostrado\ +=\ \textcolor{stringliteral}{"{}\_"{}};}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00191}00191\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00192}00192\ }
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00193}00193\ \ \ \ \ ventana.dibujarTexto(mostrado,\ r.left\ +\ 10.0f,\ r.top\ +\ 8.0f,\ 20,\ TEXTO\_OSCURO);}
+\DoxyCodeLine{\Hypertarget{Widgets_8cpp_source_l00194}00194\ \}}
+
+\end{DoxyCode}

@@ -1,0 +1,80 @@
+\doxysection{main\+Servidor.\+cpp}
+\hypertarget{mainServidor_8cpp_source}{}\label{mainServidor_8cpp_source}\index{src/mainServidor.cpp@{src/mainServidor.cpp}}
+\doxymbox{\hyperlink{mainServidor_8cpp}{Ir a la documentación de este archivo.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00001}00001\ \textcolor{preprocessor}{\#include\ "{}../include/Servidor.h"{}}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00002}00002\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00003}00003\ \textcolor{preprocessor}{\#include\ <atomic>}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00004}00004\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00005}00005\ \textcolor{preprocessor}{\#include\ <csignal>}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00006}00006\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00007}00007\ \textcolor{preprocessor}{\#include\ <iostream>}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00008}00008\ \textcolor{preprocessor}{\#include\ <thread>}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00009}00009\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00010}00010\ \textcolor{keyword}{using\ namespace\ }std;}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00011}00011\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00012}00012\ \textcolor{comment}{//\ Los\ manejadores\ de\ señales\ deben\ ser\ "{}async-\/signal-\/safe"{}:\ no\ pueden\ usar}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00013}00013\ \textcolor{comment}{//\ mutex,\ cout,\ new/delete,\ etc.\ Por\ eso\ aqui\ SOLO\ se\ ponen\ banderas}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00014}00014\ \textcolor{comment}{//\ atomicas;\ el\ trabajo\ real\ (cerrar\ sockets,\ hacer\ fork,\ escribir}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00015}00015\ \textcolor{comment}{//\ archivos...)\ lo\ hace\ el\ hilo\ monitor\ de\ abajo,\ en\ un\ contexto\ normal.}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00016}00016\ \textcolor{keyword}{static}\ atomic<bool>\ banderaApagado\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00017}00017\ \textcolor{keyword}{static}\ atomic<bool>\ banderaReporte\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00018}00018\ \textcolor{keyword}{static}\ atomic<bool>\ banderaToggleSimulador\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00019}00019\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00020}\doxymbox{\hyperlink{mainServidor_8cpp_a282b220f349dfcbde8c7b9bd4df7b2aa}{00020}}\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{mainServidor_8cpp_a282b220f349dfcbde8c7b9bd4df7b2aa}{manejarSenal}}(\textcolor{keywordtype}{int}\ senal)\ \{}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00021}00021\ \ \ \ \ \textcolor{keywordflow}{if}\ (senal\ ==\ SIGINT\ ||\ senal\ ==\ SIGTERM)\ \{}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00022}00022\ \ \ \ \ \ \ \ \ banderaApagado.store(\textcolor{keyword}{true});}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00023}00023\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (senal\ ==\ SIGUSR1)\ \{}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00024}00024\ \ \ \ \ \ \ \ \ banderaReporte.store(\textcolor{keyword}{true});}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00025}00025\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (senal\ ==\ SIGUSR2)\ \{}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00026}00026\ \ \ \ \ \ \ \ \ banderaToggleSimulador.store(\textcolor{keyword}{true});}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00027}00027\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00028}00028\ \}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00029}00029\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00030}00030\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ instalarManejadoresDeSenales()\ \{}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00031}00031\ \ \ \ \ \textcolor{keyword}{struct\ }sigaction\ accion;}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00032}00032\ \ \ \ \ memset(\&accion,\ 0,\ \textcolor{keyword}{sizeof}(accion));}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00033}00033\ \ \ \ \ accion.sa\_handler\ =\ \doxymbox{\hyperlink{mainServidor_8cpp_a282b220f349dfcbde8c7b9bd4df7b2aa}{manejarSenal}};}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00034}00034\ \ \ \ \ sigemptyset(\&accion.sa\_mask);}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00035}00035\ \ \ \ \ accion.sa\_flags\ =\ 0;}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00036}00036\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00037}00037\ \ \ \ \ sigaction(SIGINT,\ \&accion,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00038}00038\ \ \ \ \ sigaction(SIGTERM,\ \&accion,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00039}00039\ \ \ \ \ sigaction(SIGUSR1,\ \&accion,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00040}00040\ \ \ \ \ sigaction(SIGUSR2,\ \&accion,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00041}00041\ \}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00042}00042\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00043}\doxymbox{\hyperlink{mainServidor_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}{00043}}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{mainServidor_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}{main}}()\{}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00044}00044\ \ \ \ \ Servidor\ servidor;}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00045}00045\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00046}00046\ \ \ \ \ instalarManejadoresDeSenales();}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00047}00047\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00048}00048\ \ \ \ \ cout\ <<\ \textcolor{stringliteral}{"{}Senales\ disponibles:\ SIGINT/SIGTERM\ =\ apagado\ seguro,\ "{}}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00049}00049\ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}SIGUSR1\ =\ reporte\ de\ ventas\ (fork),\ SIGUSR2\ =\ pausar/reanudar\ simulador."{}}\ <<\ endl;}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00050}00050\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00051}00051\ \ \ \ \ \textcolor{comment}{//\ Hilo\ monitor:\ revisa\ las\ banderas\ cada\ 200ms\ y\ ejecuta\ la\ accion\ real}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00052}00052\ \ \ \ \ \textcolor{comment}{//\ (aqui\ SI\ se\ puede\ usar\ mutex,\ hacer\ I/O,\ fork(),\ lanzar\ hilos,\ etc.).}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00053}00053\ \ \ \ \ thread\ hiloMonitor([\&servidor]()\ \{}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00054}00054\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (!banderaApagado.load())\ \{}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00055}00055\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (banderaReporte.exchange(\textcolor{keyword}{false}))\ \{}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00056}00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ servidor.generarReporteVentas();}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00057}00057\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00058}00058\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00059}00059\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (banderaToggleSimulador.exchange(\textcolor{keyword}{false}))\ \{}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00060}00060\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ servidor.alternarSimulador();}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00061}00061\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00062}00062\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ this\_thread::sleep\_for(chrono::milliseconds(200));}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00064}00064\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00065}00065\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00066}00066\ \ \ \ \ \ \ \ \ servidor.detener();}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00067}00067\ \ \ \ \ \});}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00068}00068\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00069}00069\ \ \ \ \ servidor.iniciar();\ \textcolor{comment}{//\ bloquea\ aceptando\ conexiones\ hasta\ que\ detener()\ cierre\ el\ socket}}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00070}00070\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00071}00071\ \ \ \ \ hiloMonitor.join();}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00072}00072\ }
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00073}00073\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{\Hypertarget{mainServidor_8cpp_source_l00074}00074\ \}}
+
+\end{DoxyCode}
