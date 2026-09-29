@@ -29,6 +29,7 @@ class Usuario{
 		string getContrasena() const;
 		string getUsername() const;
 
+//const string& n significa: “recibe este string sin copiarlo y no me permitas modificarlo dentro de esta función”
 		void setNombre(const string& n);
 		void setTipoUsuario(const string& tu);
 		void setCorreo(const string& c);
