@@ -855,8 +855,6 @@ string Servidor::procesarComando(const string& comando) {
 
             if (duenoTarjeta != pedido.getUsernameCliente()) {
                 motivoRechazo = "La tarjeta no pertenece al cliente del pedido.";
-            } else if (!Tarjeta::luhnValido(tarjeta.getNumeroTarjeta())) {
-                motivoRechazo = "Numero de tarjeta invalido.";
             } else if (tarjeta.getCVV() != cvv) {
                 motivoRechazo = "CVV incorrecto.";
             } else if (tarjeta.estaVencida()) {
@@ -1233,31 +1231,26 @@ string Servidor::procesarComando(const string& comando) {
         string titular = campos[4];
         string vencimiento = campos[5];
 
-        auto soloDigitos = [](const string& texto) {
-            return !texto.empty() && all_of(texto.begin(), texto.end(),
-                                            [](unsigned char c) { return isdigit(c) != 0; });
-        };
-
-        if (!soloDigitos(numero) || numero.size() < 13 || numero.size() > 19) {
-            return "ERR|El numero de tarjeta debe tener entre 13 y 19 digitos.";
+        if (!Tarjeta::numeroFormatoValido(numero)) {
+            return "ERR|El numero de tarjeta debe tener exactamente 16 digitos.";
         }
 
-        if (!Tarjeta::luhnValido(numero)) {
-            return "ERR|Numero de tarjeta invalido.";
-        }
-
-        if (!soloDigitos(cvv) || (cvv.size() != 3 && cvv.size() != 4)) {
-            return "ERR|El CVV debe tener 3 o 4 digitos.";
+        if (!Tarjeta::cvvFormatoValido(cvv)) {
+            return "ERR|El CVV debe tener exactamente 3 digitos.";
         }
 
         if (titular.empty()) {
             return "ERR|Falta el nombre del titular.";
         }
 
+        if (!Tarjeta::fechaFormatoValida(vencimiento)) {
+            return "ERR|Fecha invalida: usa MM/AA (ej. 08/28).";
+        }
+
         Tarjeta nueva(numero, cvv, titular, vencimiento);
 
         if (nueva.estaVencida()) {
-            return "ERR|Tarjeta vencida o fecha invalida (usa MM/AA).";
+            return "ERR|La tarjeta ya esta vencida.";
         }
 
         lock_guard<mutex> guard(dbMutex);

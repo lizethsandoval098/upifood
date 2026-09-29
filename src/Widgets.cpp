@@ -97,6 +97,44 @@ void CampoTexto::recibirCaracter(sf::Uint32 unicode) {
                 break;
             }
         }
+        if (modo == ModoCampo::FECHA_MMAA && !contenido.empty() && contenido.back() == '/') {
+            contenido.pop_back(); // al borrar despues de "12/" se va tambien la barra
+        }
+        return;
+    }
+
+    if (modo != ModoCampo::LIBRE) {
+        bool esDigito = (unicode >= '0' && unicode <= '9');
+
+        if (modo == ModoCampo::SOLO_DIGITOS) {
+            if (esDigito && contenido.size() < maxLongitud) {
+                contenido += static_cast<char>(unicode);
+            }
+            return;
+        }
+
+        // FECHA_MMAA
+        if (unicode == '/') {
+            if (contenido.size() == 1 && contenido[0] >= '1') { // "5/" -> "05/"
+                contenido = "0" + contenido + "/";
+            }
+            return;
+        }
+
+        if (!esDigito || contenido.size() >= 5) {
+            return;
+        }
+
+        if (contenido.empty() && unicode >= '2') { // "5" -> "05/" (no existe el mes 5x)
+            contenido = std::string("0") + static_cast<char>(unicode) + "/";
+            return;
+        }
+
+        contenido += static_cast<char>(unicode);
+
+        if (contenido.size() == 2) {
+            contenido += '/';
+        }
         return;
     }
 
@@ -127,6 +165,10 @@ void CampoTexto::setContenido(const std::string& texto) {
 
 void CampoTexto::setMaxLongitud(std::size_t maximo) {
     maxLongitud = maximo;
+}
+
+void CampoTexto::setModo(ModoCampo m) {
+    modo = m;
 }
 
 void CampoTexto::limpiar() {

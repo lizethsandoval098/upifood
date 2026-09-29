@@ -89,6 +89,41 @@ bool Tarjeta::estaVencida() const {
     return anio < anioActual || (anio == anioActual && mes < mesActual);
 }
 
+static bool soloDigitosExactos(const string& texto, size_t largo) {
+    if (texto.size() != largo) {
+        return false;
+    }
+
+    for (char c : texto) {
+        if (c < '0' || c > '9') {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool Tarjeta::numeroFormatoValido(const string& numero) {
+    return soloDigitosExactos(numero, 16);
+}
+
+bool Tarjeta::cvvFormatoValido(const string& cvv) {
+    return soloDigitosExactos(cvv, 3);
+}
+
+bool Tarjeta::fechaFormatoValida(const string& fecha) {
+    if (fecha.size() != 5 || fecha[2] != '/') {
+        return false;
+    }
+
+    if (!soloDigitosExactos(fecha.substr(0, 2), 2) || !soloDigitosExactos(fecha.substr(3, 2), 2)) {
+        return false;
+    }
+
+    int mes = (fecha[0] - '0') * 10 + (fecha[1] - '0');
+    return mes >= 1 && mes <= 12;
+}
+
 bool Tarjeta::luhnValido(const string& numero) {
     if (numero.size() < 12 || numero.size() > 19) {
         return false;

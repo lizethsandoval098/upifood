@@ -192,6 +192,7 @@ int main(int argc, char* argv[]) {
     botonVolver.setColor(sf::Color(150, 130, 112));
     regCorreo.setMaxLongitud(50);
     regAnio.setMaxLongitud(4);
+    regAnio.setModo(ModoCampo::SOLO_DIGITOS);
     regEscuela.setMaxLongitud(12);
     vector<CampoTexto*> camposRegistro = {&regCorreo, &regNombre, &regApellidoP, &regApellidoM,
                                           &regAnio, &regEscuela, &regClave};
@@ -207,20 +208,24 @@ int main(int argc, char* argv[]) {
     // ---------------- PANEL: botones de las vistas ----------------
     Boton botonHacerPedido("Hacer pedido y pagar", 620, 516, 240, 44);
     CampoTexto campoCvvPago("CVV de la tarjeta", 260, 380, 150, 42, true);
-    campoCvvPago.setMaxLongitud(4);
+    campoCvvPago.setMaxLongitud(3);
+    campoCvvPago.setModo(ModoCampo::SOLO_DIGITOS);
     vector<CampoTexto*> camposPago = {&campoCvvPago};
     Boton botonPagar("Pagar", 430, 380, 180, 42);
     Boton botonAgregarTarjetaDesdePago("Agregar tarjeta", 630, 380, 230, 42);
     botonAgregarTarjetaDesdePago.setColor(sf::Color(150, 130, 112));
 
-    CampoTexto campoNumero("Número de tarjeta", 260, 360, 300, 42);
+    CampoTexto campoNumero("Número de tarjeta (16 dígitos)", 260, 360, 300, 42);
     CampoTexto campoCvvNuevo("CVV", 580, 360, 90, 42, true);
     CampoTexto campoVenc("Vence (MM/AA)", 690, 360, 170, 42);
     CampoTexto campoTitular("Nombre del titular", 260, 440, 300, 42);
     Boton botonGuardarTarjeta("Guardar tarjeta", 580, 440, 280, 42);
-    campoNumero.setMaxLongitud(19);
-    campoCvvNuevo.setMaxLongitud(4);
+    campoNumero.setMaxLongitud(16);
+    campoNumero.setModo(ModoCampo::SOLO_DIGITOS);
+    campoCvvNuevo.setMaxLongitud(3);
+    campoCvvNuevo.setModo(ModoCampo::SOLO_DIGITOS);
     campoVenc.setMaxLongitud(5);
+    campoVenc.setModo(ModoCampo::FECHA_MMAA);
     vector<CampoTexto*> camposTarjeta = {&campoNumero, &campoCvvNuevo, &campoVenc, &campoTitular};
 
     // ---------------- Estado del programa ----------------
@@ -657,6 +662,8 @@ int main(int argc, char* argv[]) {
             ventana.dibujarTextoCentrado("Crear cuenta", sf::FloatRect(0, 30, ANCHO, 50), 40, BARRA_LATERAL);
             ventana.dibujarTextoCentrado("Solo para alumnos del IPN (correo @alumno.ipn.mx)",
                                          sf::FloatRect(0, 85, ANCHO, 30), 18, TEXTO_SUAVE);
+            ventana.dibujarTextoCentrado("Correo: inicial del nombre + apellido paterno + inicial del materno + 4 dígitos (los 2 primeros = año de ingreso)",
+                                         sf::FloatRect(0, 112, ANCHO, 24), 14, TEXTO_SUAVE);
 
             for (CampoTexto* c : camposRegistro) c->dibujar(ventana);
             botonRegistrar.dibujar(ventana);
@@ -665,7 +672,7 @@ int main(int argc, char* argv[]) {
             ventana.dibujarTexto("Tu usuario será lo que va antes de la @ de tu correo.", 110, 460, 15, TEXTO_SUAVE);
 
             if (!mensajeRegistro.empty()) {
-                ventana.dibujarTextoCentrado(mensajeRegistro, sf::FloatRect(0, 520, ANCHO, 30), 18, ROJO_ERROR);
+                ventana.dibujarTextoCentrado(mensajeRegistro, sf::FloatRect(0, 530, ANCHO, 30), 17, ROJO_ERROR);
             }
         }
         else {

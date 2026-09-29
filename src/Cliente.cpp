@@ -11,6 +11,7 @@
 #include <cctype>
 #include <cstdio>
 #include <stdexcept>
+#include <ctime>
 
 Cliente::Cliente() {
     tipoCliente = "INVITADO";
@@ -208,6 +209,14 @@ bool Cliente::registrarNuevoCliente() {
         return false;
     }
 
+    string errorCorreo = validarCorreoConNombre(correo, nom, apellidoP, apellidoM, anio);
+
+    if (!errorCorreo.empty()) {
+        cout << "No es posible registrar el usuario." << endl;
+        cout << errorCorreo << endl;
+        return false;
+    }
+
     string username = asignarUsername(correo);
 
     cout << "Registro realizado correctamente." << endl;
@@ -287,6 +296,11 @@ bool Cliente::validarIPN(const string& correo, int anio, const string& escuela) 
         return false;
     }
 
+    time_t ahora = time(nullptr);
+    if (anio > localtime(&ahora)->tm_year + 1900) {
+        return false; // no se puede haber ingresado en el futuro
+    }
+
     if (!validarEscuela(escuela)) {
         return false;
     }
@@ -302,6 +316,78 @@ bool Cliente::validarIPN(const string& correo, int anio, const string& escuela) 
     }
 
     return true;
+}
+
+string Cliente::normalizarParaCorreo(const string& texto) {
+    string resultado;
+
+    for (size_t i = 0; i < texto.size(); i++) {
+        unsigned char c = static_cast<unsigned char>(texto[i]);
+
+        if (c < 0x80) {
+            if (isalnum(c)) {
+                resultado += static_cast<char>(tolower(c));
+            }
+            continue;
+        }
+
+        // Letras con acento (UTF-8 de 2 bytes: 0xC3 xx). Se pasan a su letra base.
+        if (c == 0xC3 && i + 1 < texto.size()) {
+            unsigned char d = static_cast<unsigned char>(texto[++i]);
+            char base = 0;
+
+            if ((d >= 0x80 && d <= 0x85) || (d >= 0xA0 && d <= 0xA5)) base = 'a';       // Á À Â Ã Ä Å / á à â ã ä å
+            else if ((d >= 0x88 && d <= 0x8B) || (d >= 0xA8 && d <= 0xAB)) base = 'e';  // É È Ê Ë
+            else if ((d >= 0x8C && d <= 0x8F) || (d >= 0xAC && d <= 0xAF)) base = 'i';  // Í Ì Î Ï
+            else if ((d >= 0x92 && d <= 0x96) || (d >= 0xB2 && d <= 0xB6)) base = 'o';  // Ó Ò Ô Õ Ö
+            else if ((d >= 0x99 && d <= 0x9C) || (d >= 0xB9 && d <= 0xBC)) base = 'u';  // Ú Ù Û Ü
+            else if (d == 0x91 || d == 0xB1) base = 'n';                                // Ñ ñ
+
+            if (base != 0) resultado += base;
+        }
+    }
+
+    return resultado;
+}
+
+string Cliente::validarCorreoConNombre(const string& correo, const string& nombre,
+                                       const string& apellidoP, const string& apellidoM, int anio) {
+    string nom = normalizarParaCorreo(nombre);
+    string ap = normalizarParaCorreo(apellidoP);
+    string am = normalizarParaCorreo(apellidoM);
+
+    if (nom.empty() || ap.empty() || am.empty()) {
+        return "Nombre y apellidos deben llevar letras.";
+    }
+
+    size_t posArroba = correo.find('@');
+    string local = normalizarParaCorreo(posArroba == string::npos ? correo : correo.substr(0, posArroba));
+
+    char dosDigitos[8];
+    snprintf(dosDigitos, sizeof(dosDigitos), "%02d", anio % 100);
+
+    string prefijo = string(1, nom[0]) + ap + string(1, am[0]) + dosDigitos;
+
+    // El correo debe ser: prefijo (con el anio) + 2 digitos aleatorios
+    if (local.size() != prefijo.size() + 2 ||
+        !isdigit(static_cast<unsigned char>(local[local.size() - 1])) ||
+        !isdigit(static_cast<unsigned char>(local[local.size() - 2]))) {
+        return "El correo debe ser " + prefijo + "XX@alumno.ipn.mx (XX = 2 digitos).";
+    }
+
+    string inicio = local.substr(0, prefijo.size() - 2);
+    string digitosAnio = local.substr(prefijo.size() - 2, 2);
+
+    if (inicio != prefijo.substr(0, prefijo.size() - 2)) {
+        return "El correo no coincide con tu nombre: debe ser " + prefijo + "XX@alumno.ipn.mx";
+    }
+
+    if (digitosAnio != string(dosDigitos)) {
+        return "El anio de ingreso (" + to_string(anio) + ") no coincide con los digitos del correo (" +
+               digitosAnio + ").";
+    }
+
+    return "";
 }
 
 bool Cliente::validarEscuela(const string& escuela) {
@@ -465,7 +551,14 @@ bool Cliente::registrarse(const string& correo, const string& nombre, const stri
     }
 
     if (!validarIPN(correo, anioNumero, escuela)) {
-        ultimoError = "Correo (@alumno.ipn.mx), anio (> 2014) o escuela no validos.";
+        ultimoError = "Correo (@alumno.ipn.mx), anio (2015 en adelante) o escuela no validos.";
+        return false;
+    }
+
+    string errorCorreo = validarCorreoConNombre(correo, nombre, apellidoP, apellidoM, anioNumero);
+
+    if (!errorCorreo.empty()) {
+        ultimoError = errorCorreo;
         return false;
     }
 
@@ -793,6 +886,32 @@ bool Cliente::agregarTarjetaRed(const string& numero, const string& cvv, const s
         return false;
     }
 
+    // Se valida aqui (rapido, sin ir al servidor) y el servidor lo vuelve a validar.
+    if (!Tarjeta::numeroFormatoValido(numero)) {
+        ultimoError = "El numero de tarjeta debe tener exactamente 16 digitos.";
+        return false;
+    }
+
+    if (!Tarjeta::cvvFormatoValido(cvv)) {
+        ultimoError = "El CVV debe tener exactamente 3 digitos.";
+        return false;
+    }
+
+    if (titular.empty()) {
+        ultimoError = "Escribe el nombre del titular.";
+        return false;
+    }
+
+    if (!Tarjeta::fechaFormatoValida(vencimiento)) {
+        ultimoError = "Fecha invalida: usa MM/AA (ej. 08/28).";
+        return false;
+    }
+
+    if (Tarjeta(numero, cvv, titular, vencimiento).estaVencida()) {
+        ultimoError = "La tarjeta ya esta vencida.";
+        return false;
+    }
+
     string respuesta = enviarComando(socketCliente,
                                      "TARJETA_AGREGAR|" + getUsername() + "|" + numero + "|" + cvv + "|" +
                                      titular + "|" + vencimiento);
@@ -808,8 +927,8 @@ bool Cliente::agregarTarjetaRed(const string& numero, const string& cvv, const s
 
 bool Cliente::pagarPedidoRed(const string& folio, const string& numeroTarjeta, const string& cvv,
                              string& referenciaOut) {
-    if (tieneSeparadores(cvv)) {
-        ultimoError = "CVV invalido.";
+    if (!Tarjeta::cvvFormatoValido(cvv)) {
+        ultimoError = "El CVV debe tener exactamente 3 digitos.";
         return false;
     }
 
