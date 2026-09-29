@@ -34,13 +34,7 @@ add_library(
 
 # Ruta ABSOLUTA de la carpeta recursos/ (asi la fuente se encuentra sin
 # importar desde que carpeta ejecutes el programa).
-file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/database")
-target_compile_definitions(modelo PRIVATE
-	RECURSOS_DIR="${CMAKE_SOURCE_DIR}/recursos"
-	# La base de datos SIEMPRE vive en <proyecto>/database/upifood.db, se ejecute
-	# el servidor desde la carpeta que sea.
-	DB_DIR="${CMAKE_SOURCE_DIR}/database"
-)
+target_compile_definitions(modelo PRIVATE RECURSOS_DIR="${CMAKE_SOURCE_DIR}/recursos")
 
 target_link_libraries(
 	modelo
