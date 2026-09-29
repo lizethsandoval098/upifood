@@ -846,6 +846,51 @@ const vector<ResumenPedidoCliente>& Cliente::getPedidosCliente() const {
     return pedidosCliente;
 }
 
+bool Cliente::cargarDetallePedido(const string& folio, const string& idCafeteria) {
+    vector<string> lineas;
+
+    if (!pedirLista("PEDIDO_DETALLE|" + idCafeteria + "|" + folio + "|" + getUsername(), lineas)) {
+        return false;
+    }
+
+    detallePedido.clear();
+    folioDetalle = folio;
+
+    for (const string& linea : lineas) {
+        // idProducto|nombre|cantidad|precioUnitario
+        vector<string> campos = separarCampos(linea);
+
+        if (campos.size() < 4) {
+            continue;
+        }
+
+        Producto producto;
+        producto.setIdProducto(campos[0]);
+        producto.setNombreProducto(campos[1]);
+
+        int cantidad = 0;
+
+        try {
+            cantidad = stoi(campos[2]);
+            producto.setPrecio(stof(campos[3]));
+        } catch (...) {
+            continue;
+        }
+
+        detallePedido.push_back({producto, cantidad});
+    }
+
+    return true;
+}
+
+const vector<pair<Producto, int>>& Cliente::getDetallePedido() const {
+    return detallePedido;
+}
+
+const string& Cliente::getFolioDetalle() const {
+    return folioDetalle;
+}
+
 bool Cliente::cargarTarjetasRed() {
     vector<string> lineas;
 

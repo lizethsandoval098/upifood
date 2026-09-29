@@ -700,7 +700,7 @@ string Servidor::procesarComando(const string& comando) {
 
     // ---------------------------------------------------------------
     // PEDIDOS_CAFETERIA|idCafeteria
-    // -> OK|N  y luego N lineas:  folio|username|estado|total|fecha
+    // -> OK|N  y luego N lineas:  folio|username|estado|total|fecha|pagado(1/0)
     // (los mas recientes primero)
     // ---------------------------------------------------------------
     if (tipo == "PEDIDOS_CAFETERIA") {
@@ -722,21 +722,25 @@ string Servidor::procesarComando(const string& comando) {
                          pedido.getUsernameCliente() + "|" +
                          pedido.getEstado() + "|" +
                          to_string(pedido.getTotal()) + "|" +
-                         pedido.getFecha();
+                         pedido.getFecha() + "|" +
+                         (db.pedidoTienePagoAprobado(pedido.getFolio()) ? "1" : "0");
         }
 
         return respuesta;
     }
 
     // ---------------------------------------------------------------
-    // PEDIDO_DETALLE|idCafeteria|folio
+    // PEDIDO_DETALLE|idCafeteria|folio[|username]
     // -> OK|N  y luego N lineas:  idProducto|nombre|cantidad|precioUnitario
+    // El username es opcional: lo manda el CLIENTE para que solo pueda ver
+    // el detalle de SUS pedidos (la cafeteria no lo manda).
     // ---------------------------------------------------------------
     if (tipo == "PEDIDO_DETALLE") {
         if (campos.size() < 3) return "ERR|Formato invalido.";
 
         string idCafeteria = campos[1];
         string folio = campos[2];
+        string usernameSolicitante = (campos.size() >= 4) ? campos[3] : "";
 
         lock_guard<mutex> guard(dbMutex);
 
@@ -748,6 +752,10 @@ string Servidor::procesarComando(const string& comando) {
 
         if (pedido.getIdCafeteria() != idCafeteria) {
             return "ERR|Ese pedido no pertenece a esta cafeteria.";
+        }
+
+        if (!usernameSolicitante.empty() && pedido.getUsernameCliente() != usernameSolicitante) {
+            return "ERR|Ese pedido no es tuyo.";
         }
 
         vector<pair<Producto, int>> lista = pedido.getListaProductos();
@@ -796,6 +804,11 @@ string Servidor::procesarComando(const string& comando) {
 
         if (!permitido) {
             return "ERR|No se puede pasar el pedido de " + actual + " a " + nuevoEstado + ".";
+        }
+
+        // Un pedido SIN PAGAR no se puede empezar a preparar: solo cancelar.
+        if (nuevoEstado == "Preparando" && !db.pedidoTienePagoAprobado(folio)) {
+            return "ERR|El pedido no esta pagado: no se puede preparar (solo cancelar).";
         }
 
         if (!db.actualizarEstadoPedido(folio, nuevoEstado)) {

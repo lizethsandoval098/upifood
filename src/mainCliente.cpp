@@ -207,6 +207,7 @@ int main(int argc, char* argv[]) {
 
     // ---------------- PANEL: botones de las vistas ----------------
     Boton botonHacerPedido("Hacer pedido y pagar", 620, 516, 240, 44);
+    Boton botonPagarPedido("Pagar este pedido", 660, 524, 210, 34); // en el detalle de Mis pedidos
     CampoTexto campoCvvPago("CVV de la tarjeta", 260, 380, 150, 42, true);
     campoCvvPago.setMaxLongitud(3);
     campoCvvPago.setModo(ModoCampo::SOLO_DIGITOS);
@@ -242,9 +243,22 @@ int main(int argc, char* argv[]) {
     string folioPago;           // pedido que se esta pagando
     float totalPago = 0.0f;
     int tarjetaSel = -1;
+    string pedidoSel;           // folio del pedido seleccionado en "Mis pedidos" (para ver su detalle)
 
     auto filasVisibles = [&]() -> int {
+        if (vista == Vista::PEDIDOS) return 5; // abajo va el panel con el detalle del pedido
         return (vista == Vista::TARJETAS || vista == Vista::PAGO) ? 4 : 10;
+    };
+
+    // Resumen del pedido seleccionado (nullptr si no hay o ya no existe).
+    auto pedidoSeleccionado = [&]() -> const ResumenPedidoCliente* {
+        if (pedidoSel.empty()) return nullptr;
+
+        for (const ResumenPedidoCliente& p : cliente.getPedidosCliente()) {
+            if (p.folio == pedidoSel) return &p;
+        }
+
+        return nullptr;
     };
 
     auto totalFilas = [&]() -> int {
@@ -277,7 +291,19 @@ int main(int argc, char* argv[]) {
         switch (vista) {
             case Vista::CAFETERIAS: ok = cliente.cargarCafeterias(); break;
             case Vista::MENU:       ok = cliente.cargarMenu(idCafeteriaSel); break;
-            case Vista::PEDIDOS:    ok = cliente.cargarPedidosCliente(); break;
+            case Vista::PEDIDOS:
+                ok = cliente.cargarPedidosCliente();
+
+                if (ok && !pedidoSel.empty()) {
+                    const ResumenPedidoCliente* sel = pedidoSeleccionado();
+
+                    if (sel == nullptr) {
+                        pedidoSel.clear();                                       // ya no existe
+                    } else {
+                        cliente.cargarDetallePedido(sel->folio, sel->idCafeteria); // refresca sus productos
+                    }
+                }
+                break;
             case Vista::TARJETAS:   ok = cliente.cargarTarjetasRed(); break;
             case Vista::PAGO:       ok = cliente.cargarTarjetasRed(); break;
             case Vista::CARRITO:    break; // el carrito es local
@@ -491,6 +517,7 @@ int main(int argc, char* argv[]) {
                     botonTarjetas.actualizarHover(mx, my);
                     botonSalir.actualizarHover(mx, my);
                     botonHacerPedido.actualizarHover(mx, my);
+                    botonPagarPedido.actualizarHover(mx, my);
                     botonPagar.actualizarHover(mx, my);
                     botonAgregarTarjetaDesdePago.actualizarHover(mx, my);
                     botonGuardarTarjeta.actualizarHover(mx, my);
@@ -562,19 +589,28 @@ int main(int argc, char* argv[]) {
                         }
                     }
                     else if (vista == Vista::PEDIDOS) {
-                        int fila = filaEn(mx, my, filasVisibles());
-                        int idx = scroll + fila;
+                        const ResumenPedidoCliente* sel = pedidoSeleccionado();
 
-                        if (fila >= 0 && idx < totalFilas()) {
-                            const ResumenPedidoCliente& p = cliente.getPedidosCliente()[idx];
+                        // Boton "Pagar este pedido" (solo aparece si esta sin pagar y no cancelado).
+                        if (sel != nullptr && !sel->pagado && sel->estado != "Cancelado" &&
+                            botonPagarPedido.contiene(mx, my)) {
+                            folioPago = sel->folio;
+                            totalPago = sel->total;
+                            tarjetaSel = -1;
+                            campoCvvPago.limpiar();
+                            enfocar(camposPago, &campoCvvPago);
+                            cambiarVista(Vista::PAGO);
+                        } else {
+                            int fila = filaEn(mx, my, filasVisibles());
+                            int idx = scroll + fila;
 
-                            if (!p.pagado && p.estado != "Cancelado") {
-                                folioPago = p.folio;
-                                totalPago = p.total;
-                                tarjetaSel = -1;
-                                campoCvvPago.limpiar();
-                                enfocar(camposPago, &campoCvvPago);
-                                cambiarVista(Vista::PAGO);
+                            if (fila >= 0 && idx < totalFilas()) {
+                                const ResumenPedidoCliente& p = cliente.getPedidosCliente()[idx];
+
+                                pedidoSel = p.folio;
+                                cliente.cargarDetallePedido(p.folio, p.idCafeteria);
+                                aviso.clear();
+                                avisoDeRed = false;
                             }
                         }
                     }
@@ -791,14 +827,14 @@ int main(int argc, char* argv[]) {
                 int total = static_cast<int>(lista.size());
 
                 encabezadoTabla(ventana, "Mis pedidos (" + to_string(total) + ")",
-                                "Se actualiza solo. Haz clic en uno 'Por pagar' para pagarlo.",
+                                "Se actualiza solo. Haz clic en un pedido para ver su detalle.",
                                 {{"Folio", 260}, {"Cafetería", 420}, {"Estado", 560}, {"Total", 660}, {"Pago", 750}});
 
                 for (int i = 0; i < visibles && scroll + i < total; i++) {
                     const ResumenPedidoCliente& p = lista[scroll + i];
                     float y = filaY(i);
 
-                    franja(ventana, i);
+                    franja(ventana, i, p.folio == pedidoSel);
                     ventana.dibujarTexto(recortar(p.folio, 16), 260, y, 16, TEXTO_OSCURO);
                     ventana.dibujarTexto(recortar(cliente.nombreCafeteria(p.idCafeteria), 12), 420, y, 16, TEXTO_OSCURO);
                     ventana.dibujarTexto(p.estado, 560, y, 16, colorEstado(p.estado));
@@ -815,6 +851,61 @@ int main(int argc, char* argv[]) {
 
                 if (total == 0 && aviso.empty()) {
                     ventana.dibujarTexto("Todavía no has hecho pedidos.", 260, 150, 18, TEXTO_SUAVE);
+                }
+
+                // --- detalle del pedido seleccionado (igual que en la cafetería) ---
+                rectangulo(ventana, 250, 318, 620, 2, sf::Color(200, 190, 178));
+
+                const ResumenPedidoCliente* seleccionado = pedidoSeleccionado();
+
+                if (seleccionado == nullptr) {
+                    ventana.dibujarTexto("Detalle del pedido", 260, 330, 18, TEXTO_OSCURO);
+                    ventana.dibujarTexto("Selecciona un pedido de la tabla para ver sus productos.",
+                                         260, 360, 16, TEXTO_SUAVE);
+                } else {
+                    ventana.dibujarTexto("Pedido " + recortar(seleccionado->folio, 30), 260, 328, 20, TEXTO_OSCURO);
+                    ventana.dibujarTexto("Cafetería: " + recortar(cliente.nombreCafeteria(seleccionado->idCafeteria), 24) +
+                                         "   ·   Fecha: " + seleccionado->fecha,
+                                         260, 358, 15, TEXTO_SUAVE);
+
+                    ventana.dibujarTexto("Estado:", 260, 384, 17, TEXTO_SUAVE);
+                    ventana.dibujarTexto(seleccionado->estado, 335, 384, 17, colorEstado(seleccionado->estado));
+
+                    ventana.dibujarTexto("Pago:", 450, 384, 17, TEXTO_SUAVE);
+                    ventana.dibujarTexto(seleccionado->pagado ? "Pagado" : "No pagado", 500, 384, 17,
+                                         seleccionado->pagado ? VERDE : ROJO_ERROR);
+
+                    ventana.dibujarTexto("Total: " + dinero(seleccionado->total), 660, 384, 17, TEXTO_OSCURO);
+
+                    const vector<pair<Producto, int>>& detalle = cliente.getDetallePedido();
+                    bool detalleVigente = (cliente.getFolioDetalle() == pedidoSel);
+                    int maxLineas = 5;
+
+                    if (!detalleVigente) {
+                        ventana.dibujarTexto("Cargando productos...", 260, 414, 16, TEXTO_SUAVE);
+                    }
+
+                    for (int i = 0; detalleVigente && i < static_cast<int>(detalle.size()); i++) {
+                        float y = 414.0f + i * 20.0f;
+
+                        if (i == maxLineas - 1 && static_cast<int>(detalle.size()) > maxLineas) {
+                            ventana.dibujarTexto("... y " + to_string(detalle.size() - i) + " productos más",
+                                                 260, y, 16, TEXTO_SUAVE);
+                            break;
+                        }
+
+                        const Producto& prod = detalle[i].first;
+                        int cantidad = detalle[i].second;
+
+                        ventana.dibujarTexto(to_string(cantidad) + " x " + recortar(prod.getNombreProducto(), 40),
+                                             260, y, 16, TEXTO_OSCURO);
+                        ventana.dibujarTexto(dinero(prod.getPrecio() * cantidad), 780, y, 16, TEXTO_SUAVE);
+                    }
+
+                    // Si todavia no se paga, desde aqui se puede pagar.
+                    if (!seleccionado->pagado && seleccionado->estado != "Cancelado") {
+                        botonPagarPedido.dibujar(ventana);
+                    }
                 }
             }
             else if (vista == Vista::TARJETAS) {

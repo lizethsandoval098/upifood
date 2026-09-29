@@ -35,6 +35,7 @@ Cafeteria::Cafeteria(const Cafeteria& otra)
 	  idCafeteria(otra.idCafeteria),
 	  inventario(otra.inventario),
 	  listaPedidos(otra.listaPedidos),
+	  foliosPagados(otra.foliosPagados),
 	  productosPendientes(otra.productosPendientes),
 	  gananciaCajaTurno(otra.gananciaCajaTurno),
 	  gananciaPedidosTurno(otra.gananciaPedidosTurno),
@@ -55,6 +56,7 @@ Cafeteria& Cafeteria::operator=(const Cafeteria& otra) {
 		idCafeteria = otra.idCafeteria;
 		inventario = otra.inventario;
 		listaPedidos = otra.listaPedidos;
+		foliosPagados = otra.foliosPagados;
 		productosPendientes = otra.productosPendientes;
 		gananciaCajaTurno = otra.gananciaCajaTurno;
 		gananciaPedidosTurno = otra.gananciaPedidosTurno;
@@ -309,9 +311,10 @@ bool Cafeteria::cargarListaPedidos() {
 	}
 
 	listaPedidos.clear();
+	foliosPagados.clear();
 
 	for (const string& linea : lineas) {
-		// folio|username|estado|total|fecha
+		// folio|username|estado|total|fecha|pagado(1/0)
 		vector<string> campos = separarCampos(linea);
 
 		if (campos.size() < 5) {
@@ -331,6 +334,10 @@ bool Cafeteria::cargarListaPedidos() {
 
 		pedido.setFecha(campos[4]);
 		pedido.setIdCafeteria(idCafeteria);
+
+		if (campos.size() >= 6 && campos[5] == "1") {
+			foliosPagados.push_back(campos[0]);
+		}
 
 		listaPedidos.push_back(pedido);
 	}
@@ -371,6 +378,16 @@ void Cafeteria::contabilizarPedidosCompletados() {
 		historialCaja.push_back({"Pedido " + pedido.getFolio() + " (" + pedido.getUsernameCliente() + ")",
 		                         1, pedido.getTotal()});
 	}
+}
+
+bool Cafeteria::pedidoPagado(const string& folio) const {
+	for (const auto& f : foliosPagados) {
+		if (f == folio) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool Cafeteria::cargarDetallePedido(const string& folio) {

@@ -675,6 +675,11 @@ int main(int argc, char* argv[]) {
             return;
         }
 
+        if (nuevo == "Preparando" && !cafeteria.pedidoPagado(pedidoSel)) {
+            avisar("El pedido no esta pagado: solo se puede cancelar.", false);
+            return;
+        }
+
         if (cafeteria.cambiarEstadoPedido(pedidoSel, nuevo)) {
             avisar("Pedido " + recortar(pedidoSel, 16) + ": " + nuevo + ".", true);
         } else {
@@ -684,6 +689,11 @@ int main(int argc, char* argv[]) {
 
     auto completarPedidoSel = [&]() {
         if (pedidoSel.empty() || !estaActivo(estadoDePedido(pedidoSel))) {
+            return;
+        }
+
+        if (estadoDePedido(pedidoSel) == "Pendiente" && !cafeteria.pedidoPagado(pedidoSel)) {
+            avisar("El pedido no esta pagado: solo se puede cancelar.", false);
             return;
         }
 
@@ -883,8 +893,10 @@ int main(int argc, char* argv[]) {
                     else { // Vista::PEDIDOS
                         string estadoSel = pedidoSel.empty() ? "" : estadoDePedido(pedidoSel);
                         string textoAvanzar, estadoSiguiente;
-                        bool hayAvance = siguienteEstado(estadoSel, textoAvanzar, estadoSiguiente);
-                        bool hayCompletar = (estadoSel == "Pendiente" || estadoSel == "Preparando");
+                        // Un pedido sin pagar NO se puede preparar: solo cancelar.
+                        bool sinPagar = (estadoSel == "Pendiente" && !cafeteria.pedidoPagado(pedidoSel));
+                        bool hayAvance = siguienteEstado(estadoSel, textoAvanzar, estadoSiguiente) && !sinPagar;
+                        bool hayCompletar = (estadoSel == "Pendiente" || estadoSel == "Preparando") && !sinPagar;
 
                         if (botonFiltro.contiene(mx, my)) {
                             soloActivos = !soloActivos;
@@ -1118,7 +1130,13 @@ int main(int argc, char* argv[]) {
 
                     ventana.dibujarTexto("Estado:", 260, 458, 17, TEXTO_SUAVE);
                     ventana.dibujarTexto(seleccionado->getEstado(), 335, 458, 17, colorEstado(seleccionado->getEstado()));
-                    ventana.dibujarTexto("Total: " + dinero(seleccionado->getTotal()), 620, 458, 17, TEXTO_OSCURO);
+
+                    bool pagadoSel = cafeteria.pedidoPagado(seleccionado->getFolio());
+                    ventana.dibujarTexto("Pago:", 450, 458, 17, TEXTO_SUAVE);
+                    ventana.dibujarTexto(pagadoSel ? "Pagado" : "No pagado", 500, 458, 17,
+                                         pagadoSel ? VERDE : ROJO_ERROR);
+
+                    ventana.dibujarTexto("Total: " + dinero(seleccionado->getTotal()), 660, 458, 17, TEXTO_OSCURO);
 
                     const vector<pair<Producto, int>>& detalle = cafeteria.getDetallePedido();
                     bool detalleVigente = (cafeteria.getFolioDetalle() == pedidoSel);
@@ -1146,14 +1164,24 @@ int main(int argc, char* argv[]) {
                     }
 
                     // --- botones de accion (solo los que tienen sentido para este estado) ---
+                    // Sin pago aprobado, un pedido Pendiente no se puede preparar:
+                    // se ocultan "Empezar a preparar" y "Llevar a Entregado".
+                    bool sinPagar = (seleccionado->getEstado() == "Pendiente" && !pagadoSel);
+
                     string textoAvanzar, estadoSiguiente;
-                    if (siguienteEstado(seleccionado->getEstado(), textoAvanzar, estadoSiguiente)) {
+                    if (!sinPagar && siguienteEstado(seleccionado->getEstado(), textoAvanzar, estadoSiguiente)) {
                         botonAvanzar.setTexto(textoAvanzar);
                         botonAvanzar.dibujar(ventana);
                     }
 
-                    if (seleccionado->getEstado() == "Pendiente" || seleccionado->getEstado() == "Preparando") {
+                    if (!sinPagar &&
+                        (seleccionado->getEstado() == "Pendiente" || seleccionado->getEstado() == "Preparando")) {
                         botonCompletar.dibujar(ventana);
+                    }
+
+                    if (sinPagar) {
+                        ventana.dibujarTexto("Sin pagar: no se puede preparar, solo cancelar.",
+                                             260, 626, 16, ROJO_ERROR);
                     }
 
                     if (sePuedeCancelar(seleccionado->getEstado())) {
