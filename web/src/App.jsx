@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Inicio from './components/Inicio';
@@ -6,6 +6,11 @@ import Menu from './components/Menu';
 import OrderSection from './components/OrderSection';
 import PedidosModal from './components/PedidosModal';
 import ConfiguracionModal from './components/ConfiguracionModal';
+import { createPedido, getPedidos } from './services/pedidosService';
+import { entrarComoInvitado, cerrarSesion } from './services/authService';
+import { usePedidoRealtime } from './hooks/usePedidoRealtime';
+
+const ESTATUS_FINALES = ['Entregado', 'Cancelado'];
 
 function App() {
   const [cartItems, setCartItems] = useState([]);
@@ -20,7 +25,6 @@ function App() {
   const [pedidoError, setPedidoError] = useState('');
   const [activeView, setActiveView] = useState('inicio');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [registeredCredentials, setRegisteredCredentials] = useState(null);
   const [userData, setUserData] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('upifood_user') || 'null');
@@ -98,8 +102,11 @@ function App() {
     setPedidoError('');
   };
 
-  const handleConfirmPayment = () => {
+  const handleConfirmPayment = async () => {
     if (!cartItems.length || isSubmittingOrder) return;
+
+    setIsSubmittingOrder(true);
+    setPedidoError('');
 
     if (isLoggedIn && !userData?.paymentMethod && receiptData?.last4) {
       const updatedUser = {
@@ -119,33 +126,84 @@ function App() {
       }
     }
 
-    const now = new Date();
-    const createdPedido = {
-      id: `#UPI-${String(now.getTime()).slice(-4)}`,
-      fecha: now.toISOString(),
-      items: cartItems.map((item) => ({
-        id: item.id,
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price,
-        image: item.image || '',
-      })),
-      total: totalToPay,
-      tiempoEstimado: 20,
-      estatus: 'En preparación',
-    };
+    // El pedido se guarda en la base de datos: aparece en la ventana de la
+    // cafetería y su estado se va actualizando aquí solo.
+    try {
+      const pedidoCreado = await createPedido({ items: cartItems });
+      const imagenes = new Map(cartItems.map((item) => [String(item.id), item.image || '']));
+      const createdPedido = {
+        ...pedidoCreado,
+        items: pedidoCreado.items.map((item) => ({ ...item, image: imagenes.get(String(item.id)) || '' })),
+      };
 
-    setPedidoActual(createdPedido);
-    setHistorialPedidos((currentPedidos) => [createdPedido, ...currentPedidos]);
-    setCartItems([]);
-    setIsReceiptOpen(false);
-    setIsPaymentConfirmed(true);
-    setIsOrdersModalOpen(false);
-    setPedidoError('');
-    setIsSubmittingOrder(false);
+      setPedidoActual(createdPedido);
+      setHistorialPedidos((currentPedidos) => [createdPedido, ...currentPedidos]);
+      setCartItems([]);
+      setIsReceiptOpen(false);
+      setIsPaymentConfirmed(true);
+      setIsOrdersModalOpen(false);
+    } catch (error) {
+      setPedidoError(error.message || 'No se pudo registrar el pedido. Inténtalo de nuevo.');
+    } finally {
+      setIsSubmittingOrder(false);
+    }
   };
 
-  const handleLogin = () => {
+  // Estado del pedido en vivo: si la cafetería lo mueve (Preparando -> Listo ->
+  // Entregado) la web lo refleja sola.
+  const handlePedidoUpdate = useCallback((pedido) => {
+    const fusionar = (anterior) => ({
+      ...pedido,
+      items: pedido.items.map((item) => ({
+        ...item,
+        image: item.image || anterior?.items?.find((previo) => String(previo.id) === String(item.id))?.image || '',
+      })),
+    });
+
+    setPedidoActual((actual) => (actual && actual.id === pedido.id ? fusionar(actual) : actual));
+    setHistorialPedidos((lista) => lista.map((actual) => (actual.id === pedido.id ? fusionar(actual) : actual)));
+  }, []);
+
+  const pedidoSeguido = pedidoActual && !ESTATUS_FINALES.includes(pedidoActual.estatus) ? pedidoActual.id : null;
+
+  usePedidoRealtime({
+    enabled: hasAccess && Boolean(pedidoSeguido),
+    pedidoId: pedidoSeguido,
+    onPedidoUpdate: handlePedidoUpdate,
+  });
+
+  // Al iniciar sesión se carga el historial real desde la base de datos.
+  useEffect(() => {
+    if (!isLoggedIn) return undefined;
+
+    let ignore = false;
+
+    getPedidos()
+      .then((lista) => {
+        if (ignore) return;
+        setHistorialPedidos(lista);
+        setPedidoActual((actual) => actual ?? lista.find((pedido) => !ESTATUS_FINALES.includes(pedido.estatus)) ?? null);
+      })
+      .catch(() => {
+        // Si la API no responde, el historial queda vacío y se reintenta al volver a iniciar sesión.
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [isLoggedIn]);
+
+  const handleLogin = (usuario) => {
+    if (usuario) {
+      const perfil = { ...(userData || {}), nombreCompleto: usuario.nombreCompleto, correo: usuario.correo };
+      setUserData(perfil);
+      try {
+        localStorage.setItem('upifood_user', JSON.stringify(perfil));
+      } catch {
+        // El perfil queda en el estado actual si no hay almacenamiento local.
+      }
+    }
+
     setIsGuest(false);
     setIsLoggedIn(true);
     setActiveView('inicio');
@@ -153,14 +211,16 @@ function App() {
   };
 
   const handleGuestAccess = () => {
+    entrarComoInvitado().catch(() => {
+      // Sin sesión de invitado se puede ver el menú, pero al pedir se mostrará el error de conexión.
+    });
     setIsGuest(true);
     setActiveView('menu');
     window.location.hash = 'menu';
   };
 
-  const handleRegister = (registeredUser, credentials) => {
+  const handleRegister = (registeredUser) => {
     setUserData(registeredUser);
-    setRegisteredCredentials(credentials);
     try {
       localStorage.setItem('upifood_user', JSON.stringify(registeredUser));
     } catch {
@@ -169,6 +229,7 @@ function App() {
   };
 
   const handleLogout = () => {
+    cerrarSesion();
     setIsGuest(false);
     setIsLoggedIn(false);
     setCartItems([]);
@@ -403,7 +464,6 @@ function App() {
             <Hero
               onLogin={handleLogin}
               onRegister={handleRegister}
-              registeredCredentials={registeredCredentials}
               onGuest={handleGuestAccess}
             />
           ) : null}
