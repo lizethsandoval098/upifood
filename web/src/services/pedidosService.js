@@ -1,35 +1,9 @@
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
+import { request } from './api';
 
-const getHeaders = (extraHeaders = {}) => {
-  const token = localStorage.getItem('upifood_token');
-
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...extraHeaders,
-  };
+const extraerPedido = (data) => {
+  if (data && typeof data === 'object' && 'pedido' in data) return data.pedido;
+  return data?.data ?? null;
 };
-
-async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers: getHeaders(options.headers || {}),
-  });
-
-  const contentType = response.headers.get('content-type') || '';
-  const responseBody = contentType.includes('application/json') ? await response.json() : await response.text();
-
-  if (!response.ok) {
-    const message =
-      typeof responseBody === 'string'
-        ? responseBody
-        : responseBody?.message || responseBody?.error || `La petición falló con estado ${response.status}`;
-
-    throw new Error(message);
-  }
-
-  return responseBody;
-}
 
 export const normalizePedido = (pedido) => {
   if (!pedido) return null;
@@ -44,11 +18,7 @@ export const normalizePedido = (pedido) => {
       }))
     : [];
 
-  const total = Number(
-    pedido.total ??
-      items.reduce((sum, item) => sum + item.price * item.quantity, 0) ??
-      0
-  );
+  const total = Number(pedido.total ?? items.reduce((sum, item) => sum + item.price * item.quantity, 0));
 
   return {
     id: pedido.id ?? pedido._id ?? pedido.numero ?? '#UPI-0000',
@@ -57,56 +27,39 @@ export const normalizePedido = (pedido) => {
     total,
     tiempoEstimado: Number(pedido.tiempoEstimado ?? pedido.estimatedTime ?? pedido.tiempo ?? 15),
     estatus: pedido.estatus ?? pedido.status ?? 'En preparación',
-    usuarioId: pedido.usuarioId ?? pedido.userId ?? 'usuario-demo',
+    usuarioId: pedido.usuarioId ?? pedido.userId ?? '',
   };
 };
 
-export const createPedido = async ({ usuarioId = 'usuario-demo', items = [], total = 0, metodoPago = 'tarjeta' }) => {
-  const payload = {
-    usuarioId,
-    metodoPago,
-    total,
-    items: items.map((item) => ({
-      id: item.id,
-      name: item.name,
-      quantity: item.quantity,
-      price: item.price,
-      image: item.image || '',
-    })),
-  };
-
+// Crea el pedido en la base de datos. Solo viajan el id y la cantidad de cada
+// producto: el precio y el total los calcula el servidor con los datos reales.
+export const createPedido = async ({ items = [], cafeteriaId } = {}) => {
   const data = await request('/api/pedidos', {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      ...(cafeteriaId ? { cafeteriaId } : {}),
+      items: items.map((item) => ({ id: item.id, quantity: item.quantity })),
+    }),
   });
 
-  const pedido = data?.pedido ?? data?.data ?? data;
-  return normalizePedido(pedido);
+  return normalizePedido(extraerPedido(data));
 };
 
-export const getPedidos = async (usuarioId = 'usuario-demo') => {
-  const data = await request(`/api/pedidos?usuarioId=${encodeURIComponent(usuarioId)}`);
-  const pedidos = Array.isArray(data)
-    ? data
-    : Array.isArray(data?.pedidos)
-      ? data.pedidos
-      : Array.isArray(data?.data)
-        ? data.data
-        : [];
+export const getPedidos = async () => {
+  const data = await request('/api/pedidos');
+  const pedidos = Array.isArray(data?.pedidos) ? data.pedidos : [];
 
-  return pedidos.map(normalizePedido).sort((first, second) => new Date(second.fecha) - new Date(first.fecha));
+  return pedidos.map(normalizePedido).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 };
 
-export const getPedidoActivo = async (usuarioId = 'usuario-demo') => {
-  const data = await request(`/api/pedidos/activo?usuarioId=${encodeURIComponent(usuarioId)}`);
-  const pedido = data?.pedido ?? data?.data ?? data;
-  return normalizePedido(pedido);
+export const getPedidoActivo = async () => {
+  const data = await request('/api/pedidos/activo');
+  return normalizePedido(extraerPedido(data));
 };
 
 export const getPedidoById = async (pedidoId) => {
   if (!pedidoId) return null;
 
   const data = await request(`/api/pedidos/${encodeURIComponent(String(pedidoId))}`);
-  const pedido = data?.pedido ?? data?.data ?? data;
-  return normalizePedido(pedido);
+  return normalizePedido(extraerPedido(data));
 };
