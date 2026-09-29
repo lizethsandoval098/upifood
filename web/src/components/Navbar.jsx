@@ -1,8 +1,34 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import logo from '../assets/logo.jpg';
 
 export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLoggedIn = false, isGuest = false, userData = null, onLogout = () => {}, onOpenOrders = () => {}, onOpenSettings = () => {} }) {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileWrapperRef = useRef(null);
+
+  // pointerdown (no blur/click) covers mouse and touch alike, so a tap on an
+  // option is not closed early before its own click handler gets to run.
+  useEffect(() => {
+    if (!profileMenuOpen) return undefined;
+
+    const handleOutsideInteraction = (event) => {
+      if (profileWrapperRef.current && !profileWrapperRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handleOutsideInteraction);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsideInteraction);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [profileMenuOpen]);
 
   return (
     <>
@@ -93,6 +119,7 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
           cursor: pointer;
           background: #5a3d2b;
           padding: 8px 15px;
+          min-height: 44px;
           border-radius: 999px;
           display: flex;
           align-items: center;
@@ -100,6 +127,7 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
           border: 1px solid #7d5a44;
           box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14);
           transition: transform 0.2s ease, box-shadow 0.2s ease;
+          touch-action: manipulation;
         }
 
         .cart-button:hover {
@@ -131,6 +159,7 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
           cursor: pointer;
           background: rgba(255, 248, 239, 0.14);
           padding: 8px 14px 8px 10px;
+          min-height: 44px;
           border-radius: 999px;
           display: flex;
           align-items: center;
@@ -139,6 +168,8 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
           box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
           transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
           color: #fff8ef;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
         }
 
         .profile-wrapper {
@@ -156,6 +187,7 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
           top: calc(100% + 10px);
           right: 0;
           min-width: 220px;
+          max-width: calc(100vw - 24px);
           padding: 10px;
           border-radius: 18px;
           background: rgba(255, 251, 246, 0.98);
@@ -200,12 +232,15 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
           justify-content: space-between;
           gap: 10px;
           padding: 11px 12px;
+          min-height: 44px;
           border-radius: 12px;
           cursor: pointer;
           font-weight: 600;
           font-size: 0.94rem;
           text-align: left;
           transition: background 0.18s ease, transform 0.18s ease;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
         }
 
         .profile-option:hover {
@@ -250,6 +285,68 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
           font-weight: 700;
           color: #fff8ef;
         }
+
+        @media (max-width: 720px) {
+          .navbar-shell {
+            padding: 12px 16px;
+            flex-wrap: wrap;
+            row-gap: 10px;
+          }
+
+          .navbar-brand {
+            font-size: 20px;
+          }
+
+          .brand-text {
+            font-size: 32px;
+          }
+
+          .brand-icon {
+            width: 44px;
+            height: 44px;
+          }
+
+          .nav-links {
+            order: 3;
+            width: 100%;
+            justify-content: center;
+            gap: 18px;
+          }
+
+          .nav-link {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .navbar-shell {
+            padding: 10px 12px;
+          }
+
+          .cart-button span:nth-child(2) {
+            display: none;
+          }
+
+          .profile-labels {
+            display: none;
+          }
+
+          .profile-button {
+            padding: 8px 10px;
+          }
+
+          .profile-dropdown {
+            right: -10px;
+            min-width: 200px;
+          }
+
+          .guest-tag {
+            padding: 8px 10px;
+            font-size: 0.8rem;
+          }
+        }
       `}</style>
 
       <nav className="navbar-shell">
@@ -278,11 +375,7 @@ export default function Navbar({ cartCount = 0, onCartClick = () => {}, isLogged
 
               {isLoggedIn ? <div
                 className="profile-wrapper"
-                onBlur={(event) => {
-                  if (!event.currentTarget.contains(event.relatedTarget)) {
-                    setProfileMenuOpen(false);
-                  }
-                }}
+                ref={profileWrapperRef}
               >
                 <div
                   className="profile-button"
