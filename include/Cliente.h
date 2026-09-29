@@ -58,6 +58,8 @@ class Cliente : public Usuario {
 		vector<pair<Producto, int>> carrito;          // producto + cantidad
 		string idCafeteriaCarrito;                    // el carrito es de UNA sola cafeteria
 		vector<ResumenPedidoCliente> pedidosCliente;  // historial / estado (via servidor)
+		string folioDetalle;                          // pedido cuyo detalle esta cargado
+		vector<pair<Producto, int>> detallePedido;    // productos de ese pedido (via servidor)
 		vector<InfoTarjeta> tarjetasRed;              // tarjetas registradas (via servidor)
 
 		// "OK|N" y luego N lineas (mismo patron que Administrador::pedirLista)
@@ -147,6 +149,11 @@ class Cliente : public Usuario {
 
 		bool cargarPedidosCliente();
 		const vector<ResumenPedidoCliente>& getPedidosCliente() const;
+
+		// Detalle (productos) de UN pedido del historial: PEDIDO_DETALLE.
+		bool cargarDetallePedido(const string& folio, const string& idCafeteria);
+		const vector<pair<Producto, int>>& getDetallePedido() const;
+		const string& getFolioDetalle() const;
 
 		bool cargarTarjetasRed();
 		const vector<InfoTarjeta>& getTarjetasRed() const;

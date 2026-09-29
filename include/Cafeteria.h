@@ -48,6 +48,9 @@ class Cafeteria : public Usuario {
 		vector<Producto> inventario;
 		vector<Pedido> listaPedidos;
 
+		// folios de los pedidos de listaPedidos que ya tienen pago aprobado
+		vector<string> foliosPagados;
+
 		// productos creados en la ventana que aun NO estan en la base de datos
 		vector<ProductoNuevo> productosPendientes;
 
@@ -98,6 +101,7 @@ class Cafeteria : public Usuario {
 		vector<Producto> getInventario() const;
 		bool hayProductoAgotado() const; // true si algun producto tiene stock 0 (para el aviso en la barra lateral)
 		vector<Pedido> getListaPedidos() const;
+		bool pedidoPagado(const string& folio) const; // true si el pedido ya tiene pago aprobado
 		float getGananciaCajaTurno() const;
 
 		// Vista previa del turno actual (lo que se cerraria si se pulsa "Cerrar Dia").
