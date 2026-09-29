@@ -20,7 +20,7 @@ export function usePedidoRealtime({ enabled = false, usuarioId = 'usuario-demo',
     };
 
     refreshPedido();
-    const intervalId = window.setInterval(refreshPedido, 5000);
+    const intervalId = window.setInterval(refreshPedido, 3000);
 
     return () => {
       ignore = true;
