@@ -1,6 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { cargarMenu } from '../services/menuService';
 
-const menuItems = [
+// Fotos y categorías de la web. El menú real (nombre, precio y stock) sale de la
+// base de datos; esta lista solo le pone la foto/categoría si el nombre coincide.
+const catalogoVisual = [
   {
     id: 1,
     name: 'Latte Escolar',
@@ -233,19 +236,40 @@ const menuItems = [
   },
 ];
 
+const SEGUNDOS_ACTUALIZACION = 20;
+
 export default function Menu({ onAddToCart = () => {} }) {
   const [lastAdded, setLastAdded] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todo');
-  const [quantities, setQuantities] = useState(() =>
-    menuItems.reduce((acc, item) => {
-      acc[item.id] = 1;
-      return acc;
-    }, {})
-  );
+  const [quantities, setQuantities] = useState({});
+  const [menuItems, setMenuItems] = useState([]);
+  const [menuStatus, setMenuStatus] = useState('cargando'); // cargando | listo | error
+  const [menuError, setMenuError] = useState('');
+
+  // Trae el menú de la base de datos y lo refresca cada 20 s (por si la cafetería cambia precios o stock).
+  const loadMenu = useCallback(async () => {
+    try {
+      const items = await cargarMenu(catalogoVisual);
+      setMenuItems(items);
+      setMenuStatus('listo');
+      setMenuError('');
+    } catch (error) {
+      setMenuError(error.message);
+      setMenuStatus((estado) => (estado === 'listo' ? 'listo' : 'error'));
+    }
+  }, []);
+
+  useEffect(() => {
+    loadMenu();
+    const intervalId = window.setInterval(loadMenu, SEGUNDOS_ACTUALIZACION * 1000);
+    return () => window.clearInterval(intervalId);
+  }, [loadMenu]);
+
+  const getQty = (id) => quantities[id] ?? 1;
 
   const normalizedMenuItems = useMemo(
     () => menuItems.map((item) => ({ ...item, categoria: item.categoria ?? item.category })),
-    []
+    [menuItems]
   );
 
   const categories = useMemo(
@@ -261,15 +285,17 @@ export default function Menu({ onAddToCart = () => {} }) {
     [normalizedMenuItems, selectedCategory]
   );
 
-  const updateQty = (id, delta) => {
+  const updateQty = (item, delta) => {
+    const maximo = Math.max(1, Math.min(20, item.stock ?? 20));
+
     setQuantities((prev) => ({
       ...prev,
-      [id]: Math.max(1, Math.min(20, prev[id] + delta)),
+      [item.id]: Math.max(1, Math.min(maximo, (prev[item.id] ?? 1) + delta)),
     }));
   };
 
   const addToCart = (item) => {
-    const qty = quantities[item.id];
+    const qty = getQty(item.id);
     onAddToCart(item, qty);
     setLastAdded(`${qty} x ${item.name}`);
   };
@@ -552,23 +578,28 @@ export default function Menu({ onAddToCart = () => {} }) {
                       <div className="qty-control" aria-label={`Cantidad de ${item.name}`}>
                         <button
                           className="qty-btn"
-                          onClick={() => updateQty(item.id, -1)}
+                          onClick={() => updateQty(item, -1)}
                           aria-label={`Quitar una unidad de ${item.name}`}
                         >
                           -
                         </button>
-                        <span className="qty-value">{quantities[item.id]}</span>
+                        <span className="qty-value">{getQty(item.id)}</span>
                         <button
                           className="qty-btn"
-                          onClick={() => updateQty(item.id, 1)}
+                          onClick={() => updateQty(item, 1)}
                           aria-label={`Agregar una unidad de ${item.name}`}
                         >
                           +
                         </button>
                       </div>
 
-                      <button className="add-cart-btn" onClick={() => addToCart(item)}>
-                        Agregar al carrito
+                      <button
+                        className="add-cart-btn"
+                        onClick={() => addToCart(item)}
+                        disabled={item.stock <= 0}
+                        style={item.stock <= 0 ? { opacity: 0.55, cursor: 'not-allowed' } : undefined}
+                      >
+                        {item.stock <= 0 ? 'Agotado' : 'Agregar al carrito'}
                       </button>
                     </div>
                   </div>
@@ -576,7 +607,16 @@ export default function Menu({ onAddToCart = () => {} }) {
               ))
             ) : (
               <div className="menu-empty">
-                No hay productos disponibles en esta categoría por el momento.
+                {menuStatus === 'cargando'
+                  ? 'Cargando el menú...'
+                  : menuStatus === 'error'
+                    ? `No se pudo cargar el menú. ${menuError}`
+                    : 'No hay productos disponibles en esta categoría por el momento.'}
+                {menuStatus === 'error' ? (
+                  <button type="button" className="category-chip" style={{ marginLeft: 12 }} onClick={loadMenu}>
+                    Reintentar
+                  </button>
+                ) : null}
               </div>
             )}
           </div>

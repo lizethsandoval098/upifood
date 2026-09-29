@@ -1,51 +1,70 @@
 import logo from '../assets/logo.jpg';
 import { useState } from 'react';
+import { registrarCuenta, iniciarSesion } from '../services/authService';
 
-export default function Hero({ onLogin = () => {}, onRegister = () => {}, onGuest = () => {}, registeredCredentials = null }) {
+export default function Hero({ onLogin = () => {}, onRegister = () => {}, onGuest = () => {} }) {
   const [activePanel, setActivePanel] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleRegistration = (event) => {
+  // La cuenta se crea en la base de datos (a través de la API), ya no solo en el navegador.
+  const handleRegistration = async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
+
     const formData = new FormData(event.currentTarget);
     const registeredUser = {
-      nombreCompleto: formData.get('nombreCompleto').trim(),
-      correo: formData.get('correo').trim(),
+      nombreCompleto: String(formData.get('nombreCompleto') || '').trim(),
+      correo: String(formData.get('correo') || '').trim().toLowerCase(),
       anioIngreso: formData.get('anioIngreso'),
       escuela: formData.get('escuela'),
     };
-    onRegister(registeredUser, {
-      correo: registeredUser.correo,
-      password: formData.get('password'),
-    });
+
+    setIsSubmitting(true);
     setLoginError('');
-    setActivePanel('registro-exitoso');
+
+    try {
+      await registrarCuenta({
+        nombreCompleto: registeredUser.nombreCompleto,
+        correo: registeredUser.correo,
+        password: String(formData.get('password') || ''),
+        escuela: registeredUser.escuela,
+      });
+
+      onRegister(registeredUser, { correo: registeredUser.correo });
+      setActivePanel('registro-exitoso');
+    } catch (error) {
+      setLoginError(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleLogin = (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
+
     const formData = new FormData(event.currentTarget);
-    const correo = String(formData.get('loginCorreo') || '');
+    const correo = String(formData.get('loginCorreo') || '').trim().toLowerCase();
     const password = String(formData.get('loginPassword') || '');
 
-    if (!correo.trim() || !password) {
+    if (!correo || !password) {
       setLoginError('Por favor, ingresa tu correo y contraseña.');
       return;
     }
 
-    if (!registeredCredentials) {
-      setLoginError('No hay una cuenta registrada en esta sesión. Crea una cuenta para continuar.');
-      return;
-    }
-
-    if (correo !== registeredCredentials.correo || password !== registeredCredentials.password) {
-      setLoginError('El correo o la contraseña son incorrectos.');
-      return;
-    }
-
+    setIsSubmitting(true);
     setLoginError('');
-    setActivePanel('');
-    onLogin();
+
+    try {
+      const usuario = await iniciarSesion({ correo, password });
+      setActivePanel('');
+      onLogin(usuario);
+    } catch (error) {
+      setLoginError(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -454,8 +473,9 @@ export default function Hero({ onLogin = () => {}, onRegister = () => {}, onGues
                         <option value="otra">Otra</option>
                       </select>
                       <input className="hero-mini-input" name="password" type="password" placeholder="Crear contraseña" minLength="6" required />
-                      <button type="submit" className="hero-mini-button">
-                        Registrarme
+                      {loginError ? <p className="hero-form-error" role="alert">{loginError}</p> : null}
+                      <button type="submit" className="hero-mini-button" disabled={isSubmitting}>
+                        {isSubmitting ? 'Creando cuenta...' : 'Registrarme'}
                       </button>
                     </form>
                     <div className="hero-card-actions">
