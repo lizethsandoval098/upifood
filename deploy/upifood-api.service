@@ -1,0 +1,13 @@
+[Unit]
+Description=UPIIFOOD API web (puente HTTP -> servidor C++)
+After=upifood-servidor.service network-online.target
+Wants=upifood-servidor.service
+
+[Service]
+WorkingDirectory=%h/upifood-main/api
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target
