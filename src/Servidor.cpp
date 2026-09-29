@@ -1163,6 +1163,122 @@ string Servidor::procesarComando(const string& comando) {
         return "OK|" + folio + "|" + to_string(total) + "|" + idCafeteriaCanonico;
     }
 
+    // ---------------------------------------------------------------
+    // PEDIDOS_CLIENTE|username
+    // -> OK|N  y luego N lineas:  folio|estado|total|fecha|idCafeteria|pagado(1/0)
+    // (los mas recientes primero). Es el "historial" y el "estado del pedido"
+    // de la ventana del cliente.
+    // ---------------------------------------------------------------
+    if (tipo == "PEDIDOS_CLIENTE") {
+        if (campos.size() < 2 || campos[1].empty()) return "ERR|Formato invalido.";
+
+        lock_guard<mutex> guard(dbMutex);
+
+        vector<Pedido> pedidos = db.obtenerHistorialPedidos(campos[1]);
+        reverse(pedidos.begin(), pedidos.end());
+
+        string respuesta = "OK|" + to_string(pedidos.size());
+
+        for (const auto& pedido : pedidos) {
+            char bufferTotal[32];
+            snprintf(bufferTotal, sizeof(bufferTotal), "%.2f", pedido.getTotal());
+
+            respuesta += "\n" + pedido.getFolio() + "|" +
+                         pedido.getEstado() + "|" +
+                         bufferTotal + "|" +
+                         pedido.getFecha() + "|" +
+                         pedido.getIdCafeteria() + "|" +
+                         (db.pedidoTienePagoAprobado(pedido.getFolio()) ? "1" : "0");
+        }
+
+        return respuesta;
+    }
+
+    // ---------------------------------------------------------------
+    // TARJETAS_CLIENTE|username
+    // -> OK|N  y luego N lineas:  numeroTarjeta|fechaVencimiento
+    // (nunca se manda el CVV; el cliente lo escribe al pagar)
+    // ---------------------------------------------------------------
+    if (tipo == "TARJETAS_CLIENTE") {
+        if (campos.size() < 2 || campos[1].empty()) return "ERR|Formato invalido.";
+
+        lock_guard<mutex> guard(dbMutex);
+
+        Cliente c = db.obtenerUsuarioCliente(campos[1]);
+
+        if (c.getUsername().empty()) {
+            return "ERR|Usuario inexistente.";
+        }
+
+        vector<Tarjeta> tarjetas = c.getTarjetasGuardadas();
+        string respuesta = "OK|" + to_string(tarjetas.size());
+
+        for (const auto& tarjeta : tarjetas) {
+            respuesta += "\n" + tarjeta.getNumeroTarjeta() + "|" + tarjeta.getFechaVencimiento();
+        }
+
+        return respuesta;
+    }
+
+    // ---------------------------------------------------------------
+    // TARJETA_AGREGAR|username|numero|cvv|titular|vencimiento(MM/AA)
+    // -> OK|tarjetaEnmascarada
+    // ---------------------------------------------------------------
+    if (tipo == "TARJETA_AGREGAR") {
+        if (campos.size() < 6) return "ERR|Formato invalido.";
+
+        string username = campos[1];
+        string numero = campos[2];
+        string cvv = campos[3];
+        string titular = campos[4];
+        string vencimiento = campos[5];
+
+        auto soloDigitos = [](const string& texto) {
+            return !texto.empty() && all_of(texto.begin(), texto.end(),
+                                            [](unsigned char c) { return isdigit(c) != 0; });
+        };
+
+        if (!soloDigitos(numero) || numero.size() < 13 || numero.size() > 19) {
+            return "ERR|El numero de tarjeta debe tener entre 13 y 19 digitos.";
+        }
+
+        if (!Tarjeta::luhnValido(numero)) {
+            return "ERR|Numero de tarjeta invalido.";
+        }
+
+        if (!soloDigitos(cvv) || (cvv.size() != 3 && cvv.size() != 4)) {
+            return "ERR|El CVV debe tener 3 o 4 digitos.";
+        }
+
+        if (titular.empty()) {
+            return "ERR|Falta el nombre del titular.";
+        }
+
+        Tarjeta nueva(numero, cvv, titular, vencimiento);
+
+        if (nueva.estaVencida()) {
+            return "ERR|Tarjeta vencida o fecha invalida (usa MM/AA).";
+        }
+
+        lock_guard<mutex> guard(dbMutex);
+
+        Cliente c = db.obtenerUsuarioCliente(username);
+
+        if (c.getUsername().empty()) {
+            return "ERR|Usuario inexistente.";
+        }
+
+        if (db.existeNumeroTarjeta(numero)) {
+            return "ERR|Esa tarjeta ya esta registrada.";
+        }
+
+        if (!db.guardarTarjetaCliente(username, nueva)) {
+            return "ERR|No se pudo guardar la tarjeta.";
+        }
+
+        return "OK|" + nueva.enmascarada();
+    }
+
     return "ERR|Comando desconocido: " + tipo;
 }
 

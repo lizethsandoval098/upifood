@@ -1256,6 +1256,29 @@ bool BaseDatos::guardarTarjeta(const Tarjeta& tarjeta) {
 }
 
 
+bool BaseDatos::guardarTarjetaCliente(const string& username, const Tarjeta& tarjeta) {
+	string sql = "INSERT INTO Tarjetas (numeroTarjeta, usernameCliente, fechaVencimiento, CVV, titular, "
+		     "esSimulada, fechaCreacion) VALUES (?, ?, ?, ?, ?, 0, datetime('now','localtime'));";
+
+	sqlite3_stmt* stmt;
+
+	if(sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+		cerr << "Error al preparar insercion de tarjeta (cliente): " << sqlite3_errmsg(db) << endl;
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, tarjeta.getNumeroTarjeta().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 2, username.c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 3, tarjeta.getFechaVencimiento().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 4, tarjeta.getCVV().c_str(), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(stmt, 5, tarjeta.getNombrePropietario().c_str(), -1, SQLITE_TRANSIENT);
+
+	bool exito = (sqlite3_step(stmt) == SQLITE_DONE);
+	sqlite3_finalize(stmt);
+
+	return exito;
+}
+
 // ---------------------------------------------------------------------
 // Tarjetas simuladas (bots)
 // ---------------------------------------------------------------------

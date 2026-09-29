@@ -9,6 +9,8 @@
 #include <netinet/in.h>
 #include <algorithm>
 #include <cctype>
+#include <cstdio>
+#include <stdexcept>
 
 Cliente::Cliente() {
     tipoCliente = "INVITADO";
@@ -28,7 +30,14 @@ Cliente::Cliente(string nombre, string correo, string contrasena, string usernam
     puerto = 5000;
 }
 
-Cliente::~Cliente() { }
+Cliente::~Cliente() {
+    // Solo el objeto que abrio la conexion tiene un socket valido (las copias
+    // que arma la BD traen -1), asi que no se cierra un socket ajeno.
+    if (socketCliente != -1) {
+        close(socketCliente);
+        socketCliente = -1;
+    }
+}
 
 string Cliente::getApellidoPaterno() const {
     return apellidoPaterno;
@@ -336,4 +345,483 @@ string Cliente::asignarUsername(const string& correo) {
 
 void Cliente::setIpServidor(const string& ip) {
     ipServidor = ip;
+}
+
+
+// =====================================================================
+//  API para la ventana grafica (todo via el servidor, sin cin/cout)
+// =====================================================================
+
+const string& Cliente::getUltimoError() const {
+    return ultimoError;
+}
+
+bool Cliente::pedirLista(const string& comando, vector<string>& lineas) {
+    lineas.clear();
+
+    string respuesta = enviarComando(socketCliente, comando);
+    vector<string> encabezado = separarCampos(respuesta);
+
+    if (encabezado.empty() || encabezado[0] != "OK" || encabezado.size() < 2) {
+        if (!encabezado.empty() && encabezado[0] == "ERR" && encabezado.size() > 1) {
+            ultimoError = encabezado[1];
+        } else {
+            ultimoError = "Respuesta invalida del servidor.";
+        }
+        return false;
+    }
+
+    int cantidad = 0;
+
+    try {
+        cantidad = stoi(encabezado[1]);
+    } catch (...) {
+        ultimoError = "Respuesta invalida del servidor.";
+        return false;
+    }
+
+    for (int i = 0; i < cantidad; i++) {
+        string linea;
+
+        if (!recibirMensaje(socketCliente, linea)) {
+            ultimoError = "Se perdio la conexion con el servidor.";
+            return false;
+        }
+
+        lineas.push_back(linea);
+    }
+
+    return true;
+}
+
+// El protocolo separa campos con '|' y los productos con ',' y ':', asi que
+// esos caracteres no pueden ir dentro de lo que escribe el usuario.
+static bool tieneSeparadores(const string& texto) {
+    return texto.find('|') != string::npos || texto.find('\n') != string::npos;
+}
+
+bool Cliente::iniciarSesion(const string& usuario, const string& clave) {
+    if (usuario.empty() || clave.empty()) {
+        ultimoError = "Escribe tu usuario y tu contrasena.";
+        return false;
+    }
+
+    if (tieneSeparadores(usuario) || tieneSeparadores(clave)) {
+        ultimoError = "Usuario o contrasena con caracteres no permitidos.";
+        return false;
+    }
+
+    string respuesta = enviarComando(socketCliente, "LOGIN_CLIENTE|" + usuario + "|" + clave);
+    vector<string> campos = separarCampos(respuesta);
+
+    if (campos.empty() || campos[0] != "OK") {
+        ultimoError = (campos.size() > 1) ? campos[1] : "Error desconocido.";
+        return false;
+    }
+
+    // OK|nombre|correo|apellidoP|apellidoM|tipoCliente|username
+    if (campos.size() < 7) {
+        ultimoError = "Respuesta invalida del servidor.";
+        return false;
+    }
+
+    setNombre(campos[1]);
+    setCorreo(campos[2]);
+    setApellidoPaterno(campos[3]);
+    setApellidoMaterno(campos[4]);
+    setTipoCliente(campos[5]);
+    setUsername(campos[6]);
+    setTipoUsuario("Cliente");
+
+    vaciarCarrito();
+    return true;
+}
+
+bool Cliente::registrarse(const string& correo, const string& nombre, const string& apellidoP,
+                          const string& apellidoM, const string& anio, const string& escuela,
+                          const string& contrasena, string& usernameOut) {
+    if (correo.empty() || nombre.empty() || apellidoP.empty() || apellidoM.empty() ||
+        anio.empty() || escuela.empty() || contrasena.empty()) {
+        ultimoError = "Llena todos los campos.";
+        return false;
+    }
+
+    for (const string* campo : {&correo, &nombre, &apellidoP, &apellidoM, &escuela, &contrasena}) {
+        if (tieneSeparadores(*campo)) {
+            ultimoError = "No se permite el caracter '|' en los datos.";
+            return false;
+        }
+    }
+
+    int anioNumero = 0;
+
+    try {
+        size_t usados = 0;
+        anioNumero = stoi(anio, &usados);
+        if (usados != anio.size()) throw invalid_argument("anio");
+    } catch (...) {
+        ultimoError = "El anio de ingreso debe ser un numero (ej. 2023).";
+        return false;
+    }
+
+    if (!validarIPN(correo, anioNumero, escuela)) {
+        ultimoError = "Correo (@alumno.ipn.mx), anio (> 2014) o escuela no validos.";
+        return false;
+    }
+
+    if (contrasena.size() < 8) {
+        ultimoError = "La contrasena debe tener minimo 8 caracteres.";
+        return false;
+    }
+
+    string username = asignarUsername(correo);
+    string tipo = (normalizarTexto(escuela) == "UPIITA") ? "UPIITA" : "IPN";
+
+    string comando = "REGISTRO_CLIENTE|" + username + "|" + nombre + "|" + correo + "|" +
+                     contrasena + "|" + apellidoP + "|" + apellidoM + "|" + tipo;
+
+    string respuesta = enviarComando(socketCliente, comando);
+    vector<string> campos = separarCampos(respuesta);
+
+    if (campos.empty() || campos[0] != "OK") {
+        ultimoError = (campos.size() > 1) ? campos[1] : "No se pudo registrar.";
+        return false;
+    }
+
+    usernameOut = username;
+    return true;
+}
+
+bool Cliente::cargarCafeterias() {
+    vector<string> lineas;
+
+    if (!pedirLista("LISTAR_CAFETERIAS", lineas)) {
+        return false;
+    }
+
+    cafeterias.clear();
+
+    for (const string& linea : lineas) {
+        // idCafeteria|nombre|correo|username|pedidos
+        vector<string> campos = separarCampos(linea);
+
+        if (campos.size() < 2) {
+            continue;
+        }
+
+        cafeterias.push_back({campos[0], campos[1]});
+    }
+
+    return true;
+}
+
+bool Cliente::cargarMenu(const string& idCafeteria) {
+    vector<string> lineas;
+
+    if (!pedirLista("INVENTARIO|" + idCafeteria, lineas)) {
+        return false;
+    }
+
+    menu.clear();
+
+    for (const string& linea : lineas) {
+        // idProducto|nombre|stock|precio
+        vector<string> campos = separarCampos(linea);
+
+        if (campos.size() < 4) {
+            continue;
+        }
+
+        Producto p;
+        p.setIdProducto(campos[0]);
+        p.setNombreProducto(campos[1]);
+
+        try {
+            p.setStock(stoi(campos[2]));
+            p.setPrecio(stof(campos[3]));
+        } catch (...) {
+            continue;
+        }
+
+        menu.push_back(p);
+    }
+
+    return true;
+}
+
+const vector<InfoCafeteria>& Cliente::getCafeterias() const {
+    return cafeterias;
+}
+
+const vector<Producto>& Cliente::getMenu() const {
+    return menu;
+}
+
+string Cliente::nombreCafeteria(const string& idCafeteria) const {
+    for (const auto& c : cafeterias) {
+        if (c.id == idCafeteria) {
+            return c.nombre;
+        }
+    }
+
+    return idCafeteria;
+}
+
+// ---------------------------- Carrito ----------------------------
+
+const vector<pair<Producto, int>>& Cliente::getCarrito() const {
+    return carrito;
+}
+
+const string& Cliente::getIdCafeteriaCarrito() const {
+    return idCafeteriaCarrito;
+}
+
+int Cliente::cantidadEnCarrito(const string& idProducto) const {
+    for (const auto& par : carrito) {
+        if (par.first.getIdProducto() == idProducto) {
+            return par.second;
+        }
+    }
+
+    return 0;
+}
+
+int Cliente::unidadesEnCarrito() const {
+    int total = 0;
+
+    for (const auto& par : carrito) {
+        total += par.second;
+    }
+
+    return total;
+}
+
+float Cliente::totalCarrito() const {
+    float total = 0.0f;
+
+    for (const auto& par : carrito) {
+        total += par.first.getPrecio() * par.second;
+    }
+
+    return total;
+}
+
+bool Cliente::agregarAlCarrito(const string& idCafeteria, const Producto& producto) {
+    // Un pedido es de UNA sola cafeteria: si cambia de cafeteria, se empieza de cero.
+    if (!carrito.empty() && idCafeteriaCarrito != idCafeteria) {
+        carrito.clear();
+    }
+
+    idCafeteriaCarrito = idCafeteria;
+
+    for (auto& par : carrito) {
+        if (par.first.getIdProducto() == producto.getIdProducto()) {
+            if (par.second + 1 > producto.getStock()) {
+                ultimoError = "No hay mas existencias de " + producto.getNombreProducto() + ".";
+                return false;
+            }
+
+            par.second++;
+            return true;
+        }
+    }
+
+    if (producto.getStock() < 1) {
+        ultimoError = producto.getNombreProducto() + " esta agotado.";
+        return false;
+    }
+
+    carrito.push_back({producto, 1});
+    return true;
+}
+
+void Cliente::quitarUnoDelCarrito(const string& idProducto) {
+    for (size_t i = 0; i < carrito.size(); i++) {
+        if (carrito[i].first.getIdProducto() == idProducto) {
+            carrito[i].second--;
+
+            if (carrito[i].second <= 0) {
+                carrito.erase(carrito.begin() + static_cast<long>(i));
+            }
+
+            break;
+        }
+    }
+
+    if (carrito.empty()) {
+        idCafeteriaCarrito.clear();
+    }
+}
+
+void Cliente::quitarDelCarrito(const string& idProducto) {
+    carrito.erase(remove_if(carrito.begin(), carrito.end(),
+                            [&](const pair<Producto, int>& par) {
+                                return par.first.getIdProducto() == idProducto;
+                            }),
+                  carrito.end());
+
+    if (carrito.empty()) {
+        idCafeteriaCarrito.clear();
+    }
+}
+
+void Cliente::vaciarCarrito() {
+    carrito.clear();
+    idCafeteriaCarrito.clear();
+}
+
+bool Cliente::crearPedidoDesdeCarrito(string& folioOut, float& totalOut) {
+    if (carrito.empty()) {
+        ultimoError = "Tu carrito esta vacio.";
+        return false;
+    }
+
+    if (getUsername().empty()) {
+        ultimoError = "Inicia sesion para hacer un pedido.";
+        return false;
+    }
+
+    // PEDIDO_CREAR|idCafeteria|usernameCliente|idProd1:cant1,idProd2:cant2
+    string lista;
+
+    for (const auto& par : carrito) {
+        if (!lista.empty()) lista += ",";
+        lista += par.first.getIdProducto() + ":" + to_string(par.second);
+    }
+
+    string respuesta = enviarComando(socketCliente,
+                                     "PEDIDO_CREAR|" + idCafeteriaCarrito + "|" + getUsername() + "|" + lista);
+    vector<string> campos = separarCampos(respuesta);
+
+    if (campos.empty() || campos[0] != "OK" || campos.size() < 3) {
+        ultimoError = (campos.size() > 1 && campos[0] == "ERR") ? campos[1] : "No se pudo crear el pedido.";
+        return false;
+    }
+
+    folioOut = campos[1];
+
+    try {
+        totalOut = stof(campos[2]);
+    } catch (...) {
+        totalOut = totalCarrito();
+    }
+
+    vaciarCarrito();
+    return true;
+}
+
+// ------------------------ Pedidos y tarjetas ------------------------
+
+bool Cliente::cargarPedidosCliente() {
+    vector<string> lineas;
+
+    if (!pedirLista("PEDIDOS_CLIENTE|" + getUsername(), lineas)) {
+        return false;
+    }
+
+    pedidosCliente.clear();
+
+    for (const string& linea : lineas) {
+        // folio|estado|total|fecha|idCafeteria|pagado
+        vector<string> campos = separarCampos(linea);
+
+        if (campos.size() < 6) {
+            continue;
+        }
+
+        ResumenPedidoCliente r;
+        r.folio = campos[0];
+        r.estado = campos[1];
+        r.fecha = campos[3];
+        r.idCafeteria = campos[4];
+        r.pagado = (campos[5] == "1");
+
+        try {
+            r.total = stof(campos[2]);
+        } catch (...) {
+            r.total = 0.0f;
+        }
+
+        pedidosCliente.push_back(r);
+    }
+
+    return true;
+}
+
+const vector<ResumenPedidoCliente>& Cliente::getPedidosCliente() const {
+    return pedidosCliente;
+}
+
+bool Cliente::cargarTarjetasRed() {
+    vector<string> lineas;
+
+    if (!pedirLista("TARJETAS_CLIENTE|" + getUsername(), lineas)) {
+        return false;
+    }
+
+    tarjetasRed.clear();
+
+    for (const string& linea : lineas) {
+        // numeroTarjeta|vencimiento
+        vector<string> campos = separarCampos(linea);
+
+        if (campos.size() < 2) {
+            continue;
+        }
+
+        InfoTarjeta t;
+        t.numero = campos[0];
+        t.vencimiento = campos[1];
+        t.enmascarada = Tarjeta(campos[0], "", "", campos[1]).enmascarada();
+
+        tarjetasRed.push_back(t);
+    }
+
+    return true;
+}
+
+const vector<InfoTarjeta>& Cliente::getTarjetasRed() const {
+    return tarjetasRed;
+}
+
+bool Cliente::agregarTarjetaRed(const string& numero, const string& cvv, const string& titular,
+                                const string& vencimiento) {
+    if (tieneSeparadores(numero) || tieneSeparadores(cvv) || tieneSeparadores(titular) ||
+        tieneSeparadores(vencimiento)) {
+        ultimoError = "No se permite el caracter '|' en los datos.";
+        return false;
+    }
+
+    string respuesta = enviarComando(socketCliente,
+                                     "TARJETA_AGREGAR|" + getUsername() + "|" + numero + "|" + cvv + "|" +
+                                     titular + "|" + vencimiento);
+    vector<string> campos = separarCampos(respuesta);
+
+    if (campos.empty() || campos[0] != "OK") {
+        ultimoError = (campos.size() > 1) ? campos[1] : "No se pudo guardar la tarjeta.";
+        return false;
+    }
+
+    return true;
+}
+
+bool Cliente::pagarPedidoRed(const string& folio, const string& numeroTarjeta, const string& cvv,
+                             string& referenciaOut) {
+    if (tieneSeparadores(cvv)) {
+        ultimoError = "CVV invalido.";
+        return false;
+    }
+
+    string respuesta = enviarComando(socketCliente, "PAGAR_PEDIDO|" + folio + "|" + numeroTarjeta + "|" + cvv);
+    vector<string> campos = separarCampos(respuesta);
+
+    // OK|folio|monto|referencia|fecha|tarjetaEnmascarada
+    if (campos.empty() || campos[0] != "OK") {
+        ultimoError = (campos.size() > 1) ? campos[1] : "No se pudo procesar el pago.";
+        return false;
+    }
+
+    referenciaOut = (campos.size() > 3) ? campos[3] : "";
+    return true;
 }
