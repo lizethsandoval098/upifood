@@ -162,6 +162,17 @@ class Cliente : public Usuario {
 		// razonable, y la escuela debe existir dentro del catalogo de escuelas del IPN.
 		static bool validarIPN(const string& correo, int anio, const string& escuela);
 		static bool validarEscuela(const string& escuela);
+
+		// El correo se arma con: inicial del nombre + apellido paterno + inicial del
+		// apellido materno + 4 digitos, y los 2 primeros digitos son los ultimos 2
+		// del anio de ingreso (2021 -> 21). Ej: Juan Perez Lopez, 2021 ->
+		// jperezl21XX@alumno.ipn.mx (XX aleatorios).
+		// Regresa "" si esta bien; si no, el mensaje de que esta mal.
+		static string validarCorreoConNombre(const string& correo, const string& nombre,
+		                                     const string& apellidoP, const string& apellidoM, int anio);
+
+		// Minusculas, sin acentos/n con tilde, sin espacios ni signos: "Pérez Núñez" -> "pereznunez"
+		static string normalizarParaCorreo(const string& texto);
 		static string normalizarTexto(const string& texto);
 
 		// Username automatico = lo que esta antes de la @ en el correo.

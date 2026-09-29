@@ -36,6 +36,14 @@ class Tarjeta{
 		// o si el formato no se puede leer.
 		bool estaVencida() const;
 
+		// Validaciones de FORMATO (una sola fuente para cliente y servidor):
+		//  - numero: exactamente 16 digitos
+		//  - CVV: exactamente 3 digitos
+		//  - fecha: "MM/AA" con mes entre 01 y 12 (si ya paso, lo ve estaVencida())
+		static bool numeroFormatoValido(const string& numero);
+		static bool cvvFormatoValido(const string& cvv);
+		static bool fechaFormatoValida(const string& fecha);
+
 		// Algoritmo de Luhn: valida el digito verificador de un numero de tarjeta.
 		static bool luhnValido(const string& numero);
 

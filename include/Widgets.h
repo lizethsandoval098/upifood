@@ -38,6 +38,12 @@ public:
     void dibujar(Ventana& ventana);
 };
 
+// Que caracteres acepta un CampoTexto.
+//   LIBRE        : lo de siempre (letras, numeros, acentos...)
+//   SOLO_DIGITOS : solo 0-9 (numero de tarjeta, CVV, anio)
+//   FECHA_MMAA   : solo digitos; pone la "/" sola despues del mes (12 -> "12/")
+enum class ModoCampo { LIBRE, SOLO_DIGITOS, FECHA_MMAA };
+
 class CampoTexto {
 private:
     sf::RectangleShape forma;
@@ -46,6 +52,7 @@ private:
     bool enfocado;
     bool oculto;          // true = muestra ****** (contrasena)
     std::size_t maxLongitud;
+    ModoCampo modo = ModoCampo::LIBRE;
 
 public:
     CampoTexto();
@@ -62,6 +69,7 @@ public:
     const std::string& getContenido() const;
     void setContenido(const std::string& texto); // para rellenar el campo desde el programa
     void setMaxLongitud(std::size_t maximo);
+    void setModo(ModoCampo m);
     void limpiar();
 
     void dibujar(Ventana& ventana);
